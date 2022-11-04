@@ -7,7 +7,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class FinalprojectApplication {
 
     public static void main(String[] args) {
+
         SpringApplication.run(FinalprojectApplication.class, args);
+        System.out.println("실행 확인~~~~~~~");
     }
 
 }
