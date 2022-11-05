@@ -24,8 +24,11 @@ public class MemberService {
         jpaQueryFactory.selectFrom(member)
                 .fetch();
 
+
         return new ResponseEntity<>(new PrivateResponseBody
                 (StatusCode.OK,"회원가입 성공"), HttpStatus.OK);
+
+
     }
 
 }
