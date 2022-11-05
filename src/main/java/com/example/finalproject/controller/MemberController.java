@@ -27,7 +27,6 @@ public class MemberController {
     @PostMapping("/signup")
     public ResponseEntity<PrivateResponseBody> signup(
             @RequestBody MemberRequestDto memberRequestDto){
-
         return memberService.signup(memberRequestDto);
     }
 
