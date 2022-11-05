@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
+
 import static com.example.finalproject.domain.QMember.member;
 
 @RequiredArgsConstructor
@@ -18,6 +20,7 @@ public class MemberService {
 
     private final JPAQueryFactory jpaQueryFactory;
     private final MemberRepository memberRepository;
+
 
     public ResponseEntity<PrivateResponseBody> signup(MemberRequestDto memberRequestDto){
 
@@ -29,6 +32,14 @@ public class MemberService {
                 (StatusCode.OK,"회원가입 성공"), HttpStatus.OK);
 
 
+    }
+
+    public ResponseEntity<PrivateResponseBody> login(MemberRequestDto memberRequestDto, HttpServletResponse response){
+
+
+
+        return new ResponseEntity<>(new PrivateResponseBody
+                (StatusCode.OK,""), HttpStatus.OK);
     }
 
 }

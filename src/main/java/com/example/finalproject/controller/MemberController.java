@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+
 
 @RequiredArgsConstructor
 @RequestMapping("/lier")
@@ -19,11 +21,19 @@ public class MemberController {
 
     private final MemberService memberService;
 
-//    @PostMapping("/signup")
-//    public ResponseEntity<PrivateResponseBody> signup(
-//            @RequestBody MemberRequestDto memberRequestDto){
-//
-//        return memberService.signup(memberRequestDto);
-//    }
+    @PostMapping("/signup")
+    public ResponseEntity<PrivateResponseBody> signup(
+            @RequestBody MemberRequestDto memberRequestDto){
+
+        return memberService.signup(memberRequestDto);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<PrivateResponseBody> login(
+            @RequestBody MemberRequestDto memberRequestDto,
+            HttpServletResponse response){
+
+        return memberService.login(memberRequestDto, response);
+    }
 
 }
