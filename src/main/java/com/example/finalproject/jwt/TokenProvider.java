@@ -5,6 +5,8 @@ import com.example.finalproject.controller.response.ResponseDto;
 import com.example.finalproject.domain.Member;
 import com.example.finalproject.domain.RefreshToken;
 import com.example.finalproject.domain.UserDetailsImpl;
+import com.example.finalproject.exception.PrivateResponseBody;
+import com.example.finalproject.exception.StatusCode;
 import com.example.finalproject.repository.RefreshTokenRepository;
 import com.example.finalproject.shared.Authority;
 
@@ -13,6 +15,8 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -125,13 +129,18 @@ public class TokenProvider {
   }
 
   @Transactional
-  public ResponseDto<?> deleteRefreshToken(Member member) {
+  public ResponseEntity<?> deleteRefreshToken(Member member) {
+
     RefreshToken refreshToken = isPresentRefreshToken(member);
+
     if (null == refreshToken) {
-      return ResponseDto.fail("TOKEN_NOT_FOUND", "존재하지 않는 Token 입니다.");
+      return new ResponseEntity<>(new PrivateResponseBody
+              (StatusCode.LOGIN_WRONG_FORM_JWT_TOKEN,null), HttpStatus.NOT_FOUND);
     }
 
     refreshTokenRepository.delete(refreshToken);
-    return ResponseDto.success("success");
+
+    return new ResponseEntity<>(new PrivateResponseBody
+            (StatusCode.OK,"로그아웃"),HttpStatus.OK);
   }
 }
