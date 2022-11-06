@@ -2,6 +2,7 @@ package com.example.finalproject.service;
 
 import com.example.finalproject.domain.Room;
 import com.example.finalproject.util.Parser;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.web.servlet.ModelAndView;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
+//@RequiredArgsConstructor
 @Service
 public class WebrtcServiceImpl implements WebrtcService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

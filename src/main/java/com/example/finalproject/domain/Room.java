@@ -1,14 +1,22 @@
 package com.example.finalproject.domain;
 
+import lombok.Builder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.socket.WebSocketSession;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+
 public class Room {
-    @NotNull private final Long id;
+    @NotNull
+    private Long id;
     // sockets by user names
     private final Map<String, WebSocketSession> clients = new HashMap<>();
 

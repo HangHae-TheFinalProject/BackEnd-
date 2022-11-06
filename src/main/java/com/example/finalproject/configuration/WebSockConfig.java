@@ -1,5 +1,6 @@
 package com.example.finalproject.configuration;
 
+import com.example.finalproject.handler.SignalHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -25,18 +26,18 @@ public class WebSockConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(webSocketHandler, "/signal")
+        registry.addHandler(signalHandler(), "/signal")
                 .setAllowedOrigins("*"); // allow all origins
         log.info("웹소켓 레지스트리 : {}", registry);
     }
 
 //    @Bean
-//    public WebSocketHandler signalHandler() {
-//
-//        return new SignalHandler();
-//    }
+    public WebSocketHandler signalHandler() {
 
-    @Bean
+        return new SignalHandler();
+    }
+
+//    @Bean
     public ServletServerContainerFactoryBean createWebSocketContainer() {
         ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
         container.setMaxTextMessageBufferSize(8192);

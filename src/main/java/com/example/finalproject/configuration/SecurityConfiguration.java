@@ -60,7 +60,8 @@ public class SecurityConfiguration {
         .requestMatchers(CorsUtils::isPreFlightRequest).permitAll() // 추가
         .antMatchers("/lier/signup",
                 "/lier/login",
-                "/lier/google/**" // 테스트 시 해제
+                "/lier/google/**",
+                "/lier/**"// 테스트 시 해제
                 ).permitAll()
 
         .antMatchers("/api/comments/**").permitAll()
