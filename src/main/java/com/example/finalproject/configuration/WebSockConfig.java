@@ -4,7 +4,6 @@ import com.example.finalproject.shared.WebSockChatHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.*;
 
@@ -14,7 +13,8 @@ import org.springframework.web.socket.config.annotation.*;
 public class WebSockConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(myHandler(), "/myHandler");
+        registry.addHandler(myHandler(), "/myHandler")
+                .setAllowedOrigins("*");
     }
 
     @Bean
