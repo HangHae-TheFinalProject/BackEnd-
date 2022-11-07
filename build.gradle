@@ -65,7 +65,9 @@ dependencies {
 
     // WebSocket
     compile 'org.springframework.boot:spring-boot-starter-mustache'
-//    compile 'org.springframework.boot:spring-boot-starter-websocket'
+    compile 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.webjars:stomp-websocket:2.3.4'
+
     compile 'org.webjars.bower:jquery:3.6.1'
     compile 'org.webjars:sockjs-client:1.5.1'
     compile 'org.webjars:webjars-locator:0.45'
