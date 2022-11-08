@@ -2,6 +2,7 @@
 // create and run Web Socket connection
 const socket = new WebSocket("ws://" + window.location.host + "/signal");
 
+
 // UI elements
 const videoButtonOff = document.querySelector('#video_off');
 const videoButtonOn = document.querySelector('#video_on');

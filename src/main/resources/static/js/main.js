@@ -19,6 +19,8 @@ $(function(){
 function addUuidToButtonLink(button) {
     let id = 'button-link-' + button.value;
     let ref = document.getElementById(id).href;
-    document.getElementById(id).href = ref + '/user/' + localStorage.getItem("uuid");
+    // lier/ 뺴야 될수도
+    // document.getElementById(id).href = '/lier/' + ref + '/user/' + localStorage.getItem("uuid");
+    document.getElementById(id).href = ref + localStorage.getItem("uuid");
     console.log("link.href:" + document.getElementById(id).href);
 }

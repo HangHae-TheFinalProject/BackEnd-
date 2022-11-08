@@ -15,20 +15,22 @@
 
 <!-- Begin page content -->
 <main role="main" class="container">
-    <h1>Simple WebRTC Signaling Server</h1>
+    <h1>WebRTC 테스트 메인 페이지</h1>
     <div id="container">
         <p>
-            This part receives a room number (or generates new one), and redirects current user there.
+            방 번호를 받아 생성한 유저를 그쪽으로 리다이렉트?
         </p>
-        <form th:method="post" th:action="@{/room}" th:object="${id}" id="form">
+        <form th:method="post" th:action="@{/lier/room}" th:object="${id}" id="form">
             <input type="hidden" id="uuid" name="uuid" th:value="${uuid}"/>
+<!--            로그인하고 메인페이지로 진입하게 되면 유저정보가 이쪽으로 들어와서 hidden 태그에 저장되어 방생성 및 입장에 사용되는 방식-->
+<!--            <input type="hidden" id="uuid" name="uuid" value="깃깃"/>-->
             <div class="row justify-content-md-center">
                 <div class="input-group col-md-6 mb-3 justify-content-md-center">
                     <div class="mb-3" th:if="${not #lists.isEmpty(rooms)}" th:attr="data-uid=${uuid}">
-                        <label for="rooms-list">Select one of the rooms created:</label><br>
+                        <label for="rooms-list">생성할 방(번호)</label><br>
                         <h4>
                         <span id="rooms-list" th:each="r : ${rooms}">
-                            <a th:href="@{/room/{id}(id=${r.id})}" th:id="'button-link-'+${r.id}">
+                            <a th:href="@{/lier/room/{id}/user/{uuid}(id=${r.id},uuid=${uuid})}" th:id="'button-link-'+${r.id}">
                                 <button type="button" name="action" th:text="${r.id}" th:value="${r.id}"
                                         class="btn badge badge-primary" onclick="addUuidToButtonLink(this);">99
                                 </button>
@@ -37,17 +39,16 @@
                         </h4>
                     </div>
                     <div class="mb-3">
-                        <label for="id">To create a new room enter your room number,
-                            or press 'Random #' button to get a random one</label>
+                        <label for="id">방 생성 (방 번호를 직접 입력하여 생성할 것인지, 랜덤으로 방 번호를 입력받아 생성할 것인지 선택)</label>
                         <input class="form-control" name="id" id="id" type="number" placeholder="Min: 0, max: 99"
                                min="0" max="99" th:value="${id}" required>
                     </div>
                     <div>
-                        <a th:href="@{/room/random}">
-                            <button class="btn btn-outline-success" type="button">Random #</button>
+                        <a th:href="@{/lier/room/random}">
+                            <button class="btn btn-outline-success" type="button">방 번호 랜덤 생성</button>
                         </a>
                         <button name="action" value="create" type="submit" class="btn btn-outline-primary">
-                            Create Selected Room</button>
+                            방 생성</button>
                     </div>
                 </div>
             </div>

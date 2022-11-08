@@ -24,13 +24,15 @@ public class MemberController {
 
     private final MemberService memberService;
 
+    // 회원가입
     @PostMapping("/signup")
     public ResponseEntity<PrivateResponseBody> signup(
             @RequestBody MemberRequestDto memberRequestDto){
+        // 회원가입 진행시 재확인용 비밀번호는 입력하지 않는지 확인
         return memberService.signup(memberRequestDto);
     }
 
-    //로그인 API
+    // 로그인
     @PostMapping(value = "/login")
     public ResponseEntity<PrivateResponseBody> login(
             @RequestBody LoginRequestDto requestDto,
@@ -38,7 +40,7 @@ public class MemberController {
         return memberService.login(requestDto, response);
     }
 
-    //로그아웃 API
+    // 로그아웃
     @SwaggerAnnotation
     @PostMapping(value = "/logout")
     public ResponseEntity<PrivateResponseBody> logout(

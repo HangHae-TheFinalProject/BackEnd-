@@ -50,7 +50,7 @@ public class MemberService {
         Member member = Member.builder()
                 .email(memberRequestDto.getEmail())
                 .password(passwordEncoder.encode(memberRequestDto.getPassword())) // 비밀번호 인코딩하여 저장
-                .nickname(memberRequestDto.getNickname())
+                .nickname(memberRequestDto.getNickname() + "#" + Integer.toString((int)(Math.random() * 9999)))
                 .build();
 
         memberRepository.save(member);

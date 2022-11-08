@@ -1,22 +1,24 @@
 package com.example.finalproject.domain;
 
-import lombok.Builder;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.springframework.web.socket.WebSocketSession;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 
-public class Room {
+@Setter
+@NoArgsConstructor
+@Getter
+public class Room extends Timestamped{
     @NotNull
     private Long id;
+
+
     // sockets by user names
     private final Map<String, WebSocketSession> clients = new HashMap<>();
 
@@ -25,10 +27,10 @@ public class Room {
         this.id = id;
     }
 
-    public Long getId() {
-
-        return id;
-    }
+//    public Long getId() {
+//
+//        return id;
+//    }
 
     public Map<String, WebSocketSession> getClients() {
 

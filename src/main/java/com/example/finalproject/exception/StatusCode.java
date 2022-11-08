@@ -19,6 +19,8 @@ public enum StatusCode {
     DUPLICATED_PASSWORD(HttpStatus.BAD_REQUEST,"118","Password가 틀립니다."),
     POST_ERROR(HttpStatus.BAD_REQUEST,"119","게시글 작성이 필요합니다."),
     NOT_EXIST_MEDIA(HttpStatus.BAD_REQUEST,"120","이미지가 존재하지 않아 게시글 작성이 불가합니다."),
+    NOT_FOUND_ROOM(HttpStatus.BAD_REQUEST,"121","입장할 방이 존재하지 않습니다."),
+    CANT_ENTER(HttpStatus.BAD_REQUEST,"122","입장 정원이 초과하였습니다."),
 
     INTERNAL_SERVER_ERROR_PLZ_CHECK(HttpStatus.INTERNAL_SERVER_ERROR, "999", "알수없는 서버 내부 에러 발생 , dladlsgur3334@gmail.com 으로 연락 부탁드립니다.");
 

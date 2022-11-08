@@ -21,10 +21,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-@NoArgsConstructor
-@AllArgsConstructor
 @Component
-@Primary
+//@Primary
 public class SignalHandler extends TextWebSocketHandler {
     private RoomService roomService;
 

@@ -3,11 +3,13 @@ package com.example.finalproject.service;
 import com.example.finalproject.domain.Room;
 import com.example.finalproject.util.Parser;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.util.*;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class RoomService {    
@@ -43,7 +45,9 @@ public class RoomService {
                 .orElse(Collections.emptyMap());
     }
 
+    //
     public WebSocketSession addClient(final Room room, final String name, final WebSocketSession session) {
+        log.info("이름 : {}, 소켓세션 : {} ", name, session);
         return room.getClients().put(name, session);
     }
 

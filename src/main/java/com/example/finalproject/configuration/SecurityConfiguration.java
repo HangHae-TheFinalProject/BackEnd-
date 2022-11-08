@@ -48,7 +48,7 @@ public class SecurityConfiguration {
     http.csrf().disable()
 
         .exceptionHandling()
-        .authenticationEntryPoint(authenticationEntryPointException)
+//        .authenticationEntryPoint(authenticationEntryPointException)
         .accessDeniedHandler(accessDeniedHandlerException)
 
         .and()
@@ -73,6 +73,8 @@ public class SecurityConfiguration {
                 "/swagger-ui.html",
                 "/webjars/**",
                 "/v3/api-docs/**",
+                "/js/**",
+                "/css/**",
                 "/swagger-ui/**").permitAll()
         .anyRequest().authenticated()
 

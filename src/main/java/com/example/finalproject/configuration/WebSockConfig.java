@@ -27,11 +27,12 @@ public class WebSockConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(signalHandler(), "/signal")
+                .setAllowedOriginPatterns("*")
                 .setAllowedOrigins("*"); // allow all origins
         log.info("웹소켓 레지스트리 : {}", registry);
     }
 
-//    @Bean
+
     public WebSocketHandler signalHandler() {
 
         return new SignalHandler();

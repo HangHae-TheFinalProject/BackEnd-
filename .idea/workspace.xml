@@ -5,6 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2ea06d16-5bdd-4df1-926d-5f41a7e918ba" name="Changes" comment="webrtc 2차 테스트">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/controller/GemeRoomController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/controller/request/GameRoomRequestDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/controller/response/GameRoomResponseDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/domain/GameRoom.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/repository/GameRoomRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/7.5.1/executionHistory/executionHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/7.5.1/executionHistory/executionHistory.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/7.5.1/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/7.5.1/executionHistory/executionHistory.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/7.5.1/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/7.5.1/fileHashes/fileHashes.bin" afterDir="false" />
@@ -13,20 +18,40 @@
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/FinalprojectApplication.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/FinalprojectApplication.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/configuration/CorsConfig.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/configuration/CorsConfig.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/configuration/SecurityConfiguration.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/configuration/SecurityConfiguration.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/configuration/WebSockConfig.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/configuration/WebSockConfig.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/shared/WebSockChatHandler.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/resources/main/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/build/resources/main/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/resources/main/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/build/resources/main/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/controller/MemberController.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/controller/MemberController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/domain/Member$MemberBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/domain/Member$MemberBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/domain/Member.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/domain/Member.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/domain/QMember.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/domain/QMember.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/domain/QRefreshToken.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/domain/QRefreshToken.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/exception/StatusCode.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/exception/StatusCode.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/service/MemberService.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/example/finalproject/service/MemberService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/generated/'querydsl'/com/example/finalproject/domain/QMember.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/generated/'querydsl'/com/example/finalproject/domain/QRefreshToken.java" beforeDir="false" afterPath="$PROJECT_DIR$/build/generated/'querydsl'/com/example/finalproject/domain/QRefreshToken.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/tmp/compileJava/previous-compilation-data.bin" beforeDir="false" afterPath="$PROJECT_DIR$/build/tmp/compileJava/previous-compilation-data.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/FinalprojectApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/FinalprojectApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/configuration/CorsConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/configuration/CorsConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/configuration/SecurityConfiguration.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/configuration/SecurityConfiguration.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/configuration/WebSockConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/configuration/WebSockConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/controller/MemberController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/controller/MemberController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/controller/WebrtcController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/domain/Member.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/domain/Member.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/domain/Room.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/domain/Room.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/handler/WebSockChatHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/handler/WebSockChatHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/service/WebrtcServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/service/WebrtcServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/exception/StatusCode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/exception/StatusCode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/handler/SignalHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/handler/SignalHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/service/MemberService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/service/MemberService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/service/RoomService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/service/RoomService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/service/WebrtcService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/service/GameRoomService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/service/WebrtcServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/service/GameRoomServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/util/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/util/Parser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/static/js/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/js/main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/static/js/webrtc_client.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/static/js/webrtc_client.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/templates/chat_room.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/templates/chat_room.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/templates/main.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/templates/main.html" afterDir="false" />
+    </list>
+    <list id="6b923852-64a5-43ee-8080-e8c804e397e1" name="Changes by puri" comment="">
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/configuration/SecurityConfiguration.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/configuration/SecurityConfiguration.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -78,6 +103,7 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="Interface" />
         <option value="Class" />
       </list>
     </option>
@@ -121,6 +147,15 @@
         <entry key="com.haulmont.jpb.jpaStructure" value="false" />
       </map>
     </option>
+  </component>
+  <component name="LineStatusTrackerManager">
+    <file path="$PROJECT_DIR$/src/main/java/com/example/finalproject/configuration/SecurityConfiguration.java">
+      <ranges>
+        <range start1="50" end1="51" start2="50" end2="51" changelist="2ea06d16-5bdd-4df1-926d-5f41a7e918ba" />
+        <range start1="65" end1="66" start2="65" end2="67" changelist="6b923852-64a5-43ee-8080-e8c804e397e1" />
+        <range start1="75" end1="75" start2="76" end2="78" changelist="2ea06d16-5bdd-4df1-926d-5f41a7e918ba" />
+      </ranges>
+    </file>
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -169,6 +204,27 @@
     </key>
   </component>
   <component name="RunManager" selected="Gradle.liergame_finalproject [build]">
+    <configuration name="liergame_finalproject [buildDependents]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="buildDependents" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
     <configuration name="liergame_finalproject [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -211,6 +267,9 @@
       <DebugAllEnabled>false</DebugAllEnabled>
       <method v="2" />
     </configuration>
+    <configuration name="sdp_offer.html" type="JavascriptDebugType" temporary="true" nameIsGenerated="true" uri="http://localhost:63342/finalproject/finalproject.main/templates/sdp_offer.html" useBuiltInWebServerPort="true">
+      <method v="2" />
+    </configuration>
     <configuration name="FinalprojectApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
       <module name="finalproject.main" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.finalproject.FinalprojectApplication" />
@@ -219,14 +278,18 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="Gradle.liergame_finalproject [buildDependents]" />
       <item itemvalue="Gradle.liergame_finalproject [build]" />
       <item itemvalue="Gradle.liergame_finalproject [compileQuerydsl]" />
+      <item itemvalue="JavaScript Debug.sdp_offer.html" />
       <item itemvalue="Spring Boot.FinalprojectApplication" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Gradle.liergame_finalproject [build]" />
+        <item itemvalue="Gradle.liergame_finalproject [buildDependents]" />
         <item itemvalue="Gradle.liergame_finalproject [compileQuerydsl]" />
+        <item itemvalue="JavaScript Debug.sdp_offer.html" />
       </list>
     </recent_temporary>
   </component>
@@ -242,7 +305,10 @@
       <workItem from="1667574487435" duration="1521000" />
       <workItem from="1667576225533" duration="804000" />
       <workItem from="1667577062876" duration="313000" />
-      <workItem from="1667724336242" duration="4692000" />
+      <workItem from="1667724336242" duration="13159000" />
+      <workItem from="1667751482724" duration="648000" />
+      <workItem from="1667779307990" duration="41652000" />
+      <workItem from="1667865467542" duration="301000" />
     </task>
     <task id="LOCAL-00001" summary="멤버 엔티티 생성">
       <created>1667575326459</created>
@@ -293,7 +359,14 @@
       <option name="project" value="LOCAL" />
       <updated>1667722588169</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="webrtc 2차 테스트">
+      <created>1667730509519</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1667730509519</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

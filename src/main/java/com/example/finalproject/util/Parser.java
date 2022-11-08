@@ -11,7 +11,9 @@ public class Parser {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     
     public Optional<Long> parseId(String sid) {
+
         Long id = null;
+
         try {
             id = Long.valueOf(sid);
         } catch (Exception e) {
@@ -19,5 +21,11 @@ public class Parser {
         }
 
         return Optional.ofNullable(id);
+    }
+
+
+    public Optional<Long> parseRoomId(Long roomId) {
+
+        return Optional.ofNullable(roomId);
     }
 }
