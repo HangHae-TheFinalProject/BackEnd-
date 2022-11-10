@@ -46,6 +46,9 @@ public class SecurityConfiguration {
     http.cors();
 
     http.csrf().disable()
+//        .headers()
+//        .frameOptions().sameOrigin() // SockJS는 기본적으로 HTML iframe 요소를 통한 전송을 허용하지 않도록 설정되는데 해당 내용을 해제한다.
+//        .and()
 
         .exceptionHandling()
         .authenticationEntryPoint(authenticationEntryPointException)
@@ -73,6 +76,10 @@ public class SecurityConfiguration {
                 "/webjars/**",
                 "/v3/api-docs/**",
                 "/swagger-ui/**").permitAll()
+        .antMatchers("/ws-stomp").permitAll()
+        .antMatchers("/ws-stomp/**").permitAll()
+        .antMatchers("/chat/rooms").permitAll()
+        .antMatchers("/chat/example/room").permitAll()
         .anyRequest().authenticated()
 
         .and()
