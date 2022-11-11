@@ -10,6 +10,7 @@ import com.example.finalproject.jwt.TokenProvider;
 import com.example.finalproject.repository.MemberRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +24,7 @@ import java.util.Optional;
 
 import static com.example.finalproject.domain.QMember.member;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class MemberService {
@@ -50,7 +52,7 @@ public class MemberService {
         Member member = Member.builder()
                 .email(memberRequestDto.getEmail())
                 .password(passwordEncoder.encode(memberRequestDto.getPassword())) // 비밀번호 인코딩하여 저장
-                .nickname(memberRequestDto.getNickname())
+                .nickname(memberRequestDto.getNickname() + "#" + Integer.toString((int)(Math.random() * 9999)))
                 .build();
 
         memberRepository.save(member);
@@ -87,6 +89,9 @@ public class MemberService {
         HashMap<String, String> login_info = new HashMap<>();
         login_info.put("email", member.getEmail());
         login_info.put("nickname", member.getNickname());
+
+        log.info("액세스 토큰 : {}", response.getHeader("Authorization"));
+        log.info("리프레시 토큰 : {}", response.getHeader("Refresh-Token"));
 
         // Message 및 Status를 Return
         return new ResponseEntity<>(new PrivateResponseBody

@@ -20,6 +20,8 @@ spring:
     multipart:
       max-file-size: 1GB
       max-request-size: 1GB
+  thymeleaf:
+    cache: false
 
 logging:
   level:
