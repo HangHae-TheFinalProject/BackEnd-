@@ -22,7 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Optional;
 
-import static com.example.finalproject.domain.QMember.member;
 
 @Slf4j
 @RequiredArgsConstructor

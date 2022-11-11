@@ -9,6 +9,7 @@ import org.hibernate.Hibernate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -30,6 +31,10 @@ public class Member extends Timestamped{
 
     @Column(nullable = false)
     private String nickname;
+
+
+    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts;
 
 //    @JsonIgnore
 //    @JoinColumn(name = "gameroom_id")
