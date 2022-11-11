@@ -59,8 +59,9 @@ public class SecurityConfiguration {
         .authorizeRequests()
         .requestMatchers(CorsUtils::isPreFlightRequest).permitAll() // 추가
         .antMatchers("/lier/signup",
-                "/lier/login"
-//                "/lier/**" // 테스트 시 해제
+                "/lier/login",
+                "/lier/google/**"
+//                "/lier/**"// 테스트 시 해제
                 ).permitAll()
 
         .antMatchers("/api/comments/**").permitAll()
@@ -72,6 +73,8 @@ public class SecurityConfiguration {
                 "/swagger-ui.html",
                 "/webjars/**",
                 "/v3/api-docs/**",
+                "/js/**",
+                "/css/**",
                 "/swagger-ui/**").permitAll()
         .anyRequest().authenticated()
 
