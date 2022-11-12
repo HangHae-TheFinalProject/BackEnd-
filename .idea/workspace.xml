@@ -4,9 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2ea06d16-5bdd-4df1-926d-5f41a7e918ba" name="Changes" comment="4차 WebRTC 업데이트 (Openvidu) + 게임 방 추가">
+    <list default="true" id="2ea06d16-5bdd-4df1-926d-5f41a7e918ba" name="Changes" comment="2. 게시글 일부 수정">
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2022-11-05__12_55__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2022-11-05__12_55__Changes_.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2022-11-05__12_55__Changes_1.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2022-11-05__12_55__Changes_1.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/util/Parser.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/domain/GameRoom.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/domain/GameRoom.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/domain/GameRoomMember.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/domain/GameRoomMember.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/domain/Member.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/domain/Member.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/finalproject/service/GameRoomService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/finalproject/service/GameRoomService.java" afterDir="false" />
     </list>
     <list id="6b923852-64a5-43ee-8080-e8c804e397e1" name="Changes by puri" comment="Changes by puri" />
     <option name="SHOW_DIALOG" value="false" />
@@ -113,29 +118,29 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "C:/sparta/BackEnd",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "SDKs",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.44712645",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "spring.configuration.checksum": "de7dbc92f1035e9669befe9d72268767"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/sparta/BackEnd&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;SDKs&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.44712645&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;spring.configuration.checksum&quot;: &quot;de7dbc92f1035e9669befe9d72268767&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "mysql"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;mysql&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="ReactorSettings">
     <option name="notificationShown" value="true" />
   </component>
@@ -153,7 +158,7 @@
       <recent name="com.example.finalproject.controller" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.liergame_finalproject [build]">
+  <component name="RunManager" selected="Gradle.liergame_finalproject [compileQuerydsl]">
     <configuration name="liergame_finalproject [buildDependents]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -236,8 +241,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.liergame_finalproject [build]" />
         <item itemvalue="Gradle.liergame_finalproject [compileQuerydsl]" />
+        <item itemvalue="Gradle.liergame_finalproject [build]" />
         <item itemvalue="Gradle.liergame_finalproject [buildDependents]" />
         <item itemvalue="JavaScript Debug.sdp_offer.html" />
       </list>

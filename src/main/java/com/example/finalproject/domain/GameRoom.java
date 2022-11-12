@@ -30,5 +30,8 @@ public class GameRoom extends Timestamped {
     @Column(nullable = false)
     private String owner;
 
+    @JoinColumn(name = "gameroommember_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private GameRoomMember gameRoomMember;
 
 }

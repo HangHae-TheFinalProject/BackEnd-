@@ -11,8 +11,6 @@ import com.example.finalproject.repository.GameRoomMemberRepository;
 import com.example.finalproject.repository.GameRoomRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openvidu.java.client.*;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -143,7 +141,6 @@ public class GameRoomService {
                 .roomPassword(gameRoomRequestDto.getRoomPassword())
                 .mode(Mode.modeName(gameRoomRequestDto.getMode()))
                 .owner(auth_member.getNickname())
-//                .members(inMemberList)
                 .build();
 
         // 게임방 생성 (저장)

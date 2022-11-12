@@ -23,4 +23,12 @@ public class GameRoomMember {
 
     @Column(nullable = false)
     private Long gameroom_id;
+
+    @JoinColumn(name="gameroom_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private GameRoom gameRoom;
+
+    @JoinColumn(name="member_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Member member;
 }
