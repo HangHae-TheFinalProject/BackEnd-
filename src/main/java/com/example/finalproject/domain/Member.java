@@ -1,5 +1,6 @@
 package com.example.finalproject.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,7 +20,7 @@ public class Member extends Timestamped{
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    private Long id;
+    private Long memberId;
 
     @Column(nullable = false)
     private String email;
@@ -30,6 +31,12 @@ public class Member extends Timestamped{
     @Column(nullable = false)
     private String nickname;
 
+    // 추가
+    @JsonIgnore
+    @JoinColumn(name="gameroommember_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private GameRoomMember gameRoomMember;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -39,7 +46,7 @@ public class Member extends Timestamped{
             return false;
         }
         Member member = (Member) o;
-        return id != null && Objects.equals(id, member.id);
+        return memberId != null && Objects.equals(memberId, member.memberId);
     }
 
     @Override
