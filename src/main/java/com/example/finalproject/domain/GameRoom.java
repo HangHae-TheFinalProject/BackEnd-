@@ -30,5 +30,4 @@ public class GameRoom extends Timestamped {
     @Column(nullable = false)
     private String owner;
 
-
 }

@@ -36,10 +36,6 @@ public class Member extends Timestamped{
     @OneToMany(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts;
 
-//    @JsonIgnore
-//    @JoinColumn(name = "gameroom_id")
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    private GameRoom gameRoom;
 
     @Override
     public boolean equals(Object o) {

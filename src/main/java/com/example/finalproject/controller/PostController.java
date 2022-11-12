@@ -60,6 +60,7 @@ public class PostController {
         return postService.getPost(request, postId);
     }
 
+
     // 게시글 전체 목록 조회
     @GetMapping("/posts")
     public ResponseEntity<?> getAllPost(

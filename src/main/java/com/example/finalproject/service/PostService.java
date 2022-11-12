@@ -270,4 +270,8 @@ public class PostService {
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, allPosts), HttpStatus.OK);
     }
 
+
+    /////////////////////////////////////////////////
+    // S3 키가 노출되어서 재발급 받고 다시 코드 수정해야함//
+    /////////////////////////////////////////////////
 }
