@@ -24,11 +24,13 @@ public class GameRoomMember {
     @Column(nullable = false)
     private Long gameroom_id;
 
-    @JoinColumn(name="gameroom_id")
+    // 추가
+    @JoinColumn(name="gameroomid")
     @ManyToOne(fetch = FetchType.LAZY)
     private GameRoom gameRoom;
 
-    @JoinColumn(name="member_id")
+    // 추가
+    @JoinColumn(name="memberid")
     @ManyToOne(fetch = FetchType.LAZY)
     private Member member;
 }

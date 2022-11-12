@@ -101,6 +101,8 @@ public class MemberService {
     //로그아웃
     public ResponseEntity<PrivateResponseBody> logout(HttpServletRequest request) {
 
+        log.info("로그아웃 진입 : {}", request.getHeader("Authorization"));
+
         // 토큰 확인
         if (!tokenProvider.validateToken(request.getHeader("Refresh-Token"))) {
             return new ResponseEntity<>(new PrivateResponseBody

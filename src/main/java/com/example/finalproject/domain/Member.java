@@ -31,6 +31,8 @@ public class Member extends Timestamped{
     @Column(nullable = false)
     private String nickname;
 
+    // 추가
+    @JsonIgnore
     @JoinColumn(name="gameroommember_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private GameRoomMember gameRoomMember;
