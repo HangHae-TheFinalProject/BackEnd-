@@ -11,8 +11,6 @@ import com.example.finalproject.repository.GameRoomMemberRepository;
 import com.example.finalproject.repository.GameRoomRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openvidu.java.client.*;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -62,9 +60,12 @@ public class GameRoomService {
     }
 
 
-    // 메인페이지 (방 전체 목록 조회) - json
-    public ResponseEntity<?> lierMainPage(HttpServletRequest request) {
-        // 합칠 떄 사용
+
+    // 메인페이지 (방 전체 목록 조회)
+    public ResponseEntity<?> lierMainPage(
+            HttpServletRequest request) { // 인증정보를 가진 request
+
+        // 토큰 유효성 검증
         authorizeToken(request);
 
         // 테스트 시 활용할 임의 멤버
@@ -76,40 +77,56 @@ public class GameRoomService {
 //            throw new PrivateException(StatusCode.LOGIN_EXPIRED_JWT_TOKEN);
 //        }
 
+        // 생성된 전체 게임방 불러오기
         List<GameRoom> rooms = jpaQueryFactory
                 .selectFrom(gameRoom)
                 .fetch();
 
+        // 메인페이지에 보여줄 전체 방과 방의 주인 및 방 참여 인원을 출력하기 위한 리스트
         List<GameRoomResponseDto> gameroomlist = new ArrayList<>();
-        List<Member> memberList = new ArrayList<>();
 
+        // 생성된 전체 방의 한 방씩 조회
         for (GameRoom gameRoom1 : rooms) {
+            // 방의 id 와 멤버 id 까지 저장되어있는 GameRoomMember 엔티티를 사용해
+            // 현재 조회되고 있는 게임방에 속한 멤버들을 GameRoomMember 에서 찾아서 리스트화
+            // # GameRoomMember에는 멤버의 정보가 그대로 전부 들어있는 것이 아니라 id 정도만 존재하기 떄문에
+            // 따로 Member 엔티티에서 조회해서 추출해야 한다.
             List<GameRoomMember> gameRoomMembers = jpaQueryFactory
                     .selectFrom(gameRoomMember)
-                    .where(gameRoomMember.gameroom_id.eq(gameRoom1.getRoomId()))
+                    .where(gameRoomMember.gameRoom.eq(gameRoom1))
                     .fetch();
 
+            // 방에 속한 멤버들의 정보들을 저장하기위한 리스트
+            List<Member> memberList = new ArrayList<>();
+
+                // 게임방에 참가하고있는 멤버들의 인원 수 만큼 조회
                 for(int i = 0 ; i < gameRoomMembers.size() ; i++){
+
+                    // 참가한 멤버마다 정보들을 불러옴
                     Member each_member = jpaQueryFactory
                             .selectFrom(member)
                             .where(member.memberId.eq(gameRoomMembers.get(i).getMember_id()))
                             .fetchOne();
 
+                    // 리스트에 정보들을 저장
                     memberList.add(each_member);
                 }
 
+            // 바로 DB 정보를 결과값으로 보낼 수 없기 때문에 DTO에 한번 더 저장
             GameRoomResponseDto gameRoomResponseDto = GameRoomResponseDto.builder()
-                    .id(gameRoom1.getRoomId())
-                    .roomName(gameRoom1.getRoomName())
-                    .mode(gameRoom1.getMode())
-                    .member(memberList)
-                    .owner(gameRoom1.getOwner())
-                    .password(gameRoom1.getRoomPassword())
+                    .id(gameRoom1.getRoomId()) // 게임방 id
+                    .roomName(gameRoom1.getRoomName()) // 게임방 이름
+                    .roomPassword(gameRoom1.getRoomPassword()) // 게임방 패스워드
+                    .mode(gameRoom1.getMode()) // 게임 모드
+                    .member(memberList) // 게임에 참가하고있는 멤버들
+                    .owner(gameRoom1.getOwner()) // 게임방의 오너
                     .build();
 
+            // DTO에 담긴 정보들을 리스트에 차곡차곡 저장
             gameroomlist.add(gameRoomResponseDto);
         }
 
+        // 결과 출력
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, gameroomlist), HttpStatus.OK);
     }
 
@@ -117,10 +134,11 @@ public class GameRoomService {
     // 방 생성 - json
     @Transactional
     public ResponseEntity<?> makeGameRoom(
-            GameRoomRequestDto gameRoomRequestDto,
-            HttpServletRequest request) throws io.openvidu.java.client.OpenViduJavaClientException, io.openvidu.java.client.OpenViduHttpException {
+            GameRoomRequestDto gameRoomRequestDto, // 방 생성을 위해 input 값이 담긴 DTO
+            HttpServletRequest request) // 인증정보를 가진 request
+            throws io.openvidu.java.client.OpenViduJavaClientException, io.openvidu.java.client.OpenViduHttpException {
 
-        // 합칠 떄 사용
+        // 토큰 유효성 검증
         Member auth_member = authorizeToken(request);
 
         // 테스트 시 활용할 임의 멤버
@@ -132,46 +150,49 @@ public class GameRoomService {
 //            throw new PrivateException(StatusCode.LOGIN_EXPIRED_JWT_TOKEN);
 //        }
 
+        // OenVIdu 사옹을 위한 sessionId 와 Token을 생성하여 저장한 HashMap
+        // 게임 방에서 화상채팅을 이용할 것이기 때문에 필요
         HashMap<String, String> sessionAndToken = connectOpenvidu();
 
         log.info("세션 아이디 : {}, 토큰 : {}", sessionAndToken.get("sessionId"), sessionAndToken.get("token"));
 
-
-        // 게임 방 정보 기입
+        // 게임 방 생성을 위한 DTO 정보 기입
         GameRoom gameRoom1 = GameRoom.builder()
-                .roomName(gameRoomRequestDto.getRoomName())
-                .roomPassword(gameRoomRequestDto.getRoomPassword())
-                .mode(Mode.modeName(gameRoomRequestDto.getMode()))
-                .owner(auth_member.getNickname())
-//                .members(inMemberList)
+                .roomName(gameRoomRequestDto.getRoomName()) // 게임방 이름
+                .roomPassword(gameRoomRequestDto.getRoomPassword()) // 게임방 패스워드
+                .mode(Mode.modeName(gameRoomRequestDto.getMode())) // 게임 모드
+                .owner(auth_member.getNickname()) // 게임 방장
                 .build();
 
         // 게임방 생성 (저장)
         gameRoomRepository.save(gameRoom1);
 
+        // GameRoomMember로 어느 방에 어느 멤버가 매핑이 되어있는지 관리
         GameRoomMember gameRoomMember = GameRoomMember.builder()
-                .member_id(auth_member.getMemberId())
-                .gameroom_id(gameRoom1.getRoomId())
+                .member_id(auth_member.getMemberId()) // 멤버 아이디 (방장은 생성 시 바로 입장되어있음)
+                .gameroom_id(gameRoom1.getRoomId()) // 게임방 id
+                .gameRoom(gameRoom1) // 게임방 객체
+                .member(auth_member) // 멤버 객체
                 .build();
 
+        // 매핑 관리 DB 저장
         gameRoomMemberRepository.save(gameRoomMember);
 
-        GameRoom gameRoomNow = jpaQueryFactory
-                .selectFrom(gameRoom)
-                .where(gameRoom.roomId.eq(gameRoom1.getRoomId()))
-                .fetchOne();
-
+        // 원하는 정보들만 출력될 수 있도록 HashMap을 생성
         HashMap<String, String> roomInfo = new HashMap<>();
 
-        roomInfo.put("roomName", gameRoomNow.getRoomName());
-        roomInfo.put("roomId", Long.toString(gameRoomNow.getRoomId()));
-        roomInfo.put("owner", gameRoomNow.getOwner());
-        roomInfo.put("sessionId", sessionAndToken.get("sessionId"));
-        roomInfo.put("token", sessionAndToken.get("token"));
+        roomInfo.put("roomName", gameRoom1.getRoomName()); // 게임방 이름
+        roomInfo.put("roomId", Long.toString(gameRoom1.getRoomId())); // 게임방 id
+        roomInfo.put("roomPassword", gameRoom1.getRoomPassword()); // 게임방 패스워드
+        roomInfo.put("mode", gameRoom1.getMode().toString()); // 게임 모드
+        roomInfo.put("owner", gameRoom1.getOwner()); // 게임 방장
+        roomInfo.put("sessionId", sessionAndToken.get("sessionId")); // OpenVidu sessionId
+        roomInfo.put("token", sessionAndToken.get("token")); // OpenVidu token
 
 
-        log.info("생성한 방 {}에 입장해있는 유저들 {}", gameRoom1.getRoomId());
+        log.info("방 {}을 생성한 유저 : {}", gameRoom1.getRoomId(), roomInfo.get("owner"));
 
+        // 결과 출력
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, roomInfo), HttpStatus.OK);
 
     }
@@ -180,10 +201,10 @@ public class GameRoomService {
     // 방 입장 - json
     @Transactional
     public ResponseEntity<?> enterGameRoom(
-            Long roomId,
-            HttpServletRequest request) {
+            Long roomId, // 게임방 id
+            HttpServletRequest request) { // 인증정보를 가진 request
 
-        // 합칠 떄 사용
+        // 토큰 유효성 검증
         Member auth_member = authorizeToken(request);
 
         // 테스트 시 활용할 임의 멤버 (방장이 아닌 새로운 멤버가 들어온다고 가정)
@@ -195,63 +216,76 @@ public class GameRoomService {
 //            throw new PrivateException(StatusCode.LOGIN_EXPIRED_JWT_TOKEN);
 //        }
 
+        // 최종적으로 결과를 보여줄 DTO
         GameRoomResponseDto gameRoomResponseDto;
 
-        if (jpaQueryFactory
-                .selectFrom(gameRoomMember)
-                .where(gameRoomMember.gameroom_id.eq(roomId).and(gameRoomMember.member_id.eq(auth_member.getMemberId())))
-                .fetchOne() != null) {
-            throw new PrivateException(StatusCode.MEMBER_DUPLICATED);
-        }
-
-        List<GameRoomMember> gameRoomMembers = jpaQueryFactory
-                .selectFrom(gameRoomMember)
-                .where(gameRoomMember.gameroom_id.eq(roomId))
-                .fetch();
-
-        if (gameRoomMembers.size() >= 9) {
-            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.CANT_ENTER,null),HttpStatus.BAD_REQUEST);
-        }
-
-
-        GameRoom gameRoom1 = jpaQueryFactory
+        // 입장하고자하는 방의 정보 불러오기
+        GameRoom enterGameRoom = jpaQueryFactory
                 .selectFrom(gameRoom)
                 .where(gameRoom.roomId.eq(roomId))
                 .fetchOne();
 
-        GameRoomMember gameRoomMember = GameRoomMember.builder()
-                .member_id(auth_member.getMemberId())
-                .gameroom_id(gameRoom1.getRoomId())
-                .build();
+        // 만약, 관리 DB(GameRoomMember)에 현재 입장하고자 하는 멤버와 입장하고자 하는 방 정보가 매핑이 되어있으면 이미 참가가 되어있는 것이므로 에러 출력
+        if (jpaQueryFactory
+                .selectFrom(gameRoomMember)
+                .where(gameRoomMember.member.eq(auth_member).and(gameRoomMember.gameRoom.eq(enterGameRoom)))
+                .fetchOne() != null) {
 
-        gameRoomMemberRepository.save(gameRoomMember);
-
-
-        List<GameRoomMember> gameRoomMemberlist = jpaQueryFactory
-                .selectFrom(QGameRoomMember.gameRoomMember)
-                .where(QGameRoomMember.gameRoomMember.gameroom_id.eq(roomId))
-                .fetch();
-
-        List<Member> members = new ArrayList<>();
-
-        for(GameRoomMember gameRoomMember1 : gameRoomMemberlist){
-            Member inMember = jpaQueryFactory
-                    .selectFrom(member)
-                    .where(member.memberId.eq(gameRoomMember1.getMember_id()))
-                    .fetchOne();
-
-            members.add(inMember);
+            // 이미 참가한 멤버 이슈 출력
+            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.MEMBER_DUPLICATED,null),HttpStatus.BAD_REQUEST);
         }
 
-        gameRoomResponseDto = GameRoomResponseDto.builder()
-                .id(gameRoom1.getRoomId())
-                .roomName(gameRoom1.getRoomName())
-                .mode(gameRoom1.getMode())
-                .member(members)
-                .owner(gameRoom1.getOwner())
-                .password(gameRoom1.getRoomPassword())
+        // 현재 입장하고자하는 게임방의 정보를 가지고있는 관리DB(GameRoomMember) 정보들을 리스트화하여 불러오기 (게임 방 정원 확인을 위한 용도)
+        List<GameRoomMember> gameRoomMemberList = jpaQueryFactory
+                .selectFrom(gameRoomMember)
+                .where(gameRoomMember.gameRoom.eq(enterGameRoom))
+                .fetch();
+
+        // 만약, 위에서 불러온 관리DB 정보가 9명이거나 이상이라면 정원 초과로 판단하여 에러 출력
+        if (gameRoomMemberList.size() >= 9) {
+
+            // 정원이 초과하여 입장할 수 없다는 이슈 출력
+            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.CANT_ENTER,null),HttpStatus.BAD_REQUEST);
+        }
+
+        // 8명이거나 이하라면, 관리DB (GameRoomMember)에 저장 및 등록 (멤버 게임방 입장)
+        // 사실상 어떤 방에 어떤 멤버가 있는지 관리할 수 있는 것은 GameRoomMember 이다.
+        GameRoomMember addGameRoomMember1 = GameRoomMember.builder()
+                .gameRoom(enterGameRoom)
+                .member(auth_member)
+                .member_id(auth_member.getMemberId())
+                .gameroom_id(enterGameRoom.getRoomId())
                 .build();
 
+        // 입장한 정보 저장
+        gameRoomMemberRepository.save(addGameRoomMember1);
+
+        // 다시 한번, 입장하고자하는 방에 속한 멤버들의 정보를 불러온다.
+        List<GameRoomMember> gameRoomMembers = jpaQueryFactory
+                .selectFrom(gameRoomMember)
+                .where(gameRoomMember.gameRoom.eq(enterGameRoom))
+                .fetch();
+
+        // 불러온 멤버 정보들을 하나로 담기 위한 리스트
+        List<Member> memberList = new ArrayList<>();
+
+        // 리스트에 불러온 멤버의 정보들을 담는다.
+        for(GameRoomMember gameRoomMember1 : gameRoomMembers){
+            memberList.add(gameRoomMember1.getMember());
+        }
+
+        // 최종적으로 출력될 DTO에 현재 게임방의 정보와 리스트에 담아온 참가 멤버들의 정보를 input 한다.
+        gameRoomResponseDto = GameRoomResponseDto.builder()
+                .id(enterGameRoom.getRoomId()) // 입장한 게임방 id
+                .roomName(enterGameRoom.getRoomName()) // 입장한 게임방 이름
+                .roomPassword(enterGameRoom.getRoomPassword()) // 입장한 게임방 패스워드
+                .mode(enterGameRoom.getMode()) // 입장한 게임 모드
+                .owner(enterGameRoom.getOwner()) // 입장한 게임방의 방장
+                .member(memberList) // 입장한 멤버들
+                .build();
+
+
+        // 결과 출력
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, gameRoomResponseDto), HttpStatus.OK);
     }
 
@@ -259,10 +293,10 @@ public class GameRoomService {
     // 방 나가기
     @Transactional
     public ResponseEntity<?> roomExit(
-            Long roomId,
-            HttpServletRequest request) {
+            Long roomId, // 나가고자 하는 방 id
+            HttpServletRequest request) { // 인증 정보를 갖고있는 request
 
-        // 합칠 떄 사용
+        // 토큰 유효성 검증
         Member auth_member = authorizeToken(request);
 
         // 테스트 시 활용할 임의 멤버 (방장이 아닌 새로운 멤버가 들어온다고 가정)
@@ -274,22 +308,25 @@ public class GameRoomService {
 //            throw new PrivateException(StatusCode.LOGIN_EXPIRED_JWT_TOKEN);
 //        }
 
-        // 현재 나가려고 하는 방의 정보
+        // 나가고자 하는 방의 정보 불러오기
         GameRoom gameRoom1 = jpaQueryFactory
                 .selectFrom(gameRoom)
                 .where(gameRoom.roomId.eq(roomId))
                 .fetchOne();
 
+        // 관리DB에서 나가고자하는 게임방에서 참가하고있는 멤버 삭제
         jpaQueryFactory
                 .delete(gameRoomMember)
-                .where(gameRoomMember.member_id.eq(auth_member.getMemberId()).and(gameRoomMember.gameroom_id.eq(gameRoom1.getRoomId())))
+                .where(gameRoomMember.member.eq(auth_member).and(gameRoomMember.gameRoom.eq(gameRoom1)))
                 .execute();
 
+        // 나간 후의 게임방 현재 인원 수 확인을 위해 관리DB에 남아있는 멤버들 리스트화
         List<GameRoomMember> gameRoomMembers = jpaQueryFactory
                 .selectFrom(gameRoomMember)
-                .where(gameRoomMember.gameroom_id.eq(roomId))
+                .where(gameRoomMember.gameRoom.eq(gameRoom1))
                 .fetch();
 
+        // 만약 멤버가 나간 후, 게임방에 남아있는 멤버가 존재하지 않을 경우에 게임방도 같이 삭제
         if(gameRoomMembers.isEmpty()){
             jpaQueryFactory
                     .delete(gameRoom)
@@ -297,8 +334,9 @@ public class GameRoomService {
                     .execute();
         }
 
-        // 방에서 나가려고 하는 멤버가 현재 방장이라면 남은 사람듣 중에 방장을 랜덤으로 지정
-        if (auth_member.getNickname() == gameRoom1.getOwner()) {
+        // 방에서 나가려고 하는 멤버가 현재 방장이고, 게임방에 남아있는 인원이 존재할 경우에 남은 사람듣 중에 방장을 랜덤으로 지정
+        if (auth_member.getNickname() == gameRoom1.getOwner() && !gameRoomMembers.isEmpty()) {
+
             // 남은 사람들의 수 만큼 랜덤으로 돌려서 나온 멤버 id
             Long next_owner_id = gameRoomMembers.get((int) (Math.random() * gameRoomMembers.size())).getMember_id();
 
@@ -319,34 +357,47 @@ public class GameRoomService {
             em.clear();
         }
 
+        // 정상적으로 방을 나가면 문구 출력
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, "방을 나가셨습니다."), HttpStatus.OK);
     }
 
 
     // OpenVidu sessionId , token 생성
     public HashMap<String, String> connectOpenvidu() throws io.openvidu.java.client.OpenViduJavaClientException, io.openvidu.java.client.OpenViduHttpException {
-//        Member member = authorizeToken(request);
 
+        // 1. OpenVIdu(WebRTC)는 EC2 서버를 추가하여 따로 생성하였음.
+        // 2. git bash로 리눅스 언어, docker를 사용하여 OpenVidu를 설정 및 구축함
+
+        // 현재 구축해놓은 OpenVidu 서버 주소
         String OPENVIDU_URL = "https://cheiks.shop";
+        // 서버 주소를 사용하기 위한 SECRET키
         String OPENVIDU_SECRET = "MY_SECRET";
 
+        // OpenVidu 객체에 주소와 SECRET키를 넣어 사용 준비
         OpenVidu openvidu = new OpenVidu(OPENVIDU_URL, OPENVIDU_SECRET);
+        // 화상채팅을 사용하려면 session을 사용하게 되는데, session 설정값을 가져옴.
         SessionProperties properties = new SessionProperties.Builder().build();
 
+        // OpenVidu에 세션 설정값을 input 하여 session 생성
         Session session = openvidu.createSession(properties);
 
+        // 세션에 연결하기위한 설정 값 빌드
         ConnectionProperties connectionProperties = new ConnectionProperties.Builder()
                 .type(ConnectionType.WEBRTC)
                 .role(OpenViduRole.PUBLISHER)
                 .data("user_data")
                 .build();
+        // 빌드된 세션 설정 값으로 세션의 연결점(커넥션) 생성
         Connection connection = session.createConnection(connectionProperties);
+        // 커넥션을 사용해 token 생성 (session 과 마찬가지로 OpenVidu 컨텐츠를 사용하기 위해 token도 필요함)
         String token = connection.getToken();
 
         log.info("세션 아이디 : {} / 토큰 : {}", session.getSessionId(), token);
 
+        // sessionId와 token을 저장하기 위한 HashMap 생성
         HashMap<String, String> sessionAndToken = new HashMap<>();
 
+        // sessionId와 token을 HashMap에 저장
         sessionAndToken.put("sessionId", session.getSessionId());
         sessionAndToken.put("token", token);
 

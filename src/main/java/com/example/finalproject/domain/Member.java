@@ -31,10 +31,11 @@ public class Member extends Timestamped{
     @Column(nullable = false)
     private String nickname;
 
-//    @JsonIgnore
-//    @JoinColumn(name = "gameroom_id")
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    private GameRoom gameRoom;
+    // 추가
+    @JsonIgnore
+    @JoinColumn(name="gameroommember_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private GameRoomMember gameRoomMember;
 
     @Override
     public boolean equals(Object o) {
