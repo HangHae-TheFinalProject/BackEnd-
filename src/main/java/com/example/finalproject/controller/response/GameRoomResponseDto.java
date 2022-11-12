@@ -13,9 +13,8 @@ import java.util.List;
 public class GameRoomResponseDto {
     private Long id;
     private String roomName;
+    private String roomPassword;
     private Mode mode;
     private List<Member> member;
     private String owner;
-    private String password;
-//    private Integer playerCnt = 0;
 }
