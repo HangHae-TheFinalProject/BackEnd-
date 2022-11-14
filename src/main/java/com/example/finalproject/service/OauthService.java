@@ -130,6 +130,9 @@ public class OauthService {
                 googleUserInfo.put("id", id);
 
                 log.info("## Login Controller : {}", googleUserInfo);
+                log.info("구글 이메일 : {}", googleUserInfo.get("email"));
+                log.info("구글 사용자 이름 : {}", googleUserInfo.get("name"));
+                log.info("구글 아이디 : {}", googleUserInfo.get("id"));
             }
         } catch (Exception e) {
             log.info(e.toString());

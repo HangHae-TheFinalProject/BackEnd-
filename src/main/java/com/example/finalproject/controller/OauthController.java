@@ -62,25 +62,13 @@ public class OauthController {
     }
 
 
+    // 프론트에서 인가코드를 통해 결론적으로 뽑힌 액세스 토큰을 가지고와서 구글에게 다시 한번 사용자 조회를 요청한다.
     @PostMapping("/token/receive")
-    public ResponseEntity<?> googleUserCheckTest(HttpServletRequest request
-//                                                 @RequestParam("accesstoken") String accesstoken
-    ){
-
-//        log.info("전달받은 AccessToken : {}", request.getHeader("Access_token"));
-//        log.info("전달받은 AccessToken : {}", request.getHeader("access_token"));
-//        log.info("전달받은 AccessToken : {}", request.getHeader("AccessToken"));
-//        log.info("전달받은 AccessToken : {}", request.getHeader("accessToken"));
-//        log.info("전달받은 AccessToken : {}", request);
-//        log.info("전달받은 AccessToken : {}", request.getParameter("Access_token"));
-//        log.info("전달받은 AccessToken : {}", request.getParameter("access_token"));
-//        log.info("전달받은 AccessToken : {}", request.getParameter("AccessToken"));
-//        log.info("전달받은 AccessToken : {}", request.getParameter("accessToken"));
+    public ResponseEntity<?> googleUserCheckTest(HttpServletRequest request) throws Exception{
 
         log.info("헤더 : {}",request.getHeader("accesstoken"));
-//        log.info("액세스 토큰 : {}", accesstoken);
-
-//        oauthService.getGoogleUserInfo();
+        String accesstoken = request.getHeader("accesstoken");
+        oauthService.getGoogleUserInfo(accesstoken);
 
         return null;
     }
