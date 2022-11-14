@@ -1,4 +1,4 @@
-package com.example.finalproject.configuration;//package com.move.Bunjang.configuration;
+package com.example.finalproject.configuration;
 //
 //import lombok.Value;
 //import org.springframework.context.annotation.Configuration;

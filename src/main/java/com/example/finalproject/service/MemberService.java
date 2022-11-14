@@ -138,4 +138,9 @@ public class MemberService {
         response.addHeader("Access-Token-Expire-Time", tokenDto.getAccessTokenExpiresIn().toString());
     }
 
+
+//    public Member getMember(String email) {
+//        return memberRepository.findByEmail(email);
+//    }
+
 }

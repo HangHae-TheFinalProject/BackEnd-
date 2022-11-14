@@ -3,6 +3,10 @@ package com.example.finalproject.configuration;
 import com.example.finalproject.jwt.AccessDeniedHandlerException;
 import com.example.finalproject.jwt.AuthenticationEntryPointException;
 import com.example.finalproject.jwt.TokenProvider;
+//import com.example.finalproject.service.CustomOAuth2UserService;
+
+//import com.example.finalproject.service.Oauth2UserService;
+import com.example.finalproject.service.Oauth2UserService;
 import com.example.finalproject.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,61 +31,70 @@ import org.springframework.web.cors.CorsUtils;
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class SecurityConfiguration {
 
-  @Value("${jwt.secret}")
-  String SECRET_KEY;
-  private final TokenProvider tokenProvider;
-  private final UserDetailsServiceImpl userDetailsService;
-  private final AuthenticationEntryPointException authenticationEntryPointException;
-  private final AccessDeniedHandlerException accessDeniedHandlerException;
-  private final CorsConfig corsConfig;
+    @Value("${jwt.secret}")
+    String SECRET_KEY;
+    private final TokenProvider tokenProvider;
+    private final UserDetailsServiceImpl userDetailsService;
+    private final AuthenticationEntryPointException authenticationEntryPointException;
+    private final AccessDeniedHandlerException accessDeniedHandlerException;
+    private final CorsConfig corsConfig;
+    private final Oauth2UserService oauth2UserService;
 
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
+    /* OAuth */
+//    private final CustomOAuth2UserService customOAuth2UserService;
 
-  @Bean
-  @Order(SecurityProperties.BASIC_AUTH_ORDER)
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http.cors();
+    @Bean
+    public PasswordEncoder passwordEncoder() {
 
-    http.csrf().disable()
+        return new BCryptPasswordEncoder();
+    }
 
-        .exceptionHandling()
-        .authenticationEntryPoint(authenticationEntryPointException)
-        .accessDeniedHandler(accessDeniedHandlerException)
+    @Bean
+    @Order(SecurityProperties.BASIC_AUTH_ORDER)
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.cors();
 
-        .and()
-        .sessionManagement()
-        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        http.csrf().disable()
 
-        .and()
-        .authorizeRequests()
-        .requestMatchers(CorsUtils::isPreFlightRequest).permitAll() // 추가
-        .antMatchers("/lier/signup",
-                "/lier/login",
-                "/lier/google/**"
-//                "/lier/**"// 테스트 시 해제
+                .exceptionHandling()
+                .authenticationEntryPoint(authenticationEntryPointException)
+                .accessDeniedHandler(accessDeniedHandlerException)
+
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+
+                .and()
+                .authorizeRequests()
+                .requestMatchers(CorsUtils::isPreFlightRequest).permitAll() // 추가
+                .antMatchers("/lier/signup",
+                        "/lier/login",
+                        "/lier/google/**",
+                        "/lier/auth/**"
                 ).permitAll()
+                .antMatchers("/api/comments/**").permitAll()
+                .antMatchers("/v2/api-docs",
+                        "/swagger-resources",
+                        "/swagger-resources/**",
+                        "/configuration/ui",
+                        "/configuration/security",
+                        "/swagger-ui.html",
+                        "/webjars/**",
+                        "/v3/api-docs/**",
+                        "/js/**",
+                        "/css/**",
+                        "/swagger-ui/**").permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .addFilter(corsConfig.corsFilter())
+                .apply(new JwtSecurityConfiguration(SECRET_KEY, tokenProvider, userDetailsService));
+//                .and() /* OAuth */
+//                .oauth2Login()
+//                .userInfoEndpoint() // OAuth2 로그인 성공 후 가져올 설정들
+//                .userService(oauth2UserService); // 서버에서 사용자 정보를 가져온 상태에서 추가로 진행하고자 하는 기능 명시
 
-        .antMatchers("/api/comments/**").permitAll()
-        .antMatchers( "/v2/api-docs",
-                "/swagger-resources",
-                "/swagger-resources/**",
-                "/configuration/ui",
-                "/configuration/security",
-                "/swagger-ui.html",
-                "/webjars/**",
-                "/v3/api-docs/**",
-                "/js/**",
-                "/css/**",
-                "/swagger-ui/**").permitAll()
-        .anyRequest().authenticated()
+        return http.build();
+    }
 
-        .and()
-        .addFilter(corsConfig.corsFilter())
-        .apply(new JwtSecurityConfiguration(SECRET_KEY, tokenProvider, userDetailsService));
 
-    return http.build();
-  }
 }
