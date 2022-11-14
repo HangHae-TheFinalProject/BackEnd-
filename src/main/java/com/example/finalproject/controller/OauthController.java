@@ -77,7 +77,7 @@ public class OauthController {
 //        log.info("전달받은 AccessToken : {}", request.getParameter("AccessToken"));
 //        log.info("전달받은 AccessToken : {}", request.getParameter("accessToken"));
 
-        log.info("헤더 : {}",request.getHeader(""));
+        log.info("헤더 : {}",request.getHeader("accesstoken"));
 //        log.info("액세스 토큰 : {}", accesstoken);
 
 //        oauthService.getGoogleUserInfo();
