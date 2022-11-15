@@ -1,5 +1,6 @@
 package com.example.finalproject.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,5 +30,11 @@ public class GameRoom extends Timestamped {
 
     @Column(nullable = false)
     private String owner;
+
+    // 추가
+    @JsonIgnore
+    @JoinColumn(name = "gameroommember_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private GameRoomMember gameRoomMember;
 
 }
