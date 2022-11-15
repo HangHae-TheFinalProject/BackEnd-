@@ -11,7 +11,6 @@ import org.springframework.stereotype.Controller;
 public class ChatController {
 
     private final ChatService ChatService;
-
     @MessageMapping("/chat/message")
     public void message(ChatMessage message) {
         ChatService.meesage(message);
