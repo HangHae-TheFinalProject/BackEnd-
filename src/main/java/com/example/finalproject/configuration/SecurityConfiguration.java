@@ -66,8 +66,9 @@ public class SecurityConfiguration {
                                 "/lier/chat/rooms"
 //                "/lier/**" // 테스트 시 해제
                 "/lier/login",
-                "/lier/google/**"
-//                "/lier/**"// 테스트 시 해제
+                "/lier/auth/**",
+                "/lier/chat/rooms"
+//                "/lier/**" // 테스트 시 해제
                 ).permitAll()
 
         .antMatchers("/api/comments/**").permitAll()
