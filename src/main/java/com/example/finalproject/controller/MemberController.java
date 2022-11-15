@@ -28,6 +28,7 @@ public class MemberController {
         return memberService.signup(memberRequestDto);
     }
 
+
     @PostMapping("/login")
     public ResponseEntity<PrivateResponseBody> login(
             @RequestBody MemberRequestDto memberRequestDto,
