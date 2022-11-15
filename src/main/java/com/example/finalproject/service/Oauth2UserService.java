@@ -44,8 +44,6 @@ public class Oauth2UserService extends DefaultOAuth2UserService {
                     .email(email)
                     .password(password)
                     .nickname(nickname)
-                    .provider(provider)
-                    .providerId(providerId)
                     .build();
 
             memberRepository.save(member);

@@ -139,8 +139,4 @@ public class MemberService {
     }
 
 
-//    public Member getMember(String email) {
-//        return memberRepository.findByEmail(email);
-//    }
-
 }

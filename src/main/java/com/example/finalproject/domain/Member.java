@@ -31,12 +31,6 @@ public class Member extends Timestamped{
     @Column(nullable = false)
     private String nickname;
 
-    @Column
-    private String provider;
-
-    @Column
-    private String providerId;
-
     // 추가
     @JsonIgnore
     @JoinColumn(name="gameroommember_id")
