@@ -17,6 +17,7 @@ import java.util.Map;
 @NoArgsConstructor
 public class UserDetailsImpl implements UserDetails,OAuth2User {
 
+
   private Member member;
   private Map<String, Object> attributes;
 
