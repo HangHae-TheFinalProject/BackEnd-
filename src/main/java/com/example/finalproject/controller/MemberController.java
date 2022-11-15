@@ -30,6 +30,7 @@ public class MemberController {
         return memberService.signup(memberRequestDto);
     }
 
+
     //로그인 API
     @PostMapping(value = "/login")
     public ResponseEntity<PrivateResponseBody> login(
