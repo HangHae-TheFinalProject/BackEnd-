@@ -24,6 +24,7 @@ public class GameController {
         return gameService.gameStart(request, gameroomid);
     }
 
+
     @GetMapping("/{gameroomid}/spotlight/{spotNum}")
     public ResponseEntity<?> spotlight(
             @PathVariable Long gameroomid,
