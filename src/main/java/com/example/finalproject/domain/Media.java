@@ -6,32 +6,26 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Getter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @Entity
-public class GameRoomMember extends Timestamped{
+public class Media {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    private Long gameRoomMemberId;
+    private Long mediaId;
 
     @Column(nullable = false)
-    private Long member_id;
+    private String mediaName;
 
     @Column(nullable = false)
-    private Long gameroom_id;
+    private String mediaUrl;
 
-    // 추가
-    @JoinColumn(name="gameroomid")
+    @JoinColumn(name = "postId")
     @ManyToOne(fetch = FetchType.LAZY)
-    private GameRoom gameRoom;
+    private Post post;
 
-    // 추가
-    @JoinColumn(name="memberid")
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Member member;
 }

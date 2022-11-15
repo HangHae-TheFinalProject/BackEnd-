@@ -1,5 +1,6 @@
 package com.example.finalproject.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,25 +14,29 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Entity
-public class GameRoomMember extends Timestamped{
+public class Post {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    private Long gameRoomMemberId;
+    private Long postId;
 
     @Column(nullable = false)
-    private Long member_id;
+    private String author;
 
     @Column(nullable = false)
-    private Long gameroom_id;
+    private String title;
 
-    // 추가
-    @JoinColumn(name="gameroomid")
-    @ManyToOne(fetch = FetchType.LAZY)
-    private GameRoom gameRoom;
+    @Column(nullable = false)
+    private String content;
 
-    // 추가
-    @JoinColumn(name="memberid")
+    @JsonIgnore
+    @JoinColumn(name = "memberId")
     @ManyToOne(fetch = FetchType.LAZY)
     private Member member;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "post",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Media> medias;
+
+
 }
