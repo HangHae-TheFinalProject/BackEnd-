@@ -65,10 +65,10 @@ public class OauthService {
         }
     }
 
-    public String requestAccessToken(SocialLoginType socialLoginType, String code) {
-        SocialOauth socialOauth = this.findSocialOauthByType(socialLoginType);
-        return socialOauth.requestAccessToken(code);
-    }
+//    public String requestAccessToken(SocialLoginType socialLoginType, String code) {
+//        SocialOauth socialOauth = this.findSocialOauthByType(socialLoginType);
+//        return socialOauth.requestAccessToken(code);
+//    }
 
 
     public ResponseEntity<?> getGoogleUserInfo(String accessToken, HttpServletResponse response) throws Exception {
