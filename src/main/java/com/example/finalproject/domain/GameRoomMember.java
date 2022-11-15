@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Entity
-public class GameRoomMember {
+public class GameRoomMember extends Timestamped{
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
@@ -24,4 +24,14 @@ public class GameRoomMember {
 
     @Column(nullable = false)
     private Long gameroom_id;
+
+    // 추가
+    @JoinColumn(name="gameroomid")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private GameRoom gameRoom;
+
+    // 추가
+    @JoinColumn(name="memberid")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Member member;
 }

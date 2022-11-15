@@ -100,6 +100,8 @@ public class MemberService {
     //로그아웃
     public ResponseEntity<PrivateResponseBody> logout(HttpServletRequest request) {
 
+        log.info("로그아웃 진입 : {}", request.getHeader("Authorization"));
+
         // 토큰 확인
         if (!tokenProvider.validateToken(request.getHeader("Refresh-Token"))) {
             return new ResponseEntity<>(new PrivateResponseBody
@@ -133,6 +135,10 @@ public class MemberService {
         response.addHeader("Authorization", "Bearer " + tokenDto.getAccessToken());
         response.addHeader("Refresh-Token", tokenDto.getRefreshToken());
         response.addHeader("Access-Token-Expire-Time", tokenDto.getAccessTokenExpiresIn().toString());
+
+        log.info("액세스 토큰 : {} , 리프레시 토큰 : {}", response.getHeader("Authorization"), response.getHeader("Refresh-Token"));
+
     }
+
 
 }
