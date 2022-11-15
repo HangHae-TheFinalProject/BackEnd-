@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class ChatController {
 
+
     private final ChatService ChatService;
     @MessageMapping("/chat/message")
     public void message(ChatMessage message) {
