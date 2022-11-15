@@ -12,7 +12,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Builder
 @Entity
-public class GameRoomMember {
+public class GameRoomMember extends Timestamped{
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
