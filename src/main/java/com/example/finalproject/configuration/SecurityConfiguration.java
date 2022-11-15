@@ -65,6 +65,9 @@ public class SecurityConfiguration {
                                 "/lier/login",
                                 "/lier/chat/rooms"
 //                "/lier/**" // 테스트 시 해제
+                "/lier/login",
+                "/lier/google/**"
+//                "/lier/**"// 테스트 시 해제
                 ).permitAll()
 
         .antMatchers("/api/comments/**").permitAll()
@@ -76,6 +79,8 @@ public class SecurityConfiguration {
                 "/swagger-ui.html",
                 "/webjars/**",
                 "/v3/api-docs/**",
+                "/js/**",
+                "/css/**",
                 "/swagger-ui/**").permitAll()
         .antMatchers("/ws-stomp").permitAll()
         .antMatchers("/ws-stomp/**").permitAll()
