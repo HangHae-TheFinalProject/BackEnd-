@@ -1,14 +1,12 @@
 package com.example.finalproject.service;
 
-import com.example.finalproject.controller.response.ResponseDto;
 import com.example.finalproject.domain.ChatRoom;
-import com.example.finalproject.domain.Info;
+import com.example.finalproject.controller.response.ChatRoomDto;
 import com.example.finalproject.domain.Member;
 import com.example.finalproject.exception.PrivateResponseBody;
 import com.example.finalproject.exception.StatusCode;
 import com.example.finalproject.jwt.TokenProvider;
 import com.example.finalproject.repository.ChatRoomRepository;
-import io.swagger.models.auth.In;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,15 +21,15 @@ public class ChatRoomService {
     private final TokenProvider jwtTokenProvider;
     private final ChatRoomRepository chatRoomRepository;
 
-    public ChatRoom createChatRoom(String name, HttpServletRequest request) {
+    public ResponseEntity<PrivateResponseBody> createChatRoom(String name, HttpServletRequest request) {
         Member member = validateMember(request);
         if (null == member) {
-            System.out.println("멤버 없음");
-            return null;
+            return new ResponseEntity<>(new PrivateResponseBody
+                    (StatusCode.LOGIN_MEMBER_ID_FAIL, null), HttpStatus.BAD_REQUEST);
         }
         ChatRoom chatRoom = ChatRoom.create(name);
-        return chatRoomRepository.saveRoom(chatRoom);
-
+        return new ResponseEntity<>(new PrivateResponseBody
+                (StatusCode.OK, chatRoomRepository.saveRoom(chatRoom)), HttpStatus.OK);
     }
     public ResponseEntity<PrivateResponseBody> enterRoom(String roomId, HttpServletRequest request) {
         Member member = validateMember(request);
@@ -40,7 +38,7 @@ public class ChatRoomService {
             return null;
         }
         return new ResponseEntity<>(new PrivateResponseBody
-                (StatusCode.OK, Info.builder()
+                (StatusCode.OK, ChatRoomDto.builder()
                 .roomId(roomId)
                 .nickname(member.getNickname())
                 .build()), HttpStatus.OK);
