@@ -30,7 +30,7 @@ import java.util.List;
 
 import org.json.simple.parser.JSONParser;
 
-import static com.example.finalproject.domain.QMember.member;
+//import static com.example.finalproject.domain.QMember.member;
 
 @Slf4j
 @Service
