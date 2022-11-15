@@ -28,7 +28,6 @@ public class GemeRoomController {
         return gameRoomService.lierMainPage(request);
     }
 
-
     // 방 생성 - json
     @PostMapping( "/room")
     public ResponseEntity<?> makeGameRoom(

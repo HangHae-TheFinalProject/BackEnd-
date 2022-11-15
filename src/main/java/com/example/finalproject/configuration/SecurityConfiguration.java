@@ -46,6 +46,9 @@ public class SecurityConfiguration {
     http.cors();
 
     http.csrf().disable()
+//        .headers()
+//        .frameOptions().sameOrigin() // SockJS는 기본적으로 HTML iframe 요소를 통한 전송을 허용하지 않도록 설정되는데 해당 내용을 해제한다.
+//        .and()
 
         .exceptionHandling()
         .authenticationEntryPoint(authenticationEntryPointException)
@@ -60,8 +63,9 @@ public class SecurityConfiguration {
         .requestMatchers(CorsUtils::isPreFlightRequest).permitAll() // 추가
         .antMatchers("/lier/signup",
                 "/lier/login",
-                "/lier/google/**"
-//                "/lier/**"// 테스트 시 해제
+                "/lier/auth/**",
+                "/lier/chat/rooms"
+//                "/lier/**" // 테스트 시 해제
                 ).permitAll()
 
         .antMatchers("/api/comments/**").permitAll()
@@ -76,6 +80,8 @@ public class SecurityConfiguration {
                 "/js/**",
                 "/css/**",
                 "/swagger-ui/**").permitAll()
+        .antMatchers("/ws-stomp").permitAll()
+        .antMatchers("/ws-stomp/**").permitAll()
         .anyRequest().authenticated()
 
         .and()

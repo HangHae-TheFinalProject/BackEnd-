@@ -16,6 +16,7 @@ import java.util.Collection;
 @AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
 
+
   private Member member;
 
   @Override
