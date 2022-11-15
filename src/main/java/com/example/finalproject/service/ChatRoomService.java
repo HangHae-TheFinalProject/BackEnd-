@@ -34,8 +34,8 @@ public class ChatRoomService {
     public ResponseEntity<PrivateResponseBody> enterRoom(String roomId, HttpServletRequest request) {
         Member member = validateMember(request);
         if (null == member) {
-            System.out.println("멤버 없음");
-            return null;
+            return new ResponseEntity<>(new PrivateResponseBody
+                    (StatusCode.LOGIN_MEMBER_ID_FAIL, null), HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(new PrivateResponseBody
                 (StatusCode.OK, ChatRoomDto.builder()
