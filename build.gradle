@@ -74,6 +74,17 @@ dependencies {
     // pub/sub
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation group: 'it.ozimov', name: 'embedded-redis', version: '0.7.2'
+
+    // 추가
+    implementation 'org.springframework.boot:spring-boot-starter-freemarker'
+    implementation 'it.ozimov:embedded-redis:0.7.2'
+    implementation 'org.webjars.bower:bootstrap:4.3.1'
+    implementation 'org.webjars.bower:vue:2.5.16'
+    implementation 'org.webjars.bower:axios:0.17.1'
+    implementation 'org.webjars:sockjs-client:1.1.2'
+    implementation 'org.webjars:stomp-websocket:2.3.3-1'
+    implementation 'com.google.code.gson:gson:2.8.0'
+
 }
 
 //빌드시 plain jar 파일은 만들어지지 않습니다.
