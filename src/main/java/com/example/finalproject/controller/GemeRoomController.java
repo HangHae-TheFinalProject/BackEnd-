@@ -20,7 +20,6 @@ public class GemeRoomController {
 
     private final GameRoomService gameRoomService;
 
-
     // 메인 페이지 OR 방 전체 목록 조회 (방 생성 및 방에 들어가기 위한 페이지) - json
     @GetMapping( "/rooms")
     public ResponseEntity<?> lierMainPage(
