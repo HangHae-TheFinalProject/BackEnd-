@@ -22,6 +22,7 @@ public enum StatusCode {
     NOT_FOUND_ROOM(HttpStatus.BAD_REQUEST,"121","입장할 방이 존재하지 않습니다."),
     CANT_ENTER(HttpStatus.BAD_REQUEST,"122","입장 정원이 초과하였습니다."),
     MEMBER_DUPLICATED(HttpStatus.BAD_REQUEST,"123","이미 입장한 유저입니다."),
+    UNAUTHORIZE(HttpStatus.BAD_REQUEST,"124","방장만이 게임 시작을 진행할 수 있습니다."),
 
     INTERNAL_SERVER_ERROR_PLZ_CHECK(HttpStatus.INTERNAL_SERVER_ERROR, "999", "알수없는 서버 내부 에러 발생 , dladlsgur3334@gmail.com 으로 연락 부탁드립니다.");
 

@@ -32,7 +32,7 @@ public class Member extends Timestamped{
     @Column(nullable = false)
     private String nickname;
 
-
+    @JsonIgnore
     @OneToMany(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts;
 

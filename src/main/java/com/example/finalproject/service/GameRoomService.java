@@ -9,12 +9,14 @@ import com.example.finalproject.exception.StatusCode;
 import com.example.finalproject.jwt.TokenProvider;
 import com.example.finalproject.repository.GameRoomMemberRepository;
 import com.example.finalproject.repository.GameRoomRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openvidu.java.client.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -23,6 +25,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 import static com.example.finalproject.domain.QMember.member;
 import static com.example.finalproject.domain.QGameRoom.gameRoom;
@@ -37,6 +40,7 @@ public class GameRoomService {
     private final GameRoomRepository gameRoomRepository;
     private final GameRoomMemberRepository gameRoomMemberRepository;
     private final EntityManager em;
+    private final SimpMessageSendingOperations messagingTemplate;
 
 
     // 인증 정보 검증 부분을 한 곳으로 모아놓음
@@ -264,6 +268,7 @@ public class GameRoomService {
         List<GameRoomMember> gameRoomMembers = jpaQueryFactory
                 .selectFrom(gameRoomMember)
                 .where(gameRoomMember.gameRoom.eq(enterGameRoom))
+                .orderBy(gameRoomMember.createdAt.asc())
                 .fetch();
 
         // 불러온 멤버 정보들을 하나로 담기 위한 리스트
@@ -283,6 +288,18 @@ public class GameRoomService {
                 .owner(enterGameRoom.getOwner()) // 입장한 게임방의 방장
                 .member(memberList) // 입장한 멤버들
                 .build();
+
+
+        // STomp로 입장한 메세지 전달
+        GameMessage gameMessage = new GameMessage();
+        gameMessage.setRoomId(Long.toString(roomId));
+        gameMessage.setSenderId(Long.toString(auth_member.getMemberId()));
+        gameMessage.setSender(auth_member.getNickname());
+        gameMessage.setContent(gameMessage.getRoomId() + "번방에 " + gameMessage.getSender() + "님이 입장하셨습니다.");
+        gameMessage.setType(GameMessage.MessageType.JOIN);
+
+        // 구독 주소에 어떤 유저가 집입했는지 메세지 전달 (구독한 유저 전부 메세지 받음)
+        messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage);
 
 
         // 결과 출력
@@ -404,5 +421,6 @@ public class GameRoomService {
         return sessionAndToken;
 
     }
+
 
 }

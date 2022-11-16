@@ -31,6 +31,7 @@ public class ChatRoomService {
         return new ResponseEntity<>(new PrivateResponseBody
                 (StatusCode.OK, chatRoomRepository.saveRoom(chatRoom)), HttpStatus.OK);
     }
+
     public ResponseEntity<PrivateResponseBody> enterRoom(String roomId, HttpServletRequest request) {
         Member member = validateMember(request);
         if (null == member) {
