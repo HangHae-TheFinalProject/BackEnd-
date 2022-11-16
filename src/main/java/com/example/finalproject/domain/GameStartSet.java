@@ -29,4 +29,12 @@ public class GameStartSet {
 
     @Column
     private Long roomId;
+
+    @Column
+    private Integer round;
+
+    public Integer oneMoerRound(){
+        this.round++;
+        return this.round;
+    }
 }
