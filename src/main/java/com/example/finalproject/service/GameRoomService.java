@@ -124,6 +124,7 @@ public class GameRoomService {
                     .mode(gameRoom1.getMode()) // 게임 모드
                     .member(memberList) // 게임에 참가하고있는 멤버들
                     .owner(gameRoom1.getOwner()) // 게임방의 오너
+                    .status(gameRoom1.getStatus()) // 게임방 현재 상태
                     .build();
 
             // DTO에 담긴 정보들을 리스트에 차곡차곡 저장
@@ -166,6 +167,7 @@ public class GameRoomService {
                 .roomPassword(gameRoomRequestDto.getRoomPassword()) // 게임방 패스워드
                 .mode(Mode.modeName(gameRoomRequestDto.getMode())) // 게임 모드
                 .owner(auth_member.getNickname()) // 게임 방장
+                .status("wait")
                 .build();
 
         // 게임방 생성 (저장)
@@ -190,6 +192,7 @@ public class GameRoomService {
         roomInfo.put("roomPassword", gameRoom1.getRoomPassword()); // 게임방 패스워드
         roomInfo.put("mode", gameRoom1.getMode().toString()); // 게임 모드
         roomInfo.put("owner", gameRoom1.getOwner()); // 게임 방장
+        roomInfo.put("status", gameRoom1.getStatus()); // 게임 방장
         roomInfo.put("sessionId", sessionAndToken.get("sessionId")); // OpenVidu sessionId
         roomInfo.put("token", sessionAndToken.get("token")); // OpenVidu token
 
@@ -228,6 +231,10 @@ public class GameRoomService {
                 .selectFrom(gameRoom)
                 .where(gameRoom.roomId.eq(roomId))
                 .fetchOne();
+
+        if(enterGameRoom.getStatus().equals("start")){
+            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.ALREADY_PLAYING,null),HttpStatus.BAD_REQUEST);
+        }
 
         // 만약, 관리 DB(GameRoomMember)에 현재 입장하고자 하는 멤버와 입장하고자 하는 방 정보가 매핑이 되어있으면 이미 참가가 되어있는 것이므로 에러 출력
         if (jpaQueryFactory
@@ -286,6 +293,7 @@ public class GameRoomService {
                 .roomPassword(enterGameRoom.getRoomPassword()) // 입장한 게임방 패스워드
                 .mode(enterGameRoom.getMode()) // 입장한 게임 모드
                 .owner(enterGameRoom.getOwner()) // 입장한 게임방의 방장
+                .status(enterGameRoom.getStatus()) // 게임방 상태
                 .member(memberList) // 입장한 멤버들
                 .build();
 

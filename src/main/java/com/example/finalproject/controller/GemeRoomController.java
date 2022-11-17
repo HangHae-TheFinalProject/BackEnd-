@@ -17,9 +17,9 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.DefaultUriBuilderFactory;
+//import org.springframework.web.client.RestTemplate;
+//import org.springframework.web.reactive.function.client.WebClient;
+//import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -65,25 +65,8 @@ public class GemeRoomController {
 
         log.info("방 입장 - 방 id : {}, uuid(유저아이디) : {}", roomId, request);
 
-        // /sub/topic/{roomid} 로 같은 공간에 존재하는 유저들에게 메세지 전달
-        // /pub/chat/주소 -> 서버에 메세지 전달
-
         return gameRoomService.enterGameRoom(roomId, request);
     }
-
-    // 방 입장 - json
-    @PostMapping("/room/test/{roomId}")
-    public ResponseEntity<?> enterGameRoomtest(
-            @PathVariable Long roomId, HttpServletRequest request) { // 입장할 인증정보를 가진 request
-
-        log.info("게임방 id : {}", roomId);
-
-        return gameRoomService.enterGameRoom(roomId, request);
-
-        // /sub/topic/{roomid} 로 같은 공간에 존재하는 유저들에게 메세지 전달
-        // /pub/chat/주소 -> 서버에 메세지 전달
-    }
-
 
     // 방 나가기 -jsno
     @DeleteMapping("/room/{roomId}/exit")
@@ -102,88 +85,7 @@ public class GemeRoomController {
 //        return gameRoomServiceImpl.connectOpenvidu(request);
 //    }
 
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-    // stomp
-
-    @MessageMapping("/lier/room/{roomId}") // /pub/ 이 맨앞에 붙어 발행 요청을 하게 될 것
-    @SendTo("/sub/lier/room/test/{roomId}")
-    public void message(@DestinationVariable String roomId, GameMessage gameMessage) {
-        if (GameMessage.MessageType.JOIN.equals(gameMessage.getType())) {
-            gameMessage.setRoomId(roomId);
-            gameMessage.setContent(gameMessage.getRoomId() + "방에 " + gameMessage.getSender() + "님이 입장하셨습니다.");
-        }
-        System.out.println("내용 : " + gameMessage.getContent());
-
-        messagingTemplate.convertAndSend("/sub/lier/room/test/" + Long.parseLong(gameMessage.getRoomId()), gameMessage);
-    }
-
-
     // 프론트 쪽에서 /ws-stomp 경로의 stomp 서버 연결을 해주고
     // 프론트 쪽에서 이 api url을 주소를 subscribe(구독) 해주어야 작동함 (맨앞에 /sub 경로가 붙어있음)
-    @PostMapping("/gameroom/{roomId}")
-    public void roomMessageProxy(@Payload GameMessage message) throws JsonProcessingException {
-
-        System.out.println("gameMessage 진입 확인");
-
-        if (GameMessage.MessageType.JOIN.equals(message.getType())) {
-            System.out.println("여기에 들어오나" + message.getType());
-            join(message);
-        }
-
-        if (GameMessage.MessageType.UPDATE.equals(message.getType())) {
-            System.out.println("여기에 들어오나" + message.getType());
-            update(message);
-        }
-//        if (GameMessage.MessageType.READY.equals(message.getType())) {
-//            System.out.println("여기에 들어오나" + message.getType());
-//            ready(message);
-//        }
-//
-//        if (GameMessage.MessageType.SWITCHING.equals(message.getType())) {
-//            System.out.println("여기에 들어오나" + message.getType());
-//            switchingPosition(message);
-//        }
-    }
-
-    // 게임 방 진입 시 받은 메세지로 후처리
-    private void join(GameMessage message) throws JsonProcessingException {
-        String roomId = message.getRoomId();
-        GameRoom room = jpaQueryFactory
-                .selectFrom(gameRoom)
-                .where(gameRoom.roomId.eq(Long.parseLong(roomId)))
-                .fetchOne();
-
-        GameMessage gameMessage = new GameMessage();
-        gameMessage.setRoomId(roomId);
-        gameMessage.setSender(message.getSender());
-        gameMessage.setContent("게임 방 진입");
-        gameMessage.setType(GameMessage.MessageType.UPDATE);
-        messagingTemplate.convertAndSend("/sub/groom/" + roomId, gameMessage);
-    }
-
-
-    private void update(GameMessage message) throws JsonProcessingException {
-        String roomId = message.getRoomId();
-//        GameRoom room = gameRoomRepository.findByRoomId(roomId);
-        GameRoom existGameRoom = jpaQueryFactory
-                .selectFrom(gameRoom)
-                .where(gameRoom.roomId.eq(Long.parseLong(roomId)))
-                .fetchOne();
-
-        if (existGameRoom != null) {
-//            String userListMessage = jsonStringBuilder.gameRoomResponseDtoJsonBuilder(room);
-            GameMessage gameMessage = new GameMessage();
-            gameMessage.setRoomId(roomId);
-            gameMessage.setSender(message.getSender());
-//            gameMessage.setContent(userListMessage);
-            gameMessage.setType(GameMessage.MessageType.UPDATE);
-            messagingTemplate.convertAndSend("/sub/groom/" + roomId, gameMessage);
-        }
-    }
 
 }
