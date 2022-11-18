@@ -214,7 +214,6 @@ public class GameRoomService {
 //                .member(auth_member) // 멤버 객체
 //                .build();
 
-
         // 매핑 관리 DB 저장
 //        gameRoomMemberRepository.save(gameRoomMember);
 
