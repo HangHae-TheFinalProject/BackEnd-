@@ -22,7 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Optional;
 
-import static com.example.finalproject.domain.QMember.member;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -136,6 +135,10 @@ public class MemberService {
         response.addHeader("Authorization", "Bearer " + tokenDto.getAccessToken());
         response.addHeader("Refresh-Token", tokenDto.getRefreshToken());
         response.addHeader("Access-Token-Expire-Time", tokenDto.getAccessTokenExpiresIn().toString());
+
+        log.info("액세스 토큰 : {} , 리프레시 토큰 : {}", response.getHeader("Authorization"), response.getHeader("Refresh-Token"));
+
     }
+
 
 }
