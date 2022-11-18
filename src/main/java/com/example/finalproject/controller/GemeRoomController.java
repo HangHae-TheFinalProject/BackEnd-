@@ -35,12 +35,14 @@ public class GemeRoomController {
 
     private final GameRoomService gameRoomService;
 
-    // 메인 페이지 OR 방 전체 목록 조회 (방 생성 및 방에 들어가기 위한 페이지) - json
+    // 메인 페이지 OR 방 전체 목록 조회 (방 생성 및 방에 들어가기 위한 페이지) - 페이징 처리 완료
     @GetMapping("/rooms")
     public ResponseEntity<?> lierMainPage(
-            HttpServletRequest request) { // 인증정보를 가진 request
-        return gameRoomService.lierMainPage(request);
+            HttpServletRequest request,
+            @RequestParam("page") int page) { // 인증정보를 가진 request
+        return gameRoomService.lierMainPage(request, page);
     }
+
 
     // 방 생성 - json
     @PostMapping("/room")
