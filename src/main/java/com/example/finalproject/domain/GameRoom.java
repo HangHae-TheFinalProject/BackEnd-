@@ -31,6 +31,10 @@ public class GameRoom extends Timestamped {
     @Column(nullable = false)
     private String owner;
 
+    @Column(nullable = false)
+    private String status;
+
+
     // 추가
     @JsonIgnore
     @JoinColumn(name = "gameroommember_id")

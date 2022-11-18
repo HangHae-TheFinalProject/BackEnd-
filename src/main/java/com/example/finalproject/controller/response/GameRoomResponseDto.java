@@ -17,4 +17,5 @@ public class GameRoomResponseDto {
     private Mode mode;
     private List<Member> member;
     private String owner;
+    private String status;
 }

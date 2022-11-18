@@ -1,4 +1,4 @@
-package com.example.finalproject.configuration;//package com.move.Bunjang.configuration;
+package com.example.finalproject.configuration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -11,7 +11,7 @@ import javax.annotation.PreDestroy;
 public class EmbeddedRedisConfig {
 
     @Value("${spring.redis.port}")
-    private int redisPort= 6739;
+    private int redisPort;
 
     private RedisServer redisServer;
 
