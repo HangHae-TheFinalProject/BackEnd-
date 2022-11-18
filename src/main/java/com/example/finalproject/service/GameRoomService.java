@@ -207,15 +207,15 @@ public class GameRoomService {
         chatRoomService.createChatRoom( gameRoom1.getRoomId().toString(), gameRoom1.getRoomName());
 
         // GameRoomMember로 어느 방에 어느 멤버가 매핑이 되어있는지 관리
-        GameRoomMember gameRoomMember = GameRoomMember.builder()
-                .member_id(auth_member.getMemberId()) // 멤버 아이디 (방장은 생성 시 바로 입장되어있음)
-                .gameroom_id(gameRoom1.getRoomId()) // 게임방 id
-                .gameRoom(gameRoom1) // 게임방 객체
-                .member(auth_member) // 멤버 객체
-                .build();
+//        GameRoomMember gameRoomMember = GameRoomMember.builder()
+//                .member_id(auth_member.getMemberId()) // 멤버 아이디 (방장은 생성 시 바로 입장되어있음)
+//                .gameroom_id(gameRoom1.getRoomId()) // 게임방 id
+//                .gameRoom(gameRoom1) // 게임방 객체
+//                .member(auth_member) // 멤버 객체
+//                .build();
 
         // 매핑 관리 DB 저장
-        gameRoomMemberRepository.save(gameRoomMember);
+//        gameRoomMemberRepository.save(gameRoomMember);
 
         // 원하는 정보들만 출력될 수 있도록 HashMap을 생성
         HashMap<String, String> roomInfo = new HashMap<>();
