@@ -174,7 +174,7 @@ public class GameRoomService {
         // 게임방 생성 (저장)
         gameRoomRepository.save(gameRoom1);
 
-        chatRoomService.createChatRoom(gameRoom1.getRoomName(), gameRoom1.getRoomId().toString());
+        chatRoomService.createChatRoom( gameRoom1.getRoomId().toString(), gameRoom1.getRoomName());
 
         // GameRoomMember로 어느 방에 어느 멤버가 매핑이 되어있는지 관리
         GameRoomMember gameRoomMember = GameRoomMember.builder()
