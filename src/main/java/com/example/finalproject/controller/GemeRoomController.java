@@ -34,9 +34,6 @@ import static com.example.finalproject.domain.QGameRoom.gameRoom;
 public class GemeRoomController {
 
     private final GameRoomService gameRoomService;
-    private final SimpMessageSendingOperations messagingTemplate;
-    private final JPAQueryFactory jpaQueryFactory;
-
 
     // 메인 페이지 OR 방 전체 목록 조회 (방 생성 및 방에 들어가기 위한 페이지) - json
     @GetMapping("/rooms")
@@ -51,7 +48,6 @@ public class GemeRoomController {
             @RequestBody GameRoomRequestDto gameRoomRequestDto, // 방 생성을 위한 정보를 기입할 DTO
             HttpServletRequest request) // 인증정보를 가진 request
             throws io.openvidu.java.client.OpenViduJavaClientException, io.openvidu.java.client.OpenViduHttpException {
-
         log.info("메인페이지 이동 - 방 이름 : {}, 방 패스워드 : {}, 게임 모드 : {}", gameRoomRequestDto.getRoomName(), gameRoomRequestDto.getRoomPassword(), gameRoomRequestDto.getMode());
         return gameRoomService.makeGameRoom(gameRoomRequestDto, request);
     }
@@ -62,9 +58,7 @@ public class GemeRoomController {
     public ResponseEntity<?> enterGameRoom(
             @PathVariable Long roomId, // 입장할 방 id
             HttpServletRequest request) { // 입장할 인증정보를 가진 request
-
         log.info("방 입장 - 방 id : {}, uuid(유저아이디) : {}", roomId, request);
-
         return gameRoomService.enterGameRoom(roomId, request);
     }
 

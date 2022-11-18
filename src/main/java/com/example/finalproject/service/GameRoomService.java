@@ -192,7 +192,7 @@ public class GameRoomService {
         roomInfo.put("roomPassword", gameRoom1.getRoomPassword()); // 게임방 패스워드
         roomInfo.put("mode", gameRoom1.getMode().toString()); // 게임 모드
         roomInfo.put("owner", gameRoom1.getOwner()); // 게임 방장
-        roomInfo.put("status", gameRoom1.getStatus()); // 게임 방장
+        roomInfo.put("status", gameRoom1.getStatus()); // 게임방 현재 상태
         roomInfo.put("sessionId", sessionAndToken.get("sessionId")); // OpenVidu sessionId
         roomInfo.put("token", sessionAndToken.get("token")); // OpenVidu token
 
