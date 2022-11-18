@@ -39,6 +39,7 @@ public class GameRoomService {
     private final JPAQueryFactory jpaQueryFactory;
     private final GameRoomRepository gameRoomRepository;
     private final GameRoomMemberRepository gameRoomMemberRepository;
+    private final ChatRoomService chatRoomService;
     private final EntityManager em;
     private final SimpMessageSendingOperations messagingTemplate;
 
@@ -172,6 +173,8 @@ public class GameRoomService {
 
         // 게임방 생성 (저장)
         gameRoomRepository.save(gameRoom1);
+
+        chatRoomService.createChatRoom(gameRoom1.getRoomName(), gameRoom1.getRoomId().toString());
 
         // GameRoomMember로 어느 방에 어느 멤버가 매핑이 되어있는지 관리
         GameRoomMember gameRoomMember = GameRoomMember.builder()

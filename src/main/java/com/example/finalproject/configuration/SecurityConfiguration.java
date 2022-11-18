@@ -66,7 +66,8 @@ public class SecurityConfiguration {
                 .antMatchers("/lier/signup",
                         "/lier/login",
                         "/lier/auth/**",
-                        "/lier/chat/rooms"
+                        "/lier/chat/rooms",
+                        "/lier/manager/**"
 //                "/lier/**" // 테스트 시 해제
                 ).permitAll()
 
