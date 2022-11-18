@@ -93,8 +93,7 @@ public class MemberService {
         log.info("리프레시 토큰 : {}", response.getHeader("Refresh-Token"));
 
         // Message 및 Status를 Return
-        return new ResponseEntity<>(new PrivateResponseBody
-                (StatusCode.OK, login_info), HttpStatus.OK);
+        return new ResponseEntity(new PrivateResponseBody(StatusCode.LOGIN_OK, login_info), HttpStatus.OK);
     }
 
     //로그아웃
