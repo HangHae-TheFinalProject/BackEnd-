@@ -51,25 +51,6 @@ public class GameHTTPService {
 //        gameMessage.setType(GameMessage.MessageType.START);
 //        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 //    }
-// 인증 정보 검증 부분을 한 곳으로 모아놓음
-    public Member authorizeToken(HttpServletRequest request) {
-
-        // Access 토큰 유효성 확인
-        if (request.getHeader("Authorization") == null) {
-            throw new PrivateException(StatusCode.LOGIN_EXPIRED_JWT_TOKEN);
-        }
-
-        // Refresh 토큰 유요성 확인
-        if (!tokenProvider.validateToken(request.getHeader("Refresh-Token"))) {
-            throw new PrivateException(StatusCode.LOGIN_EXPIRED_JWT_TOKEN);
-        }
-
-        // Access, Refresh 토큰 유효성 검증이 완료되었을 경우 인증된 유저 정보 저장
-        Member member = tokenProvider.getMemberFromAuthentication();
-
-        // 인증된 유저 정보 반환
-        return member;
-    }
     @Transactional
     public void vote(Long gameroomid, String name){
         voteHashMap.put(name, voteHashMap.getOrDefault(name, 0) + 1);
