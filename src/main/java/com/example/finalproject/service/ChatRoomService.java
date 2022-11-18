@@ -21,13 +21,13 @@ public class ChatRoomService {
     private final TokenProvider jwtTokenProvider;
     private final ChatRoomRepository chatRoomRepository;
 
-    public ResponseEntity<PrivateResponseBody> createChatRoom(String name, HttpServletRequest request) {
-        Member member = validateMember(request);
-        if (null == member) {
-            return new ResponseEntity<>(new PrivateResponseBody
-                    (StatusCode.LOGIN_MEMBER_ID_FAIL, null), HttpStatus.BAD_REQUEST);
-        }
-        ChatRoom chatRoom = ChatRoom.create(name);
+    public ResponseEntity<PrivateResponseBody> createChatRoom(String roomId, String name) {
+//        Member member = validateMember(request);
+//        if (null == member) {
+//            return new ResponseEntity<>(new PrivateResponseBody
+//                    (StatusCode.LOGIN_MEMBER_ID_FAIL, null), HttpStatus.BAD_REQUEST);
+//        }
+        ChatRoom chatRoom = ChatRoom.create(name, roomId);
         return new ResponseEntity<>(new PrivateResponseBody
                 (StatusCode.OK, chatRoomRepository.saveRoom(chatRoom)), HttpStatus.OK);
     }
