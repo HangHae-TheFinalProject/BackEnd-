@@ -76,7 +76,7 @@ public class GameRoomService {
     // 메인페이지 (방 전체 목록 조회) - 페이징 처리 완료
     public ResponseEntity<?> lierMainPage(
             HttpServletRequest request,
-            int page) { // 인증정보를 가진 request
+            int pageNum) { // 인증정보를 가진 request
 
         // 토큰 유효성 검증
         authorizeToken(request);
@@ -93,7 +93,7 @@ public class GameRoomService {
         // 한 페이지 당 보여지는 방 수 (4개)
         int size = 4;
         // 페이징 처리를 위해 현재 페이지와 보여지는 방 수를 곱해놓는다. (4개의 방 수 중 가장 마지막에 나올 위치값)
-        int sizeInPage = page * size;
+        int sizeInPage = pageNum * size;
 
         // 생성된 전체 게임방 불러오기
         List<GameRoom> rooms = jpaQueryFactory
