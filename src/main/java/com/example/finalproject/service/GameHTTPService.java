@@ -5,6 +5,7 @@ import com.example.finalproject.domain.GameMessage;
 import com.example.finalproject.domain.GameRoomMember;
 import com.example.finalproject.domain.GameStartSet;
 import com.example.finalproject.domain.Member;
+import com.example.finalproject.exception.PrivateException;
 import com.example.finalproject.exception.PrivateResponseBody;
 import com.example.finalproject.exception.StatusCode;
 import com.example.finalproject.jwt.TokenProvider;
@@ -35,7 +36,7 @@ public class GameHTTPService {
     private final GameStartSetRepository gameStartSetRepository;
     private final SimpMessageSendingOperations messagingTemplate;
     private final JPAQueryFactory jpaQueryFactory;
-    private final TokenProvider jwtTokenProvider;
+    private final TokenProvider tokenProvider;
     static int cnt =0;
     static HashMap<String, Integer> voteHashMap = new HashMap<>();
 
@@ -50,6 +51,25 @@ public class GameHTTPService {
 //        gameMessage.setType(GameMessage.MessageType.START);
 //        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 //    }
+// 인증 정보 검증 부분을 한 곳으로 모아놓음
+    public Member authorizeToken(HttpServletRequest request) {
+
+        // Access 토큰 유효성 확인
+        if (request.getHeader("Authorization") == null) {
+            throw new PrivateException(StatusCode.LOGIN_EXPIRED_JWT_TOKEN);
+        }
+
+        // Refresh 토큰 유요성 확인
+        if (!tokenProvider.validateToken(request.getHeader("Refresh-Token"))) {
+            throw new PrivateException(StatusCode.LOGIN_EXPIRED_JWT_TOKEN);
+        }
+
+        // Access, Refresh 토큰 유효성 검증이 완료되었을 경우 인증된 유저 정보 저장
+        Member member = tokenProvider.getMemberFromAuthentication();
+
+        // 인증된 유저 정보 반환
+        return member;
+    }
     @Transactional
     public void vote(Long gameroomid, String name){
         voteHashMap.put(name, voteHashMap.getOrDefault(name, 0) + 1);
@@ -68,7 +88,7 @@ public class GameHTTPService {
             gameMessage.setSenderId("");
             gameMessage.setSender("");
             gameMessage.setContent("투표중 입니다.");
-            gameMessage.setType(GameMessage.MessageType.START);
+            gameMessage.setType(GameMessage.MessageType.WAIT);
             messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
             return;
         }
@@ -99,7 +119,7 @@ public class GameHTTPService {
         gameMessage.setSenderId("");
         gameMessage.setSender("");
         gameMessage.setContent(nickName +content +"");
-        gameMessage.setType(GameMessage.MessageType.START);
+        gameMessage.setType(GameMessage.MessageType.RESULT);
         messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
     }
@@ -139,7 +159,7 @@ public class GameHTTPService {
         gameMessage.setSenderId("");
         gameMessage.setSender("");
         gameMessage.setContent(gameStartSet.getKeyword().equals(answer) +"");
-        gameMessage.setType(GameMessage.MessageType.START);
+        gameMessage.setType(GameMessage.MessageType.RESULT);
         messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
         if(gameStartSet.getKeyword().equals(answer)) {// 라이어가 정답을 맞추면
@@ -215,7 +235,7 @@ public class GameHTTPService {
         gameMessage.setSenderId("");
         gameMessage.setSender("");
         gameMessage.setContent("Winner : "+winner +" Loser : " + loser);
-        gameMessage.setType(GameMessage.MessageType.START);
+        gameMessage.setType(GameMessage.MessageType.RESULT);
         messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
     }
