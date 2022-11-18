@@ -9,12 +9,14 @@ import com.example.finalproject.exception.StatusCode;
 import com.example.finalproject.jwt.TokenProvider;
 import com.example.finalproject.repository.GameRoomMemberRepository;
 import com.example.finalproject.repository.GameRoomRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openvidu.java.client.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -23,6 +25,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 import static com.example.finalproject.domain.QMember.member;
 import static com.example.finalproject.domain.QGameRoom.gameRoom;
@@ -38,6 +41,7 @@ public class GameRoomService {
     private final GameRoomMemberRepository gameRoomMemberRepository;
     private final ChatRoomService chatRoomService;
     private final EntityManager em;
+    private final SimpMessageSendingOperations messagingTemplate;
 
 
     // 인증 정보 검증 부분을 한 곳으로 모아놓음
@@ -121,6 +125,7 @@ public class GameRoomService {
                     .mode(gameRoom1.getMode()) // 게임 모드
                     .member(memberList) // 게임에 참가하고있는 멤버들
                     .owner(gameRoom1.getOwner()) // 게임방의 오너
+                    .status(gameRoom1.getStatus()) // 게임방 현재 상태
                     .build();
 
             // DTO에 담긴 정보들을 리스트에 차곡차곡 저장
@@ -163,6 +168,7 @@ public class GameRoomService {
                 .roomPassword(gameRoomRequestDto.getRoomPassword()) // 게임방 패스워드
                 .mode(Mode.modeName(gameRoomRequestDto.getMode())) // 게임 모드
                 .owner(auth_member.getNickname()) // 게임 방장
+                .status("wait")
                 .build();
 
         // 게임방 생성 (저장)
@@ -189,6 +195,7 @@ public class GameRoomService {
         roomInfo.put("roomPassword", gameRoom1.getRoomPassword()); // 게임방 패스워드
         roomInfo.put("mode", gameRoom1.getMode().toString()); // 게임 모드
         roomInfo.put("owner", gameRoom1.getOwner()); // 게임 방장
+        roomInfo.put("status", gameRoom1.getStatus()); // 게임방 현재 상태
         roomInfo.put("sessionId", sessionAndToken.get("sessionId")); // OpenVidu sessionId
         roomInfo.put("token", sessionAndToken.get("token")); // OpenVidu token
 
@@ -227,6 +234,10 @@ public class GameRoomService {
                 .selectFrom(gameRoom)
                 .where(gameRoom.roomId.eq(roomId))
                 .fetchOne();
+
+        if(enterGameRoom.getStatus().equals("start")){
+            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.ALREADY_PLAYING,null),HttpStatus.BAD_REQUEST);
+        }
 
         // 만약, 관리 DB(GameRoomMember)에 현재 입장하고자 하는 멤버와 입장하고자 하는 방 정보가 매핑이 되어있으면 이미 참가가 되어있는 것이므로 에러 출력
         if (jpaQueryFactory
@@ -267,6 +278,7 @@ public class GameRoomService {
         List<GameRoomMember> gameRoomMembers = jpaQueryFactory
                 .selectFrom(gameRoomMember)
                 .where(gameRoomMember.gameRoom.eq(enterGameRoom))
+                .orderBy(gameRoomMember.createdAt.asc())
                 .fetch();
 
         // 불러온 멤버 정보들을 하나로 담기 위한 리스트
@@ -284,8 +296,21 @@ public class GameRoomService {
                 .roomPassword(enterGameRoom.getRoomPassword()) // 입장한 게임방 패스워드
                 .mode(enterGameRoom.getMode()) // 입장한 게임 모드
                 .owner(enterGameRoom.getOwner()) // 입장한 게임방의 방장
+                .status(enterGameRoom.getStatus()) // 게임방 상태
                 .member(memberList) // 입장한 멤버들
                 .build();
+
+
+        // STomp로 입장한 메세지 전달
+        GameMessage gameMessage = new GameMessage();
+        gameMessage.setRoomId(Long.toString(roomId));
+        gameMessage.setSenderId(Long.toString(auth_member.getMemberId()));
+        gameMessage.setSender(auth_member.getNickname());
+        gameMessage.setContent(gameMessage.getRoomId() + "번방에 " + gameMessage.getSender() + "님이 입장하셨습니다.");
+        gameMessage.setType(GameMessage.MessageType.JOIN);
+
+        // 구독 주소에 어떤 유저가 집입했는지 메세지 전달 (구독한 유저 전부 메세지 받음)
+        messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage);
 
 
         // 결과 출력
@@ -407,5 +432,6 @@ public class GameRoomService {
         return sessionAndToken;
 
     }
+
 
 }
