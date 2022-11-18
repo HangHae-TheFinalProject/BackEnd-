@@ -2,6 +2,7 @@ package com.example.finalproject.service;
 
 import com.example.finalproject.controller.request.GameRoomRequestDto;
 import com.example.finalproject.controller.response.GameRoomResponseDto;
+import com.example.finalproject.controller.response.PostResponseDto;
 import com.example.finalproject.domain.*;
 import com.example.finalproject.exception.PrivateException;
 import com.example.finalproject.exception.PrivateResponseBody;
@@ -14,14 +15,20 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openvidu.java.client.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -66,9 +73,10 @@ public class GameRoomService {
 
 
 
-    // 메인페이지 (방 전체 목록 조회)
+    // 메인페이지 (방 전체 목록 조회) - 페이징 처리 완료
     public ResponseEntity<?> lierMainPage(
-            HttpServletRequest request) { // 인증정보를 가진 request
+            HttpServletRequest request,
+            int pageNum) { // 인증정보를 가진 request
 
         // 토큰 유효성 검증
         authorizeToken(request);
@@ -82,9 +90,15 @@ public class GameRoomService {
 //            throw new PrivateException(StatusCode.LOGIN_EXPIRED_JWT_TOKEN);
 //        }
 
+        // 한 페이지 당 보여지는 방 수 (4개)
+        int size = 4;
+        // 페이징 처리를 위해 현재 페이지와 보여지는 방 수를 곱해놓는다. (4개의 방 수 중 가장 마지막에 나올 위치값)
+        int sizeInPage = pageNum * size;
+
         // 생성된 전체 게임방 불러오기
         List<GameRoom> rooms = jpaQueryFactory
                 .selectFrom(gameRoom)
+                .orderBy(gameRoom.createdAt.asc())
                 .fetch();
 
         // 메인페이지에 보여줄 전체 방과 방의 주인 및 방 참여 인원을 출력하기 위한 리스트
@@ -99,6 +113,7 @@ public class GameRoomService {
             List<GameRoomMember> gameRoomMembers = jpaQueryFactory
                     .selectFrom(gameRoomMember)
                     .where(gameRoomMember.gameRoom.eq(gameRoom1))
+                    .orderBy(gameRoomMember.createdAt.asc())
                     .fetch();
 
             // 방에 속한 멤버들의 정보들을 저장하기위한 리스트
@@ -132,8 +147,23 @@ public class GameRoomService {
             gameroomlist.add(gameRoomResponseDto);
         }
 
+        // 페이징 처리 후 4개의 방만을 보여줄 리스트
+        List<GameRoomResponseDto> roomsInPage = new ArrayList<>();
+
+        // 페이징 처리 후 나온 페이지에 존재하는 4개의 방을 담는다.
+        for(int i = sizeInPage - size ; i < sizeInPage ; i++){
+
+            // 방을 담는다.
+            roomsInPage.add(gameroomlist.get(i));
+
+            // 지금 존재하는 전체 방의 개수와 i 값이 같다면 break로 더이상 담지 않고 빠져나온다.
+            if(i == gameroomlist.size()-1){
+                break;
+            }
+        }
+
         // 결과 출력
-        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, gameroomlist), HttpStatus.OK);
+        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, roomsInPage), HttpStatus.OK);
     }
 
 
