@@ -52,7 +52,8 @@ public class GameHTTPService {
 //        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 //    }
     @Transactional
-    public void vote(Long gameroomid, String name){
+    public void vote(Long gameroomid, StringDto stringDto){
+        String name = stringDto.getValue();
         voteHashMap.put(name, voteHashMap.getOrDefault(name, 0) + 1);
         cnt ++;
 
@@ -133,7 +134,8 @@ public class GameHTTPService {
     }
 
     @Transactional
-    public void isAnswer(Long gameroomid, String answer) {
+    public void isAnswer(Long gameroomid, StringDto stringDto) {
+        String answer = stringDto.getValue();
         GameStartSet gameStartSet= gameStartSetRepository.findByRoomId(gameroomid);
         GameMessage gameMessage = new GameMessage();
         gameMessage.setRoomId(Long.toString(gameroomid));

@@ -1,6 +1,7 @@
 package com.example.finalproject.controller;
 
 
+import com.example.finalproject.controller.request.StringDto;
 import com.example.finalproject.service.GameHTTPService;
 import lombok.RequiredArgsConstructor;
 
@@ -20,15 +21,15 @@ public class GameHTTPController {
 //    }
 
     // 투표
-    @MessageMapping("/lier/manager/{gameroomid}/vote/{name}")
-    public void vote(@DestinationVariable("gameroomid") Long gameroomid, @DestinationVariable("name") String name) {
-        gameHTTPService.vote(gameroomid, name);
+    @MessageMapping("/lier/manager/{gameroomid}/vote")
+    public void vote(@DestinationVariable("gameroomid") Long gameroomid, StringDto stringDto) {
+        gameHTTPService.vote(gameroomid, stringDto);
     }
 
     // 라이어 정답 맞추기
-    @MessageMapping("/lier/manager/{gameroomid}/isAnswer/{answer}")
-    public void isAnswer(@DestinationVariable("gameroomid") Long gameroomid, @DestinationVariable("answer") String answer) {
-        gameHTTPService.isAnswer(gameroomid, answer);
+    @MessageMapping("/lier/manager/{gameroomid}/isAnswer")
+    public void isAnswer(@DestinationVariable("gameroomid") Long gameroomid, StringDto stringDto) {
+        gameHTTPService.isAnswer(gameroomid, stringDto);
     }
 
     // 한바퀴 더
