@@ -94,7 +94,7 @@ public class MemberService {
 
         // Message 및 Status를 Return
         return new ResponseEntity<>(new PrivateResponseBody
-                (StatusCode.OK, login_info), HttpStatus.OK);
+                (StatusCode.LOGIN_OK, login_info), HttpStatus.OK);
     }
 
     //로그아웃
