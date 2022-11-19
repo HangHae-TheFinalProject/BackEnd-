@@ -1,5 +1,6 @@
 package com.example.finalproject.configuration;
 
+import com.example.finalproject.shared.CustomHandshakeHandler;
 import com.example.finalproject.shared.StompHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -25,9 +26,7 @@ public class WebSockConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-stomp")
                 .setAllowedOriginPatterns("*")
-//                .setAllowedOrigins("http://jxy.me")
-//                .setAllowedOrigins("http://localhost:8080/*")
-//                .setAllowedOrigins("ws://localhost:8080/*")
+                .setHandshakeHandler(new CustomHandshakeHandler())
                 .withSockJS();
     }
     @Override

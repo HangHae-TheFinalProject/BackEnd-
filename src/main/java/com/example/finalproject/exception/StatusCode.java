@@ -8,8 +8,8 @@ public enum StatusCode {
     OK(HttpStatus.OK, "200", "응답이 정상 처리 되었습니다."),
     LOGIN_OK(HttpStatus.OK, "200", "로그인 되셨습니다!"),
 
-    LOGIN_MEMBER_ID_FAIL(HttpStatus.NOT_FOUND, "110", "해당 하는 memberId 가 없습니다"),
-    LOGIN_PASSWORD_FAIL(HttpStatus.BAD_REQUEST, "111", "Password가 틀렸습니다."),
+    LOGIN_MEMBER_ID_FAIL(HttpStatus.NOT_FOUND, "110", "존재하지 않는 유저 정보입니다."),
+    LOGIN_PASSWORD_FAIL(HttpStatus.BAD_REQUEST, "111", "비밀번호가 일치하지 않습니다."),
     LOGIN_WRONG_SIGNATURE_JWT_TOKEN(HttpStatus.BAD_REQUEST, "112", "잘못된 JWT 서명입니다."),
     LOGIN_EXPIRED_JWT_TOKEN(HttpStatus.BAD_REQUEST, "113", "만료된 JWT 토큰입니다."),
     LOGIN_NOT_SUPPORTED_JWT_TOKEN(HttpStatus.BAD_REQUEST, "114", "지원되지 않는 JWT 토큰입니다."),
@@ -25,6 +25,8 @@ public enum StatusCode {
     MEMBER_DUPLICATED(HttpStatus.BAD_REQUEST,"123","이미 입장한 유저입니다."),
     UNAUTHORIZE(HttpStatus.BAD_REQUEST,"124","방장만이 게임 시작을 진행할 수 있습니다."),
     ALREADY_PLAYING(HttpStatus.BAD_REQUEST,"125","게임 진행 중인 방에는 입장할 수 없습니다."),
+    NOT_MATCH_PLAYER(HttpStatus.BAD_REQUEST,"126","해당 방의 참가자가 아니라 준비를 진행할 수 없습니다."),
+    NOT_READY(HttpStatus.BAD_REQUEST,"127","모든 인원이 준비완료 상태가 아니라 게임을 시작할 수 없습니다."),
 
     INTERNAL_SERVER_ERROR_PLZ_CHECK(HttpStatus.INTERNAL_SERVER_ERROR, "999", "알수없는 서버 내부 에러 발생 , dladlsgur3334@gmail.com 으로 연락 부탁드립니다.");
 

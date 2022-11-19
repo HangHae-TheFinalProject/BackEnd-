@@ -34,4 +34,10 @@ public class GameRoomMember extends Timestamped{
     @JoinColumn(name="memberid")
     @ManyToOne(fetch = FetchType.LAZY)
     private Member member;
+
+    @Column(nullable = false)
+    private String ready;
+
+    @Column(nullable = false)
+    private String session;
 }
