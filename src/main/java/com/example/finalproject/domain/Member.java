@@ -41,6 +41,19 @@ public class Member extends Timestamped{
     @JoinColumn(name="gameroommember_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private GameRoomMember gameRoomMember;
+
+    @Column
+    private Long winNum = 0L;
+
+    @Column
+    private Long lossNum = 0L;
+
+    public void addWin(){
+        this.winNum += 1L;
+    }
+    public void addLose(){
+        this.lossNum += 1L;
+    }
     
     @Override
     public boolean equals(Object o) {

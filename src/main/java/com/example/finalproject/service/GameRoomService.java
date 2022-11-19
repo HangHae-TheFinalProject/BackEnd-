@@ -82,6 +82,15 @@ public class GameRoomService {
         // 토큰 유효성 검증
         authorizeToken(request);
 
+        // 테스트 시 활용할 임의 멤버
+//        Member member = jpaQueryFactory
+//                .selectFrom(QMember.member)
+//                .where(QMember.member.id.eq(1L))
+//                .fetchOne();
+//        if (member == null) {
+//            throw new PrivateException(StatusCode.LOGIN_EXPIRED_JWT_TOKEN);
+//        }
+
         // 한 페이지 당 보여지는 방 수 (4개)
         int size = 4;
         // 페이징 처리를 위해 현재 페이지와 보여지는 방 수를 곱해놓는다. (4개의 방 수 중 가장 마지막에 나올 위치값)
@@ -154,22 +163,8 @@ public class GameRoomService {
             }
         }
 
-        // 총 페이지 수
-        int pageCnt = (int)rooms.size() / size;
-
-        // 만약 총 방의 개수에서 size(한 페이지 당 방의 개수) 를 나눳을 떄 나머지가 0 이상이라면 총 페이지 수에 1을 더한다.
-        if(rooms.size() % size != 0){
-            pageCnt = pageCnt + 1;
-        }
-
-        // 기존의 페이징 처리된 방들과 총 페이지 수 저장
-        HashMap<String, Object> result = new HashMap<>();
-        result.put("pageCnt", pageCnt);
-        result.put("roomsInPage", roomsInPage);
-
-
         // 결과 출력
-        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, result), HttpStatus.OK);
+        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, roomsInPage), HttpStatus.OK);
     }
 
 
@@ -182,6 +177,15 @@ public class GameRoomService {
 
         // 토큰 유효성 검증
         Member auth_member = authorizeToken(request);
+
+        // 테스트 시 활용할 임의 멤버
+//        Member test_member = jpaQueryFactory
+//                .selectFrom(QMember.member)
+//                .where(QMember.member.id.eq(1L))
+//                .fetchOne();
+//        if (test_member == null) {
+//            throw new PrivateException(StatusCode.LOGIN_EXPIRED_JWT_TOKEN);
+//        }
 
         // OenVIdu 사옹을 위한 sessionId 와 Token을 생성하여 저장한 HashMap
         // 게임 방에서 화상채팅을 이용할 것이기 때문에 필요

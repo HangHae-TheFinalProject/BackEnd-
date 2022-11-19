@@ -149,7 +149,7 @@ public class OauthService {
 
 
         return new ResponseEntity<>(new PrivateResponseBody
-                (StatusCode.OK, login_info), HttpStatus.OK);
+                (StatusCode.LOGIN_OK, login_info), HttpStatus.OK);
     }
 
 

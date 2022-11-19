@@ -27,8 +27,7 @@ public class OauthController {
 
         log.info("헤더 : {}",request.getHeader("accesstoken"));
         String accesstoken = request.getHeader("accesstoken");
-        oauthService.getGoogleUserInfo(accesstoken, response);
 
-        return null;
+        return oauthService.getGoogleUserInfo(accesstoken, response);
     }
 }
