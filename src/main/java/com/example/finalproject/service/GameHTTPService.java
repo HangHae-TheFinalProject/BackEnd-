@@ -64,11 +64,12 @@ public class GameHTTPService {
                 .fetch();
         int memberNum = gameRoomMembers.size();
         if(cnt != memberNum){
-            GameMessageData<String> gameMessageData = new GameMessageData<>();
+            VoteDto voteDto = new VoteDto(null);
+            GameMessageData<VoteDto> gameMessageData = new GameMessageData<>();
             gameMessageData.setRoomId(Long.toString(gameroomid));
             gameMessageData.setSenderId("");
             gameMessageData.setSender("");
-            gameMessageData.setData("투표중 입니다.");
+            gameMessageData.setData(voteDto);
             gameMessageData.setType(GameMessageData.MessageType.CONTINUE);
             messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessageData);
 
