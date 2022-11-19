@@ -343,13 +343,21 @@ public class GameService {
 
         System.out.println("배열 크기 확인 " + gameRoomMembers.size());
 
+        // 구독 주소에 지금 스포트라이트 받고 있는 사람이 누군지 실시간으로 전달 (방 안에 있는 구독자 유저 전부 메세지 받음)
+        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
+
         if(spotNum == gameRoomMembers.size()){
+            gameMessage.setRoomId(Long.toString(gameroomid));
+            gameMessage.setSenderId("");
+            gameMessage.setSender("");
+            gameMessage.setContent("한 바퀴 돌았습니다!");
+            gameMessage.setType(GameMessage.MessageType.SPOTLIGHT);
+
+            messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
+
             spotNum = 0;
 //            return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, "한 바퀴 돌았습니다!"), HttpStatus.OK);
         }
-
-        // 구독 주소에 지금 스포트라이트 받고 있는 사람이 누군지 실시간으로 전달 (방 안에 있는 구독자 유저 전부 메세지 받음)
-        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, whoIsNow), HttpStatus.OK);
     }
