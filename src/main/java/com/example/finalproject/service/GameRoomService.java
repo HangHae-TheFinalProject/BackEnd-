@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,15 +81,6 @@ public class GameRoomService {
 
         // 토큰 유효성 검증
         authorizeToken(request);
-
-        // 테스트 시 활용할 임의 멤버
-//        Member member = jpaQueryFactory
-//                .selectFrom(QMember.member)
-//                .where(QMember.member.id.eq(1L))
-//                .fetchOne();
-//        if (member == null) {
-//            throw new PrivateException(StatusCode.LOGIN_EXPIRED_JWT_TOKEN);
-//        }
 
         // 한 페이지 당 보여지는 방 수 (4개)
         int size = 4;
@@ -162,8 +154,22 @@ public class GameRoomService {
             }
         }
 
+        // 총 페이지 수
+        int pageCnt = (int)rooms.size() / size;
+
+        // 만약 총 방의 개수에서 size(한 페이지 당 방의 개수) 를 나눳을 떄 나머지가 0 이상이라면 총 페이지 수에 1을 더한다.
+        if(rooms.size() % size != 0){
+            pageCnt = pageCnt + 1;
+        }
+
+        // 기존의 페이징 처리된 방들과 총 페이지 수 저장
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("pageCnt", pageCnt);
+        result.put("roomsInPage", roomsInPage);
+
+
         // 결과 출력
-        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, roomsInPage), HttpStatus.OK);
+        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, result), HttpStatus.OK);
     }
 
 
@@ -176,15 +182,6 @@ public class GameRoomService {
 
         // 토큰 유효성 검증
         Member auth_member = authorizeToken(request);
-
-        // 테스트 시 활용할 임의 멤버
-//        Member test_member = jpaQueryFactory
-//                .selectFrom(QMember.member)
-//                .where(QMember.member.id.eq(1L))
-//                .fetchOne();
-//        if (test_member == null) {
-//            throw new PrivateException(StatusCode.LOGIN_EXPIRED_JWT_TOKEN);
-//        }
 
         // OenVIdu 사옹을 위한 sessionId 와 Token을 생성하여 저장한 HashMap
         // 게임 방에서 화상채팅을 이용할 것이기 때문에 필요
@@ -206,17 +203,6 @@ public class GameRoomService {
 
         chatRoomService.createChatRoom( gameRoom1.getRoomId().toString(), gameRoom1.getRoomName());
 
-        // GameRoomMember로 어느 방에 어느 멤버가 매핑이 되어있는지 관리
-        GameRoomMember gameRoomMember = GameRoomMember.builder()
-                .member_id(auth_member.getMemberId()) // 멤버 아이디 (방장은 생성 시 바로 입장되어있음)
-                .gameroom_id(gameRoom1.getRoomId()) // 게임방 id
-                .gameRoom(gameRoom1) // 게임방 객체
-                .member(auth_member) // 멤버 객체
-                .build();
-
-        // 매핑 관리 DB 저장
-        gameRoomMemberRepository.save(gameRoomMember);
-
         // 원하는 정보들만 출력될 수 있도록 HashMap을 생성
         HashMap<String, String> roomInfo = new HashMap<>();
 
@@ -234,7 +220,6 @@ public class GameRoomService {
 
         // 결과 출력
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, roomInfo), HttpStatus.OK);
-
     }
 
 
@@ -242,19 +227,11 @@ public class GameRoomService {
     @Transactional
     public ResponseEntity<?> enterGameRoom(
             Long roomId, // 게임방 id
-            HttpServletRequest request) { // 인증정보를 가진 request
+            HttpServletRequest request,
+            Principal principal) { // 인증정보를 가진 request
 
         // 토큰 유효성 검증
         Member auth_member = authorizeToken(request);
-
-        // 테스트 시 활용할 임의 멤버 (방장이 아닌 새로운 멤버가 들어온다고 가정)
-//        Member test_member2 = jpaQueryFactory
-//                .selectFrom(QMember.member)
-//                .where(QMember.member.id.eq(2L))
-//                .fetchOne();
-//        if (test_member2 == null) {
-//            throw new PrivateException(StatusCode.LOGIN_EXPIRED_JWT_TOKEN);
-//        }
 
         // 최종적으로 결과를 보여줄 DTO
         GameRoomResponseDto gameRoomResponseDto;
@@ -265,6 +242,7 @@ public class GameRoomService {
                 .where(gameRoom.roomId.eq(roomId))
                 .fetchOne();
 
+        // 이미 게임방 상태가 시작 중이라면 참가할 수 없음
         if(enterGameRoom.getStatus().equals("start")){
             return new ResponseEntity<>(new PrivateResponseBody(StatusCode.ALREADY_PLAYING,null),HttpStatus.BAD_REQUEST);
         }
@@ -299,6 +277,8 @@ public class GameRoomService {
                 .member(auth_member)
                 .member_id(auth_member.getMemberId())
                 .gameroom_id(enterGameRoom.getRoomId())
+                .ready("unready")
+                .session(principal.getName())
                 .build();
 
         // 입장한 정보 저장
@@ -357,15 +337,6 @@ public class GameRoomService {
         // 토큰 유효성 검증
         Member auth_member = authorizeToken(request);
 
-        // 테스트 시 활용할 임의 멤버 (방장이 아닌 새로운 멤버가 들어온다고 가정)
-//        Member test_member = jpaQueryFactory
-//                .selectFrom(QMember.member)
-//                .where(QMember.member.id.eq(1L))
-//                .fetchOne();
-//        if (test_member == null) {
-//            throw new PrivateException(StatusCode.LOGIN_EXPIRED_JWT_TOKEN);
-//        }
-
         // 나가고자 하는 방의 정보 불러오기
         GameRoom gameRoom1 = jpaQueryFactory
                 .selectFrom(gameRoom)
@@ -392,27 +363,46 @@ public class GameRoomService {
                     .execute();
         }
 
+        // 누가 방을 나갔는지 소켓으로 전체 공유
+        GameMessage gameMessage = new GameMessage();
+        gameMessage.setRoomId(Long.toString(gameRoom1.getRoomId())); // 퇴장한 방의 id
+        gameMessage.setSenderId(Long.toString(auth_member.getMemberId())); //퇴장한 사람 id
+        gameMessage.setSender(auth_member.getNickname()); // 퇴장한 사람
+        gameMessage.setContent(gameMessage.getSender() + "님이 방을 나가셨습니다."); //퇴장 내용
+        gameMessage.setType(GameMessage.MessageType.LEAVE); // 메세지 타입
+
+        // 구독자들에게 퇴장 메세지 전달
+        messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage);
+
         // 방에서 나가려고 하는 멤버가 현재 방장이고, 게임방에 남아있는 인원이 존재할 경우에 남은 사람듣 중에 방장을 랜덤으로 지정
         if (auth_member.getNickname() == gameRoom1.getOwner() && !gameRoomMembers.isEmpty()) {
 
             // 남은 사람들의 수 만큼 랜덤으로 돌려서 나온 멤버 id
-            Long next_owner_id = gameRoomMembers.get((int) (Math.random() * gameRoomMembers.size())).getMember_id();
+            Long nextOwnerId = gameRoomMembers.get((int) (Math.random() * gameRoomMembers.size())).getMember_id();
 
             // 랜덤으로 지정된 멤버 소환
-            Member member = jpaQueryFactory
+            Member nextOwner = jpaQueryFactory
                     .selectFrom(QMember.member)
-                    .where(QMember.member.memberId.eq(next_owner_id))
+                    .where(QMember.member.memberId.eq(nextOwnerId))
                     .fetchOne();
 
             // 게임 방의 방장 정보 수정
             jpaQueryFactory
                     .update(gameRoom)
-                    .set(gameRoom.owner, member.getNickname())
+                    .set(gameRoom.owner, nextOwner.getNickname())
                     .where(gameRoom.roomId.eq(roomId))
                     .execute();
 
             em.flush();
             em.clear();
+
+            gameMessage.setRoomId(Long.toString(gameRoom1.getRoomId())); // 방 id
+            gameMessage.setSenderId(Long.toString(nextOwner.getMemberId())); // 다음 방장이 된 유저 id
+            gameMessage.setSender(nextOwner.getNickname()); // 다음 방장이 된 유저의 닉네임
+            gameMessage.setContent(gameMessage.getSender() + "님이 방장이 되셨습니다."); // 새로운 방장 선언
+            gameMessage.setType(GameMessage.MessageType.LEAVE); // 메세지 타입
+
+            messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage);
         }
 
         // 정상적으로 방을 나가면 문구 출력
@@ -462,6 +452,8 @@ public class GameRoomService {
         return sessionAndToken;
 
     }
+
+
 
 
 }
