@@ -15,14 +15,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
-import org.springframework.web.socket.WebSocketSession;
 
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Status;
 import javax.transaction.Transactional;
 
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

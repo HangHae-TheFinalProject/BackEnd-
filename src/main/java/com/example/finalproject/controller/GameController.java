@@ -2,19 +2,12 @@ package com.example.finalproject.controller;
 
 import com.example.finalproject.domain.GameMessage;
 import com.example.finalproject.service.GameService;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import java.security.Principal;
 
 @Slf4j
 @RequiredArgsConstructor
