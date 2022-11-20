@@ -2,30 +2,15 @@ package com.example.finalproject.controller;
 
 
 import com.example.finalproject.controller.request.GameRoomRequestDto;
-import com.example.finalproject.domain.GameMessage;
-import com.example.finalproject.domain.GameRoom;
 import com.example.finalproject.service.GameRoomService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-//import org.springframework.web.client.RestTemplate;
-//import org.springframework.web.reactive.function.client.WebClient;
-//import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.Principal;
-import java.util.HashMap;
-
-import static com.example.finalproject.domain.QGameRoom.gameRoom;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -66,6 +51,7 @@ public class GemeRoomController {
         return gameRoomService.enterGameRoom(roomId, request, principal);
     }
 
+
     // 방 나가기 -jsno
     @DeleteMapping("/room/{roomId}/exit")
     public ResponseEntity<?> roomExit(
@@ -74,6 +60,7 @@ public class GemeRoomController {
         log.info("방 나가기 - 방 아이디 : {}, uuid(유저아이디) : {}", roomId, request);
         return gameRoomService.roomExit(roomId, request);
     }
+
 
     // openvidu 연결
 //    @PostMapping("/openvidu")
