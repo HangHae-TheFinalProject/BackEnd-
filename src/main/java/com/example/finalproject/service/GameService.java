@@ -71,30 +71,6 @@ public class GameService {
     @Transactional
     public ResponseEntity<?> gameStart(GameMessage gameMessage, Long gameroomid) {
 
-//        Long membercnt = jpaQueryFactory
-//                .select(gameRoomMember.count())
-//                .from(gameRoomMember)
-//                .where(gameRoomMember.gameroom_id.eq(gameroomid))
-//                .fetchOne();
-//
-//        Long readycnt = jpaQueryFactory
-//                .select(gameRoomMember.count())
-//                .from(gameRoomMember)
-//                .where(gameRoomMember.gameroom_id.eq(gameroomid).and(gameRoomMember.ready.eq("ready")))
-//                .fetchOne();
-//
-//        if(!(membercnt == readycnt)){
-//            gameMessage.setRoomId(Long.toString(gameroomid));
-//            gameMessage.setSenderId("");
-//            gameMessage.setSender("운영자");
-//            gameMessage.setContent("모든 인원이 준비완료 상태가 아닙니다.");
-//            gameMessage.setType(GameMessage.MessageType.UNREADY);
-//
-//            messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
-//
-//            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.NOT_READY,null),HttpStatus.BAD_REQUEST);
-//        }
-
         // 현재 입장한 게임방의 정보를 가져옴
         GameRoom gameRoom1 = jpaQueryFactory
                 .selectFrom(gameRoom)
@@ -156,10 +132,11 @@ public class GameService {
                 .keyword(chooseKeyword.getWord()) // 키워드
                 .roomId(gameroomid) // 게임방 id
                 .round(0)
+                .winner(null)
                 .build();
 
         // StartSet 저장
-        gameStartSetRepository.save(gameStartSet);
+        gameStartSetRepository.save(gameStartSet);;
 
         // http 형식으로 프론트에 전달할 반환값 (예비용)
         GameStartSetResponseDto gameStartSetResponseDto = GameStartSetResponseDto.builder()
@@ -168,6 +145,7 @@ public class GameService {
                 .keyword(gameStartSet.getKeyword())
                 .roomId(gameStartSet.getRoomId())
                 .build();
+
 
         // 게임 시작 알림을 방에 구독이 된 유저들에게 알려줌
         messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
@@ -185,6 +163,8 @@ public class GameService {
 
             // 라이어가 아닐 경우
             if(!roommember.getNickname().equals(gameStartSet.getLier())){
+                log.info("시민에 걸린 유저 : {}", roommember.getNickname());
+
                 // 방 입장했을 떄 각 유저마다의 생성된 session 불러오기
                 String session = jpaQueryFactory
                         .select(gameRoomMember.session)
@@ -201,6 +181,8 @@ public class GameService {
                 messagingTemplate.convertAndSendToUser(session, "/sub/truer/gameroom/"+gameroomid, gameMessage);
 
             }else if(roommember.getNickname().equals(gameStartSet.getLier())){ // 라이어일 경우
+                log.info("라이어에 걸린 유저 : {}", gameStartSet.getLier());
+
                 // 방 입장했을 떄 각 유저마다의 생성된 session 불러오기
                 String session = jpaQueryFactory
                         .select(gameRoomMember.session)
@@ -344,8 +326,7 @@ public class GameService {
         // 구독 주소에 지금 스포트라이트 받고 있는 사람이 누군지 실시간으로 전달 (방 안에 있는 구독자 유저 전부 메세지 받음)
         messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
-        // 현 위치의 정보를 메세지화시켜서 전달까지 완료했으면 위치값을 1 증가 시켜서 다음 위치의 유저에게 향할 수 있도록 +1
-        spotNum = spotNum + 1;
+
 
         GameStartSet gameStartSet = jpaQueryFactory
                 .selectFrom(QGameStartSet.gameStartSet)
@@ -353,7 +334,7 @@ public class GameService {
                 .fetchOne();
 
         // 현재 위치값이 마지막 유저의 위치와 같을 경우
-        if (spotNum == gameRoomMembers.size()) {
+        if (spotNum == gameRoomMembers.size()-1) {
             jpaQueryFactory
                     .update(QGameStartSet.gameStartSet)
                     .set(QGameStartSet.gameStartSet.round, gameStartSet.getRound() + 1)
@@ -363,7 +344,7 @@ public class GameService {
             em.flush();
             em.clear();
 
-            if (gameStartSet.getRound() != 3) {
+            if (gameStartSet.getRound() < 3) {
                 gameMessage.setRoomId(Long.toString(gameroomid)); // 게임 방 id
                 gameMessage.setSenderId(""); // senderId는 딱히 필요없으므로 공백처리
                 gameMessage.setSender(""); // sender는 딱히 필요없으므로 공백처리
@@ -383,6 +364,10 @@ public class GameService {
 
             // 한 바퀴를 다 돌았으면 위치값을 0으로 초기화
             spotNum = 0;
+        }else{
+
+            // 현 위치의 정보를 메세지화시켜서 전달까지 완료했으면 위치값을 1 증가 시켜서 다음 위치의 유저에게 향할 수 있도록 +1
+            spotNum = spotNum + 1;
         }
 
         // http 방식으로 넘겨드릴 현재 스포트라이트를 받고있는 유저의 정보 및 위치값을 hashmap으로 저장
