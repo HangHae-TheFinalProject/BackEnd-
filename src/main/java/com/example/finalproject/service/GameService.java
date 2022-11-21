@@ -144,58 +144,67 @@ public class GameService {
                 .build();
 
 
+        gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 게임방 id
+        gameMessage.setSenderId(""); // 준비된 유저의 id
+        gameMessage.setSender("운영자"); // 준비된 유저의 닉네임
+        gameMessage.setContent(gameStartSet.getLier()); // 준비됫다는 내용
+        gameMessage.setContent2(gameStartSet.getCategory()); // 준비됫다는 내용
+        gameMessage.setContent3(gameStartSet.getKeyword()); // 준비됫다는 내용
+        gameMessage.setType(GameMessage.MessageType.START); // 메세지 타입
+
+
         // 게임 시작 알림을 방에 구독이 된 유저들에게 알려줌
         messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
-        List<GameRoomMember> gameRoomMemberlist = jpaQueryFactory
-                .selectFrom(gameRoomMember)
-                .where(gameRoomMember.gameroom_id.eq(gameroomid))
-                .fetch();
-
-        for(GameRoomMember gameRoomMember1 : gameRoomMemberlist){
-            Member roommember = jpaQueryFactory
-                    .selectFrom(member)
-                    .where(member.memberId.eq(gameRoomMember1.getMember_id()))
-                    .fetchOne();
-
-            // 라이어가 아닐 경우
-            if(!roommember.getNickname().equals(gameStartSet.getLier())){
-                log.info("시민에 걸린 유저 : {}", roommember.getNickname());
-
-                // 방 입장했을 떄 각 유저마다의 생성된 session 불러오기
-                String session = jpaQueryFactory
-                        .select(gameRoomMember.session)
-                        .from(gameRoomMember)
-                        .where(gameRoomMember.member_id.eq(roommember.getMemberId()).and(gameRoomMember.gameroom_id.eq(gameroomid)))
-                        .fetchOne();
-
-                gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 게임방 id
-                gameMessage.setSenderId(Long.toString(roommember.getMemberId())); // truer id
-                gameMessage.setSender(roommember.getNickname()); // truer 닉네임
-                gameMessage.setContent(gameMessage.getSender() + "님은 시민입니다. / [" + gameStartSet.getCategory() + " : " + gameStartSet.getKeyword() + "]"); // 시민 여부 내용
-                gameMessage.setType(GameMessage.MessageType.TRUER); // 메세지 타입
-
-                messagingTemplate.convertAndSendToUser(session, "/sub/truer/gameroom/"+gameroomid, gameMessage);
-
-            }else if(roommember.getNickname().equals(gameStartSet.getLier())){ // 라이어일 경우
-                log.info("라이어에 걸린 유저 : {}", gameStartSet.getLier());
-
-                // 방 입장했을 떄 각 유저마다의 생성된 session 불러오기
-                String session = jpaQueryFactory
-                        .select(gameRoomMember.session)
-                        .from(gameRoomMember)
-                        .where(gameRoomMember.member_id.eq(roommember.getMemberId()).and(gameRoomMember.gameroom_id.eq(gameroomid)))
-                        .fetchOne();
-
-                gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 게임방 id
-                gameMessage.setSenderId(Long.toString(roommember.getMemberId())); // lier id
-                gameMessage.setSender(roommember.getNickname()); // lier 닉네임
-                gameMessage.setContent(gameMessage.getSender() + "님은 라이어입니다. / [" + gameStartSet.getCategory() + "]"); // 라이어 여부
-                gameMessage.setType(GameMessage.MessageType.LIAR); // 메세지 타입
-
-                messagingTemplate.convertAndSendToUser(session, "/sub/lier/gameroom/"+gameroomid, gameMessage);
-            }
-        }
+//        List<GameRoomMember> gameRoomMemberlist = jpaQueryFactory
+//                .selectFrom(gameRoomMember)
+//                .where(gameRoomMember.gameroom_id.eq(gameroomid))
+//                .fetch();
+//
+//        for(GameRoomMember gameRoomMember1 : gameRoomMemberlist){
+//            Member roommember = jpaQueryFactory
+//                    .selectFrom(member)
+//                    .where(member.memberId.eq(gameRoomMember1.getMember_id()))
+//                    .fetchOne();
+//
+//            // 라이어가 아닐 경우
+//            if(!roommember.getNickname().equals(gameStartSet.getLier())){
+//                log.info("시민에 걸린 유저 : {}", roommember.getNickname());
+//
+//                // 방 입장했을 떄 각 유저마다의 생성된 session 불러오기
+//                String session = jpaQueryFactory
+//                        .select(gameRoomMember.session)
+//                        .from(gameRoomMember)
+//                        .where(gameRoomMember.member_id.eq(roommember.getMemberId()).and(gameRoomMember.gameroom_id.eq(gameroomid)))
+//                        .fetchOne();
+//
+//                gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 게임방 id
+//                gameMessage.setSenderId(Long.toString(roommember.getMemberId())); // truer id
+//                gameMessage.setSender(roommember.getNickname()); // truer 닉네임
+//                gameMessage.setContent(gameMessage.getSender() + "님은 시민입니다. / [" + gameStartSet.getCategory() + " : " + gameStartSet.getKeyword() + "]"); // 시민 여부 내용
+//                gameMessage.setType(GameMessage.MessageType.TRUER); // 메세지 타입
+//
+//                messagingTemplate.convertAndSendToUser(session, "/sub/truer/gameroom/"+gameroomid, gameMessage);
+//
+//            }else if(roommember.getNickname().equals(gameStartSet.getLier())){ // 라이어일 경우
+//                log.info("라이어에 걸린 유저 : {}", gameStartSet.getLier());
+//
+//                // 방 입장했을 떄 각 유저마다의 생성된 session 불러오기
+//                String session = jpaQueryFactory
+//                        .select(gameRoomMember.session)
+//                        .from(gameRoomMember)
+//                        .where(gameRoomMember.member_id.eq(roommember.getMemberId()).and(gameRoomMember.gameroom_id.eq(gameroomid)))
+//                        .fetchOne();
+//
+//                gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 게임방 id
+//                gameMessage.setSenderId(Long.toString(roommember.getMemberId())); // lier id
+//                gameMessage.setSender(roommember.getNickname()); // lier 닉네임
+//                gameMessage.setContent(gameMessage.getSender() + "님은 라이어입니다. / [" + gameStartSet.getCategory() + "]"); // 라이어 여부
+//                gameMessage.setType(GameMessage.MessageType.LIAR); // 메세지 타입
+//
+//                messagingTemplate.convertAndSendToUser(session, "/sub/lier/gameroom/"+gameroomid, gameMessage);
+//            }
+//        }
 
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, gameStartSetResponseDto), HttpStatus.OK);
     }
