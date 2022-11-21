@@ -60,6 +60,10 @@ public class Member extends Timestamped{
     @Column
     private Long lossCITIZEN = 0L;
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reward> rewards;
+
     public void addWin(){
         this.winNum += 1L;
     }

@@ -201,6 +201,8 @@ public class GameHTTPService {
                     playingMember.addWin();
                     victoryDto.getWinner().add(playingMember.getNickname());
                     playingMember.addWinLIER();
+                    // 업적 얻기 추가
+
                 }
                 else {
                     playingMember.addLose();
