@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface GameStartSetRepository extends JpaRepository<GameStartSet, Long> {
+    GameStartSet findByRoomId(Long roomId);
 }
