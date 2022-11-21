@@ -200,10 +200,12 @@ public class GameHTTPService {
                 if(playingMember.getNickname().equals(gameStartSet.getLier())){
                     playingMember.addWin();
                     victoryDto.getWinner().add(playingMember.getNickname());
+                    playingMember.addWinLIER();
                 }
                 else {
                     playingMember.addLose();
                     victoryDto.getLoser().add(playingMember.getNickname());
+                    playingMember.addLossCITIZEN();
                 }
             }
         }
@@ -212,10 +214,12 @@ public class GameHTTPService {
                 if(playingMember.getNickname().equals(gameStartSet.getLier())){
                     playingMember.addLose();
                     victoryDto.getLoser().add(playingMember.getNickname());
+                    playingMember.addLossLIER();
                 }
                 else {
                     playingMember.addWin();
                     victoryDto.getWinner().add(playingMember.getNickname());
+                    playingMember.addWinCITIZEN();
                 }
             }
         }
