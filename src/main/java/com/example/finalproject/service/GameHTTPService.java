@@ -1,10 +1,9 @@
 package com.example.finalproject.service;
 
 import com.example.finalproject.controller.request.StringDto;
-import com.example.finalproject.domain.GameMessage;
-import com.example.finalproject.domain.GameRoomMember;
-import com.example.finalproject.domain.GameStartSet;
-import com.example.finalproject.domain.Member;
+import com.example.finalproject.controller.response.VictoryDto;
+import com.example.finalproject.controller.response.VoteDto;
+import com.example.finalproject.domain.*;
 import com.example.finalproject.exception.PrivateException;
 import com.example.finalproject.exception.PrivateResponseBody;
 import com.example.finalproject.exception.StatusCode;
@@ -65,44 +64,51 @@ public class GameHTTPService {
                 .fetch();
         int memberNum = gameRoomMembers.size();
         if(cnt != memberNum){
-            GameMessage gameMessage = new GameMessage();
-            gameMessage.setRoomId(Long.toString(gameroomid));
-            gameMessage.setSenderId("");
-            gameMessage.setSender("");
-            gameMessage.setContent("투표중 입니다.");
-            gameMessage.setType(GameMessage.MessageType.WAIT);
-            messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
+            VoteDto voteDto = new VoteDto(null);
+            GameMessageData<VoteDto> gameMessageData = new GameMessageData<>();
+            gameMessageData.setRoomId(Long.toString(gameroomid));
+            gameMessageData.setSenderId("");
+            gameMessageData.setSender("");
+            gameMessageData.setData(voteDto);
+            gameMessageData.setType(GameMessageData.MessageType.CONTINUE);
+            messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessageData);
+
             return;
         }
         // 투표가 끝나면
-        List<String> nickName = sortHash();
-        String content = "";
-        if(nickName.size()==1){
-            if(nickName.get(0).equals(gameStartSet.getLier())){
-                content ="는 라이어가 맞습니다.";
+//        List<String> nickName = sortHash();
+
+        VoteDto voteDto = new VoteDto(sortHash());
+        GameMessageData<VoteDto> gameMessageData = new GameMessageData<>();
+        gameMessageData.setRoomId(Long.toString(gameroomid));
+        gameMessageData.setSenderId("");
+        gameMessageData.setSender("");
+
+        if(voteDto.getName().size()==1){
+            if(voteDto.getName().get(0).equals(gameStartSet.getLier())){
+//                content ="는 라이어가 맞습니다."; //LIER
+                gameMessageData.setType(GameMessageData.MessageType.LIER);
             }
             else{
-                content = "는 라이어가 아닙니다.";
+//                content = "는 라이어가 아닙니다."; //NLIER
+                gameMessageData.setType(GameMessageData.MessageType.NLIER);
                 gameStartSet.setWinner(GameStartSet.Winner.LIER);
             }
         }
         else{
             if (gameStartSet.getRound()<4){
-                content = "동점입니다.";
+//                content = "동점입니다."; //DRAW
+                gameMessageData.setType(GameMessageData.MessageType.DRAW);
             }
             else{
-                content ="동점 입니다. 라이어의 승리 입니다. 라이어는 " +gameStartSet.getLier() + "입니다.";
+//                content ="동점 입니다. 라이어의 승리 입니다. 라이어는 " +gameStartSet.getLier() + "입니다."; //DRAWANDENDGAME
+                gameMessageData.setType(GameMessageData.MessageType.DRAWANDENDGAME);
+                voteDto.setLierIs(gameStartSet.getLier());
                 gameStartSet.setWinner(GameStartSet.Winner.LIER);
             }
         }
-
-        GameMessage gameMessage = new GameMessage();
-        gameMessage.setRoomId(Long.toString(gameroomid));
-        gameMessage.setSenderId("");
-        gameMessage.setSender("");
-        gameMessage.setContent(nickName +content +"");
-        gameMessage.setType(GameMessage.MessageType.RESULT);
-        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
+        gameMessageData.setData(voteDto);
+        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessageData);
 
     }
     public List<String> sortHash(){
@@ -137,13 +143,14 @@ public class GameHTTPService {
     public void isAnswer(Long gameroomid, StringDto stringDto) {
         String answer = stringDto.getValue();
         GameStartSet gameStartSet= gameStartSetRepository.findByRoomId(gameroomid);
-        GameMessage gameMessage = new GameMessage();
-        gameMessage.setRoomId(Long.toString(gameroomid));
-        gameMessage.setSenderId("");
-        gameMessage.setSender("");
-        gameMessage.setContent(gameStartSet.getKeyword().equals(answer) +"");
-        gameMessage.setType(GameMessage.MessageType.RESULT);
-        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
+
+        GameMessageData<Boolean> gameMessageData = new GameMessageData<>();
+        gameMessageData.setRoomId(Long.toString(gameroomid));
+        gameMessageData.setSenderId("");
+        gameMessageData.setSender("");
+        gameMessageData.setData(gameStartSet.getKeyword().equals(answer));
+        gameMessageData.setType(GameMessageData.MessageType.RESULT);
+        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessageData);
 
         if(gameStartSet.getKeyword().equals(answer)) {// 라이어가 정답을 맞추면
             gameStartSet.setWinner(GameStartSet.Winner.LIER);
@@ -157,13 +164,13 @@ public class GameHTTPService {
     public void oneMoerRound(Long gameroomid) {
         GameStartSet gameStartSet= gameStartSetRepository.findByRoomId(gameroomid);
         Integer round = gameStartSet.oneMoerRound();
-        GameMessage gameMessage = new GameMessage();
-        gameMessage.setRoomId(Long.toString(gameroomid));
-        gameMessage.setSenderId("");
-        gameMessage.setSender("");
-        gameMessage.setContent("Round : " + round);
-        gameMessage.setType(GameMessage.MessageType.START);
-        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
+        GameMessageData<Integer> gameMessageData = new GameMessageData<>();
+        gameMessageData.setRoomId(Long.toString(gameroomid));
+        gameMessageData.setSenderId("");
+        gameMessageData.setSender("");
+        gameMessageData.setData(round);
+        gameMessageData.setType(GameMessageData.MessageType.RESULT);
+        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessageData);
 
     }
     @Transactional
@@ -187,17 +194,16 @@ public class GameHTTPService {
 
             playingMembers.add(each_member);
         }
-        List<String> winner = new ArrayList<>();
-        List<String> loser = new ArrayList<>();
+        VictoryDto victoryDto = new VictoryDto();
         if(gameStartSet.getWinner().equals(GameStartSet.Winner.LIER)){
             for(Member playingMember : playingMembers){
                 if(playingMember.getNickname().equals(gameStartSet.getLier())){
                     playingMember.addWin();
-                    winner.add(playingMember.getNickname());
+                    victoryDto.getWinner().add(playingMember.getNickname());
                 }
                 else {
                     playingMember.addLose();
-                    loser.add(playingMember.getNickname());
+                    victoryDto.getLoser().add(playingMember.getNickname());
                 }
             }
         }
@@ -205,21 +211,21 @@ public class GameHTTPService {
             for(Member playingMember : playingMembers){
                 if(playingMember.getNickname().equals(gameStartSet.getLier())){
                     playingMember.addLose();
-                    loser.add(playingMember.getNickname());
+                    victoryDto.getLoser().add(playingMember.getNickname());
                 }
                 else {
                     playingMember.addWin();
-                    winner.add(playingMember.getNickname());
+                    victoryDto.getWinner().add(playingMember.getNickname());
                 }
             }
         }
-        GameMessage gameMessage = new GameMessage();
-        gameMessage.setRoomId(Long.toString(gameroomid));
-        gameMessage.setSenderId("");
-        gameMessage.setSender("");
-        gameMessage.setContent("Winner : "+winner +" Loser : " + loser);
-        gameMessage.setType(GameMessage.MessageType.RESULT);
-        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
+        GameMessageData<VictoryDto> gameMessageData = new GameMessageData<>();
+        gameMessageData.setRoomId(Long.toString(gameroomid));
+        gameMessageData.setSenderId("");
+        gameMessageData.setSender("");
+        gameMessageData.setData(victoryDto);
+        gameMessageData.setType(GameMessageData.MessageType.RESULT);
+        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessageData);
 
     }
 }
