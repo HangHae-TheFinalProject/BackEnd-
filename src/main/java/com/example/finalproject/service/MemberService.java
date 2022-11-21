@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Optional;
 
+import static com.example.finalproject.domain.QMember.member;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -33,12 +34,13 @@ public class MemberService {
     private final JPAQueryFactory jpaQueryFactory;
     private final MemberRepository memberRepository;
 
+    // 회원가입
     public ResponseEntity<PrivateResponseBody> signup(MemberRequestDto memberRequestDto) {
 
         // 아이디 중복 확인
         if (null != isPresentMember(memberRequestDto.getEmail())) {
             return new ResponseEntity<>(new PrivateResponseBody
-                    (StatusCode.DUPLICATED_NICKNAME, null), HttpStatus.BAD_REQUEST);
+                    (StatusCode.DUPLICATED_EMAIL, null), HttpStatus.BAD_REQUEST);
         }
 
         // 비밀번호 중복 확인
@@ -47,11 +49,22 @@ public class MemberService {
                     (StatusCode.DUPLICATED_PASSWORD, null), HttpStatus.BAD_REQUEST);
         }
 
+        // 닉네임 중복 확인
+        if (!(jpaQueryFactory
+                .selectFrom(member)
+                .where(member.nickname.eq(memberRequestDto.getNickname()))
+                .fetchOne() == null)) {
+            return new ResponseEntity<>(new PrivateResponseBody
+                    (StatusCode.DUPLICATED_NICKNAME, null), HttpStatus.BAD_REQUEST);
+        }
+
         // 회원 정보 저장
         Member member = Member.builder()
                 .email(memberRequestDto.getEmail())
                 .password(passwordEncoder.encode(memberRequestDto.getPassword())) // 비밀번호 인코딩하여 저장
-                .nickname(memberRequestDto.getNickname() + "#" + Integer.toString((int)(Math.random() * 9999)))
+                .nickname(memberRequestDto.getNickname() + "#" + (int)(Math.random() * 9999))
+                .winNum(0L)
+                .lossNum(0L)
                 .build();
 
         memberRepository.save(member);
@@ -93,8 +106,7 @@ public class MemberService {
         log.info("리프레시 토큰 : {}", response.getHeader("Refresh-Token"));
 
         // Message 및 Status를 Return
-        return new ResponseEntity<>(new PrivateResponseBody
-                (StatusCode.LOGIN_OK, login_info), HttpStatus.OK);
+        return new ResponseEntity(new PrivateResponseBody(StatusCode.LOGIN_OK, login_info), HttpStatus.OK);
     }
 
     //로그아웃
