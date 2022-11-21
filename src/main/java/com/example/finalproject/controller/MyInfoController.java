@@ -1,5 +1,6 @@
 package com.example.finalproject.controller;
 
+import com.example.finalproject.exception.PrivateResponseBody;
 import com.example.finalproject.service.MyInfoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,6 @@ public class MyInfoController {
     @GetMapping("/posts")
     public ResponseEntity<?> getMyPosts(
             HttpServletRequest request){
-
         return myInfoService.getMyPosts(request);
     }
 
@@ -34,7 +34,27 @@ public class MyInfoController {
 //    }
 
 
-//    public ResponseEntity<?>
+    // 전적 조회
+    @GetMapping("/allrecord")
+    public ResponseEntity<PrivateResponseBody>  getMyAllRecord(
+            HttpServletRequest request){
+        return myInfoService.getMyAllRecord(request);
+    }
+
+
+    // 회원 정보
+    @GetMapping("/personal")
+    public ResponseEntity<PrivateResponseBody> getMyPersonalInfo(
+            HttpServletRequest request){
+        return myInfoService.getMyPersonalInfo(request);
+    }
+
+    // 리워드 조회
+//    @GetMapping("/reward")
+//    public ResponseEntity<PrivateResponseBody> getMyReward(
+//            HttpServletRequest request){
+//        return myInfoService.getMyReward(request);
+//    }
 
 
 }

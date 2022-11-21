@@ -83,4 +83,44 @@ public class MyInfoService {
 //        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, ""), HttpStatus.OK);
 //    }
 
+
+    // 모든 전적 조회
+    public ResponseEntity<PrivateResponseBody> getMyAllRecord(HttpServletRequest request){
+        // 인증된 유저 정보
+        Member auth_member = authorizeToken(request);
+
+        // 전적 저장
+        HashMap<String, Long> allRecordSet = new HashMap<>();
+        allRecordSet.put("winNum", auth_member.getWinNum()); // 전체 승리 수
+        allRecordSet.put("lossNum", auth_member.getLossNum()); // 전체 패배 수
+        allRecordSet.put("winLIER", auth_member.getWinLIER()); // 라이어로 승리한 수
+        allRecordSet.put("loseLIER", auth_member.getLossLIER()); // 라이어로 패배한 수
+        allRecordSet.put("winCITIZEN", auth_member.getWinCITIZEN()); //시민으로 승리한 수
+        allRecordSet.put("loseCITIZEN", auth_member.getLossCITIZEN()); // 시민으로 패배한 수
+
+        return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, allRecordSet), HttpStatus.OK);
+    }
+
+
+    public ResponseEntity<PrivateResponseBody> getMyPersonalInfo(HttpServletRequest request){
+        // 인증된 유저 정보
+        Member auth_member = authorizeToken(request);
+
+        // 개인정보 저장
+        HashMap<String, String> personalInfo = new HashMap<>();
+        personalInfo.put("email", auth_member.getEmail()); // 로그인 이메일
+        personalInfo.put("nickname", auth_member.getNickname()); // 닉네임
+
+        return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, personalInfo), HttpStatus.OK);
+    }
+
+
+//    public ResponseEntity<PrivateResponseBody> getMyReward(HttpServletRequest request){
+//        // 인증된 유저 정보
+//        Member auth_member = authorizeToken(request);
+//
+//
+//
+//        return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, ""), HttpStatus.OK);
+//    }
 }
