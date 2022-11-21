@@ -10,6 +10,7 @@ public interface RewardRequiredInter {
 
 //    public Reward achievePlayReward();
 
-    public void achieveVitoryReward(Member member);
+    public void achieveVitoryReward(Member playingMember, Long gameroomid);
+    public void achieveLoseReward(Member playingMember, Long gameroomid);
 
 }

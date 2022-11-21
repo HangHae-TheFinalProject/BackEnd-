@@ -4,6 +4,7 @@ import com.example.finalproject.domain.GameMessage;
 import com.example.finalproject.domain.Member;
 import com.example.finalproject.domain.Reward;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 
 import javax.persistence.EntityManager;
 import java.util.List;
@@ -15,18 +16,49 @@ public class RewardRequired implements RewardRequiredInter{
 
     JPAQueryFactory jpaQueryFactory;
     EntityManager em;
+    SimpMessageSendingOperations messagingTemplate;
 
 //    @Override
 //    public Reward achievePlayReward(){
 //        return Reward;
 //    }
 
+    // 게임 승리 시 얻는 업적
     @Override
-    public void achieveVitoryReward(Member playingMember){
+    public void achieveVitoryReward(Member playingMember, Long gameroomid){
 
         GameMessage gameMessage = new GameMessage();
 
-        if(playingMember.getWinNum() == 5){
+        // 게임 전체 첫 번쨰 승리의 경우
+        if(playingMember.getWinNum() == 1){
+            Reward reward1 = jpaQueryFactory
+                    .selectFrom(reward)
+                    .where(reward.rewardId.eq(3L))
+                    .fetchOne();
+
+            List<Reward> rewardlist = playingMember.getRewards();
+
+            rewardlist.add(reward1);
+
+            jpaQueryFactory
+                    .update(member)
+                    .set(member.rewards, rewardlist)
+                    .where(member.memberId.eq(playingMember.getMemberId()))
+                    .execute();
+
+            em.flush();
+            em.clear();
+
+            gameMessage.setSender("운영자");
+            gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
+            gameMessage.setType(GameMessage.MessageType.REWARD);
+
+            messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid + "/" + playingMember.getNickname(), gameMessage);
+        }
+
+
+        // 시민으로써 5연승 했을 경우 업적
+        if(playingMember.getWinCITIZEN() == 5){
             Reward reward1 = jpaQueryFactory
                     .selectFrom(reward)
                     .where(reward.rewardId.eq(5L))
@@ -47,9 +79,128 @@ public class RewardRequired implements RewardRequiredInter{
 
             gameMessage.setSender("운영자");
             gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
-//            gameMessage.setType("");
+            gameMessage.setType(GameMessage.MessageType.REWARD);
+
+            messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid + "/" + playingMember.getNickname(), gameMessage);
         }
 
+        // 라이어로써 5연승 했을 경우 업적
+        if(playingMember.getWinLIER() == 5){
+            Reward reward1 = jpaQueryFactory
+                    .selectFrom(reward)
+                    .where(reward.rewardId.eq(4L))
+                    .fetchOne();
+
+            List<Reward> rewardlist = playingMember.getRewards();
+
+            rewardlist.add(reward1);
+
+            jpaQueryFactory
+                    .update(member)
+                    .set(member.rewards, rewardlist)
+                    .where(member.memberId.eq(playingMember.getMemberId()))
+                    .execute();
+
+            em.flush();
+            em.clear();
+
+            gameMessage.setSender("운영자");
+            gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
+            gameMessage.setType(GameMessage.MessageType.REWARD);
+
+            messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid + "/" + playingMember.getNickname(), gameMessage);
+        }
+
+    }
+
+
+    // 게임 패배 시 얻는 업적
+    @Override
+    public void achieveLoseReward(Member playingMember, Long gameroomid){
+
+        GameMessage gameMessage = new GameMessage();
+
+        // 게임 전체 첫 번쨰 패배의 경우
+        if(playingMember.getLossNum() == 1){
+            Reward reward1 = jpaQueryFactory
+                    .selectFrom(reward)
+                    .where(reward.rewardId.eq(6L))
+                    .fetchOne();
+
+            List<Reward> rewardlist = playingMember.getRewards();
+
+            rewardlist.add(reward1);
+
+            jpaQueryFactory
+                    .update(member)
+                    .set(member.rewards, rewardlist)
+                    .where(member.memberId.eq(playingMember.getMemberId()))
+                    .execute();
+
+            em.flush();
+            em.clear();
+
+            gameMessage.setSender("운영자");
+            gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
+            gameMessage.setType(GameMessage.MessageType.REWARD);
+
+            messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid + "/" + playingMember.getNickname(), gameMessage);
+        }
+
+
+        // 시민으로써 5연패 했을 경우 업적
+        if(playingMember.getLossCITIZEN() == 5){
+            Reward reward1 = jpaQueryFactory
+                    .selectFrom(reward)
+                    .where(reward.rewardId.eq(8L))
+                    .fetchOne();
+
+            List<Reward> rewardlist = playingMember.getRewards();
+
+            rewardlist.add(reward1);
+
+            jpaQueryFactory
+                    .update(member)
+                    .set(member.rewards, rewardlist)
+                    .where(member.memberId.eq(playingMember.getMemberId()))
+                    .execute();
+
+            em.flush();
+            em.clear();
+
+            gameMessage.setSender("운영자");
+            gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
+            gameMessage.setType(GameMessage.MessageType.REWARD);
+
+            messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid + "/" + playingMember.getNickname(), gameMessage);
+        }
+
+        // 라이어로써 5연패 했을 경우 업적
+        if(playingMember.getLossLIER() == 5){
+            Reward reward1 = jpaQueryFactory
+                    .selectFrom(reward)
+                    .where(reward.rewardId.eq(7L))
+                    .fetchOne();
+
+            List<Reward> rewardlist = playingMember.getRewards();
+
+            rewardlist.add(reward1);
+
+            jpaQueryFactory
+                    .update(member)
+                    .set(member.rewards, rewardlist)
+                    .where(member.memberId.eq(playingMember.getMemberId()))
+                    .execute();
+
+            em.flush();
+            em.clear();
+
+            gameMessage.setSender("운영자");
+            gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
+            gameMessage.setType(GameMessage.MessageType.REWARD);
+
+            messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid + "/" + playingMember.getNickname(), gameMessage);
+        }
 
     }
 }

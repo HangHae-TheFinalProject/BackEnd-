@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.security.Principal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +37,7 @@ public class GameHTTPService {
     private final SimpMessageSendingOperations messagingTemplate;
     private final JPAQueryFactory jpaQueryFactory;
     private final TokenProvider tokenProvider;
+    private final RewardRequired rewardRequired;
     static int cnt =0;
     static HashMap<String, Integer> voteHashMap = new HashMap<>();
 
@@ -201,14 +203,17 @@ public class GameHTTPService {
                     playingMember.addWin();
                     victoryDto.getWinner().add(playingMember.getNickname());
                     playingMember.addWinLIER();
-                    // 업적 얻기 추가
-
                 }
                 else {
                     playingMember.addLose();
                     victoryDto.getLoser().add(playingMember.getNickname());
                     playingMember.addLossCITIZEN();
                 }
+
+                // 게임 승리 업적
+                rewardRequired.achieveVitoryReward(playingMember, gameroomid);
+                // 게임 패배 업적
+                rewardRequired.achieveLoseReward(playingMember, gameroomid);
             }
         }
         else{
@@ -223,6 +228,11 @@ public class GameHTTPService {
                     victoryDto.getWinner().add(playingMember.getNickname());
                     playingMember.addWinCITIZEN();
                 }
+
+                // 게임 승리 업적
+                rewardRequired.achieveVitoryReward(playingMember, gameroomid);
+                //게임 패배 업적
+                rewardRequired.achieveLoseReward(playingMember, gameroomid);
             }
         }
         GameMessageData<VictoryDto> gameMessageData = new GameMessageData<>();
