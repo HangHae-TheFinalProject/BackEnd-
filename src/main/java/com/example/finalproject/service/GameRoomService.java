@@ -178,20 +178,16 @@ public class GameRoomService {
         // 토큰 유효성 검증
         Member auth_member = authorizeToken(request);
 
-        // 테스트 시 활용할 임의 멤버
-//        Member test_member = jpaQueryFactory
-//                .selectFrom(QMember.member)
-//                .where(QMember.member.id.eq(1L))
-//                .fetchOne();
-//        if (test_member == null) {
-//            throw new PrivateException(StatusCode.LOGIN_EXPIRED_JWT_TOKEN);
-//        }
-
         // OenVIdu 사옹을 위한 sessionId 와 Token을 생성하여 저장한 HashMap
         // 게임 방에서 화상채팅을 이용할 것이기 때문에 필요
         HashMap<String, String> sessionAndToken = connectOpenvidu();
 
         log.info("세션 아이디 : {}, 토큰 : {}", sessionAndToken.get("sessionId"), sessionAndToken.get("token"));
+
+        if(gameRoomRequestDto.getRoomName().length() >= 11){
+            return new ResponseEntity<>(new PrivateResponseBody
+                    (StatusCode.ROOMNAME_OVER, null), HttpStatus.BAD_REQUEST);
+        }
 
         // 게임 방 생성을 위한 DTO 정보 기입
         GameRoom gameRoom1 = GameRoom.builder()

@@ -15,6 +15,8 @@ public class GameMessage {
     private String senderId;
     private String sender;
     private String content;
+    private String content2;
+    private String content3;
     private MessageType type;
 
     public enum MessageType {

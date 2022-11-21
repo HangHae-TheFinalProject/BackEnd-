@@ -22,6 +22,7 @@ public class CorsConfig {
         config.addAllowedOrigin("https://localhost:8443");
         config.addAllowedOrigin("https://cheiks.shop/");
         config.addAllowedOrigin("http://localhost:3000");
+        config.addAllowedOrigin("https://www.liergame.link/");
         config.addAllowedOriginPattern("*");//모든 ip의 응답을 허용하겠다. // 게시글 테스트 떄문에 잠시 열어둠
         config.addAllowedHeader("*");//모든 header의 응답을 허용하겠다.
         config.addAllowedMethod("*");//모든 post,get,putmdelete,patch 요청울 허용하겠다.

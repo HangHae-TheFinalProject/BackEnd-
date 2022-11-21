@@ -33,7 +33,7 @@ public class GameHTTPController {
     }
 
     // 한바퀴 더
-    @MessageMapping("/lier/manager/{gameroomid}/oneMoerRound")
+    @MessageMapping("/lier/manager/{gameroomid}/oneMoreRound")
     public void oneMoerRound(@DestinationVariable("gameroomid") Long gameroomid) {
         gameHTTPService.oneMoerRound(gameroomid);
     }

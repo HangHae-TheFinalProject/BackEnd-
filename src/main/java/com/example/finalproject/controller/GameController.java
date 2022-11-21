@@ -22,7 +22,7 @@ public class GameController {
             GameMessage gameMessage,
             @DestinationVariable Long gameroomid) {
 
-        log.info("게임 메세지 : {} , 게임방 아이디 : {} ", gameMessage, gameroomid);
+        log.info("게임 시작 - 게임 메세지 : {} , 게임방 아이디 : {} ", gameMessage, gameroomid);
         return gameService.gameStart(gameMessage, gameroomid);
     }
 
@@ -32,7 +32,7 @@ public class GameController {
             GameMessage gameMessage, // 게임 메세지 안에 sender에 닉네임을 전달받는데 그걸 이용
             @DestinationVariable Long gameroomid) {
 
-        log.info("게임 메세지 : {} , 게임방 아이디 : {}", gameMessage, gameroomid);
+        log.info("게임 준비 - 게임 메세지 : {} , 게임방 아이디 : {}", gameMessage, gameroomid);
         return gameService.gameReady(gameMessage, gameroomid);
     }
 
@@ -41,7 +41,7 @@ public class GameController {
     public ResponseEntity<?> spotlight(
             @DestinationVariable Long gameroomid) {
 
-        log.info("게임방 아이디 : {}", gameroomid);
+        log.info("스포트라이트 - 게임방 아이디 : {}", gameroomid);
         return gameService.spotlight(gameroomid);
     }
 
