@@ -132,7 +132,7 @@ public class GameService {
                 .category(chooseKeyword.getCategory()) // 키워드 카테고리
                 .keyword(chooseKeyword.getWord()) // 키워드
                 .roomId(gameroomid) // 게임방 id
-                .round(0)
+                .round(1)
                 .winner(null)
                 .build();
 
@@ -317,7 +317,7 @@ public class GameService {
 
     // 스포트라이트
     @Transactional
-    public ResponseEntity<?> spotlight(Long gameroomid) {
+    public void spotlight(Long gameroomid) {
         // 게임방에 참가하고 있는 유저들 불러오기
         List<GameRoomMember> gameRoomMembers = jpaQueryFactory
                 .selectFrom(gameRoomMember)
@@ -327,35 +327,37 @@ public class GameService {
 
         // 전역 변수로 초기값 0으로 지정된 위치값 : spotNum
         // spotNum 에 위치한 관리DB 유저 정보 조회
-        GameRoomMember nowSpotMember = gameRoomMembers.get(spotNum);
-
-        // 관리DB 유저 정보로 해당 유저의 상세 정보 조회
-        Member speakNowMember = jpaQueryFactory
-                .selectFrom(member)
-                .where(member.memberId.eq(nowSpotMember.getMember_id()))
-                .fetchOne();
-
-        // STomp로 입장한 메세지 전달
         GameMessage gameMessage = new GameMessage();
-        gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 방 id
-        gameMessage.setSenderId(Long.toString(speakNowMember.getMemberId())); // 스포트라이트를 받고있는 유저의 id
-        gameMessage.setSender(speakNowMember.getNickname()); // 스포트라이트를 받고있는 유저의 닉네임
-        gameMessage.setContent(gameMessage.getSender() + "님! 발언을 시작해주십시오"); // 발언을 시작하라는 내용
-        gameMessage.setType(GameMessage.MessageType.SPOTLIGHT); // 메세지 타입
 
-        System.out.println("배열 크기 확인 " + gameRoomMembers.size());
+        if (spotNum < gameRoomMembers.size()) {
 
-        // 구독 주소에 지금 스포트라이트 받고 있는 사람이 누군지 실시간으로 전달 (방 안에 있는 구독자 유저 전부 메세지 받음)
-        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
+            GameRoomMember nowSpotMember = gameRoomMembers.get(spotNum);
 
+            // 관리DB 유저 정보로 해당 유저의 상세 정보 조회
+            Member speakNowMember = jpaQueryFactory
+                    .selectFrom(member)
+                    .where(member.memberId.eq(nowSpotMember.getMember_id()))
+                    .fetchOne();
 
-        GameStartSet gameStartSet = jpaQueryFactory
-                .selectFrom(QGameStartSet.gameStartSet)
-                .where(QGameStartSet.gameStartSet.roomId.eq(gameroomid))
-                .fetchOne();
+            // STomp로 입장한 메세지 전달
+            gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 방 id
+            gameMessage.setSenderId(Long.toString(speakNowMember.getMemberId())); // 스포트라이트를 받고있는 유저의 id
+            gameMessage.setSender(speakNowMember.getNickname()); // 스포트라이트를 받고있는 유저의 닉네임
+            gameMessage.setContent(gameMessage.getSender() + "님! 발언을 시작해주십시오"); // 발언을 시작하라는 내용
+            gameMessage.setType(GameMessage.MessageType.SPOTLIGHT); // 메세지 타입
 
-        // 현재 위치값이 마지막 유저의 위치와 같을 경우
-        if (spotNum == gameRoomMembers.size()-1) {
+            // 구독 주소에 지금 스포트라이트 받고 있는 사람이 누군지 실시간으로 전달 (방 안에 있는 구독자 유저 전부 메세지 받음)
+            messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
+
+            // 현 위치의 정보를 메세지화시켜서 전달까지 완료했으면 위치값을 1 증가 시켜서 다음 위치의 유저에게 향할 수 있도록 +1
+            spotNum = spotNum + 1;
+
+        } else if (spotNum == gameRoomMembers.size()) {
+            GameStartSet gameStartSet = jpaQueryFactory
+                    .selectFrom(QGameStartSet.gameStartSet)
+                    .where(QGameStartSet.gameStartSet.roomId.eq(gameroomid))
+                    .fetchOne();
+
 
             int round = gameStartSet.getRound() + 1;
             System.out.println("현재 끝난 라운드 : " + round);
@@ -380,7 +382,7 @@ public class GameService {
                 gameMessage.setContent(contentset); // 마지막 유저의 위치면 한 바퀴를 돌았다는 것으로 간주
                 gameMessage.setType(GameMessage.MessageType.COMPLETE); // 메세지 타입
 
-            }else if (gameStartSet.getRound() == 3) {
+            } else if (gameStartSet.getRound() == 3) {
                 HashMap<String, Object> contentset = new HashMap<>();
                 contentset.put("notice", "All Round Over!");
                 contentset.put("round", gameStartSet.getRound());
@@ -397,21 +399,17 @@ public class GameService {
 
             // 한 바퀴를 다 돌았으면 위치값을 0으로 초기화
             spotNum = 0;
-        }else{
-
-            // 현 위치의 정보를 메세지화시켜서 전달까지 완료했으면 위치값을 1 증가 시켜서 다음 위치의 유저에게 향할 수 있도록 +1
-            spotNum = spotNum + 1;
         }
 
         // http 방식으로 넘겨드릴 현재 스포트라이트를 받고있는 유저의 정보 및 위치값을 hashmap으로 저장
-        HashMap<String, String> whoIsNow = new HashMap<>();
-        whoIsNow.put("memberId", Long.toString(speakNowMember.getMemberId())); // 스포트라이트를 받은 유저의 id
-        whoIsNow.put("email", speakNowMember.getEmail()); // 스포트라이트를 받은 유저의 이메일
-        whoIsNow.put("nickname", speakNowMember.getNickname()); // 스포트라이트를 받은 유저의 닉네임
-        whoIsNow.put("spotNum", Integer.toString(spotNum)); // 현재 위치값
-        whoIsNow.put("round", Integer.toString(gameStartSet.getRound())); // 현재 위치값
-
-        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, whoIsNow), HttpStatus.OK);
+//        HashMap<String, String> whoIsNow = new HashMap<>();
+//        whoIsNow.put("memberId", Long.toString(speakNowMember.getMemberId())); // 스포트라이트를 받은 유저의 id
+//        whoIsNow.put("email", speakNowMember.getEmail()); // 스포트라이트를 받은 유저의 이메일
+//        whoIsNow.put("nickname", speakNowMember.getNickname()); // 스포트라이트를 받은 유저의 닉네임
+//        whoIsNow.put("spotNum", Integer.toString(spotNum)); // 현재 위치값
+//        whoIsNow.put("round", Integer.toString(gameStartSet.getRound())); // 현재 위치값
+//
+//        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, whoIsNow), HttpStatus.OK);
     }
 
 }

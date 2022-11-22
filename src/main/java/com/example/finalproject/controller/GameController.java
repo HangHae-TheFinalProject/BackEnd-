@@ -38,11 +38,11 @@ public class GameController {
 
     // pub 사용 스포트라이트
     @MessageMapping("/lier/game/{gameroomid}/spotlight")
-    public ResponseEntity<?> spotlight(
+    public void spotlight(
             @DestinationVariable Long gameroomid) {
 
         log.info("스포트라이트 - 게임방 아이디 : {}", gameroomid);
-        return gameService.spotlight(gameroomid);
+        gameService.spotlight(gameroomid);
     }
 
 }
