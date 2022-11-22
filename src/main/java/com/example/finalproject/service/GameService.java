@@ -358,17 +358,25 @@ public class GameService {
             em.clear();
 
             if (gameStartSet.getRound() < 3) {
+                HashMap<String, Object> contentset = new HashMap<>();
+                contentset.put("notice", "Round Over!");
+                contentset.put("round", gameStartSet.getRound());
+
                 gameMessage.setRoomId(Long.toString(gameroomid)); // 게임 방 id
                 gameMessage.setSenderId(""); // senderId는 딱히 필요없으므로 공백처리
                 gameMessage.setSender(""); // sender는 딱히 필요없으므로 공백처리
-                gameMessage.setContent("Round Over!"); // 마지막 유저의 위치면 한 바퀴를 돌았다는 것으로 간주
+                gameMessage.setContent(contentset); // 마지막 유저의 위치면 한 바퀴를 돌았다는 것으로 간주
                 gameMessage.setType(GameMessage.MessageType.COMPLETE); // 메세지 타입
 
             }else if (gameStartSet.getRound() == 3) {
+                HashMap<String, Object> contentset = new HashMap<>();
+                contentset.put("notice", "All Round Over!");
+                contentset.put("round", gameStartSet.getRound());
+
                 gameMessage.setRoomId(Long.toString(gameroomid)); // 게임 방 id
                 gameMessage.setSenderId(""); // senderId는 딱히 필요없으므로 공백처리
                 gameMessage.setSender(""); // sender는 딱히 필요없으므로 공백처리
-                gameMessage.setContent("All Round Over!"); // 마지막 유저의 위치면 한 바퀴를 돌았다는 것으로 간주
+                gameMessage.setContent(contentset); // 마지막 유저의 위치면 한 바퀴를 돌았다는 것으로 간주
                 gameMessage.setType(GameMessage.MessageType.ALLCOMPLETE); // 메세지 타입
             }
 

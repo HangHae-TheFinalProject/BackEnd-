@@ -65,7 +65,8 @@ public class PostController {
 
 
     // 게시글 전체 목록 조회
-    @GetMapping("/posts/{pageNum}")
+//    @GetMapping("/posts/{pageNum}")
+    @GetMapping("/posts")
     public ResponseEntity<PrivateResponseBody> getAllPost(
             HttpServletRequest request // 인증 정보를 가진 request
 //            @PathVariable Integer pageNum // 페이지 번호
