@@ -4,24 +4,30 @@ import com.example.finalproject.controller.request.StringDto;
 import com.example.finalproject.controller.response.VictoryDto;
 import com.example.finalproject.controller.response.VoteDto;
 import com.example.finalproject.domain.*;
+
 import com.example.finalproject.jwt.TokenProvider;
 import com.example.finalproject.repository.GameStartSetRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.example.finalproject.domain.QGameRoom.gameRoom;
 import static com.example.finalproject.domain.QGameRoomMember.gameRoomMember;
 
 import java.util.Map.Entry;
 import java.util.ArrayList;
 import java.util.Comparator;
 import static com.example.finalproject.domain.QMember.member;
+import static com.example.finalproject.domain.QGameStartSet.gameStartSet;
+
 @RequiredArgsConstructor
 @Service
 public class GameHTTPService {
@@ -31,6 +37,7 @@ public class GameHTTPService {
     private final JPAQueryFactory jpaQueryFactory;
     private final TokenProvider tokenProvider;
     private final RewardRequired rewardRequired;
+    private final EntityManager em;
     static int cnt =0;
     static HashMap<String, Integer> voteHashMap = new HashMap<>();
 
@@ -155,23 +162,26 @@ public class GameHTTPService {
         }
     }
 
+//    @Transactional
+//    public void oneMoerRound(Long gameroomid) {
+//        GameStartSet gameStartSet= gameStartSetRepository.findByRoomId(gameroomid);
+//        Integer round = gameStartSet.oneMoerRound();
+//        GameMessageData<Integer> gameMessageData = new GameMessageData<>();
+//        gameMessageData.setRoomId(Long.toString(gameroomid));
+//        gameMessageData.setSenderId("");
+//        gameMessageData.setSender("");
+//        gameMessageData.setData(round);
+//        gameMessageData.setType(GameMessageData.MessageType.RESULT);
+//        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessageData);
+//
+//    }
     @Transactional
-    public void oneMoerRound(Long gameroomid) {
-        GameStartSet gameStartSet= gameStartSetRepository.findByRoomId(gameroomid);
-        Integer round = gameStartSet.oneMoerRound();
-        GameMessage<Integer> gameMessage = new GameMessage<>();
-        gameMessage.setRoomId(Long.toString(gameroomid));
-        gameMessage.setSenderId("");
-        gameMessage.setSender("");
-        gameMessage.setContent(round);
-        gameMessage.setType(GameMessage.MessageType.RESULT);
-        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
-
-    }
-    @Transactional
-    public void victory(Long gameroomid){
-        GameStartSet gameStartSet= gameStartSetRepository.findByRoomId(gameroomid);
-        System.out.println(gameStartSet.getGamestartsetId());
+    public void endGame(Long gameroomid){
+        GameStartSet gameStartSet1 = jpaQueryFactory
+                .selectFrom(gameStartSet)
+                .where(gameStartSet.roomId.eq(gameroomid))
+                .fetchOne();
+        System.out.println(gameStartSet1.getGamestartsetId());
 
         List<GameRoomMember> gameRoomMembers = jpaQueryFactory
                 .selectFrom(gameRoomMember)
@@ -188,11 +198,22 @@ public class GameHTTPService {
                     .fetchOne();
 
             playingMembers.add(each_member);
+
+            // 게임 맴버 상태 ready
+            jpaQueryFactory
+                    .update(gameRoomMember)
+                    .set(gameRoomMember.ready, "ready")
+                    .where(gameRoomMember.member_id.eq(gameRoomMember2.getMember_id()))
+                    .execute();
+            em.flush();
+            em.clear();
         }
+
+        // 전적 계산
         VictoryDto victoryDto = new VictoryDto();
-        if(gameStartSet.getWinner().equals(GameStartSet.Winner.LIER)){
+        if(gameStartSet1.getWinner().equals(GameStartSet.Winner.LIER)){
             for(Member playingMember : playingMembers){
-                if(playingMember.getNickname().equals(gameStartSet.getLier())){
+                if(playingMember.getNickname().equals(gameStartSet1.getLier())){
                     playingMember.addWin();
                     victoryDto.getWinner().add(playingMember.getNickname());
                     playingMember.addWinLIER();
@@ -211,7 +232,7 @@ public class GameHTTPService {
         }
         else{
             for(Member playingMember : playingMembers){
-                if(playingMember.getNickname().equals(gameStartSet.getLier())){
+                if(playingMember.getNickname().equals(gameStartSet1.getLier())){
                     playingMember.addLose();
                     victoryDto.getLoser().add(playingMember.getNickname());
                     playingMember.addLossLIER();
@@ -236,5 +257,22 @@ public class GameHTTPService {
         gameMessage.setType(GameMessage.MessageType.RESULT);
         messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
+        // GameStartSet 삭제
+        gameStartSetRepository.delete(gameStartSet1);
+
+        // 게임 룸 상태 wait
+        GameRoom gameRoom1 = jpaQueryFactory
+                .selectFrom(gameRoom)
+                .where(gameRoom.roomId.eq(gameroomid))
+                .fetchOne();
+
+        jpaQueryFactory
+                .update(gameRoom)
+                .set(gameRoom.status, "wait")
+                .where(gameRoom.roomId.eq(gameRoom1.getRoomId()))
+                .execute();
+
+        em.flush();
+        em.clear();
     }
 }
