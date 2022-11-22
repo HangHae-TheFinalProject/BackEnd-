@@ -4,21 +4,14 @@ import com.example.finalproject.controller.request.StringDto;
 import com.example.finalproject.controller.response.VictoryDto;
 import com.example.finalproject.controller.response.VoteDto;
 import com.example.finalproject.domain.*;
-import com.example.finalproject.exception.PrivateException;
-import com.example.finalproject.exception.PrivateResponseBody;
-import com.example.finalproject.exception.StatusCode;
 import com.example.finalproject.jwt.TokenProvider;
 import com.example.finalproject.repository.GameStartSetRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletRequest;
-import java.security.Principal;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -67,13 +60,13 @@ public class GameHTTPService {
         int memberNum = gameRoomMembers.size();
         if(cnt != memberNum){
             VoteDto voteDto = new VoteDto(null);
-            GameMessageData<VoteDto> gameMessageData = new GameMessageData<>();
-            gameMessageData.setRoomId(Long.toString(gameroomid));
-            gameMessageData.setSenderId("");
-            gameMessageData.setSender("");
-            gameMessageData.setData(voteDto);
-            gameMessageData.setType(GameMessageData.MessageType.CONTINUE);
-            messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessageData);
+            GameMessage<VoteDto> gameMessage = new GameMessage<>();
+            gameMessage.setRoomId(Long.toString(gameroomid));
+            gameMessage.setSenderId("");
+            gameMessage.setSender("");
+            gameMessage.setContent(voteDto);
+            gameMessage.setType(GameMessage.MessageType.CONTINUE);
+            messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
             return;
         }
@@ -81,36 +74,36 @@ public class GameHTTPService {
 //        List<String> nickName = sortHash();
 
         VoteDto voteDto = new VoteDto(sortHash());
-        GameMessageData<VoteDto> gameMessageData = new GameMessageData<>();
-        gameMessageData.setRoomId(Long.toString(gameroomid));
-        gameMessageData.setSenderId("");
-        gameMessageData.setSender("");
+        GameMessage<VoteDto> gameMessage = new GameMessage<>();
+        gameMessage.setRoomId(Long.toString(gameroomid));
+        gameMessage.setSenderId("");
+        gameMessage.setSender("");
 
         if(voteDto.getName().size()==1){
             if(voteDto.getName().get(0).equals(gameStartSet.getLier())){
 //                content ="는 라이어가 맞습니다."; //LIER
-                gameMessageData.setType(GameMessageData.MessageType.LIER);
+                gameMessage.setType(GameMessage.MessageType.LIER);
             }
             else{
 //                content = "는 라이어가 아닙니다."; //NLIER
-                gameMessageData.setType(GameMessageData.MessageType.NLIER);
+                gameMessage.setType(GameMessage.MessageType.NLIER);
                 gameStartSet.setWinner(GameStartSet.Winner.LIER);
             }
         }
         else{
             if (gameStartSet.getRound()<4){
 //                content = "동점입니다."; //DRAW
-                gameMessageData.setType(GameMessageData.MessageType.DRAW);
+                gameMessage.setType(GameMessage.MessageType.DRAW);
             }
             else{
 //                content ="동점 입니다. 라이어의 승리 입니다. 라이어는 " +gameStartSet.getLier() + "입니다."; //DRAWANDENDGAME
-                gameMessageData.setType(GameMessageData.MessageType.DRAWANDENDGAME);
+                gameMessage.setType(GameMessage.MessageType.DRAWANDENDGAME);
                 voteDto.setLierIs(gameStartSet.getLier());
                 gameStartSet.setWinner(GameStartSet.Winner.LIER);
             }
         }
-        gameMessageData.setData(voteDto);
-        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessageData);
+        gameMessage.setContent(voteDto);
+        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
     }
     public List<String> sortHash(){
@@ -146,13 +139,13 @@ public class GameHTTPService {
         String answer = stringDto.getValue();
         GameStartSet gameStartSet= gameStartSetRepository.findByRoomId(gameroomid);
 
-        GameMessageData<Boolean> gameMessageData = new GameMessageData<>();
-        gameMessageData.setRoomId(Long.toString(gameroomid));
-        gameMessageData.setSenderId("");
-        gameMessageData.setSender("");
-        gameMessageData.setData(gameStartSet.getKeyword().equals(answer));
-        gameMessageData.setType(GameMessageData.MessageType.RESULT);
-        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessageData);
+        GameMessage<Boolean> gameMessage = new GameMessage<>();
+        gameMessage.setRoomId(Long.toString(gameroomid));
+        gameMessage.setSenderId("");
+        gameMessage.setSender("");
+        gameMessage.setContent(gameStartSet.getKeyword().equals(answer));
+        gameMessage.setType(GameMessage.MessageType.RESULT);
+        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
         if(gameStartSet.getKeyword().equals(answer)) {// 라이어가 정답을 맞추면
             gameStartSet.setWinner(GameStartSet.Winner.LIER);
@@ -166,13 +159,13 @@ public class GameHTTPService {
     public void oneMoerRound(Long gameroomid) {
         GameStartSet gameStartSet= gameStartSetRepository.findByRoomId(gameroomid);
         Integer round = gameStartSet.oneMoerRound();
-        GameMessageData<Integer> gameMessageData = new GameMessageData<>();
-        gameMessageData.setRoomId(Long.toString(gameroomid));
-        gameMessageData.setSenderId("");
-        gameMessageData.setSender("");
-        gameMessageData.setData(round);
-        gameMessageData.setType(GameMessageData.MessageType.RESULT);
-        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessageData);
+        GameMessage<Integer> gameMessage = new GameMessage<>();
+        gameMessage.setRoomId(Long.toString(gameroomid));
+        gameMessage.setSenderId("");
+        gameMessage.setSender("");
+        gameMessage.setContent(round);
+        gameMessage.setType(GameMessage.MessageType.RESULT);
+        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
     }
     @Transactional
@@ -235,13 +228,13 @@ public class GameHTTPService {
                 rewardRequired.achieveLoseReward(playingMember, gameroomid);
             }
         }
-        GameMessageData<VictoryDto> gameMessageData = new GameMessageData<>();
-        gameMessageData.setRoomId(Long.toString(gameroomid));
-        gameMessageData.setSenderId("");
-        gameMessageData.setSender("");
-        gameMessageData.setData(victoryDto);
-        gameMessageData.setType(GameMessageData.MessageType.RESULT);
-        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessageData);
+        GameMessage<VictoryDto> gameMessage = new GameMessage<>();
+        gameMessage.setRoomId(Long.toString(gameroomid));
+        gameMessage.setSenderId("");
+        gameMessage.setSender("");
+        gameMessage.setContent(victoryDto);
+        gameMessage.setType(GameMessage.MessageType.RESULT);
+        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
     }
 }

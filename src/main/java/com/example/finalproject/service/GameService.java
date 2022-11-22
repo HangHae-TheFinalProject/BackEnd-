@@ -144,12 +144,15 @@ public class GameService {
                 .build();
 
 
+        HashMap<String, String> startset = new HashMap<>();
+        startset.put("lier", gameStartSet.getLier());
+        startset.put("category", gameStartSet.getCategory());
+        startset.put("keyword", gameStartSet.getKeyword());
+
         gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 게임방 id
         gameMessage.setSenderId(""); // 준비된 유저의 id
         gameMessage.setSender("운영자"); // 준비된 유저의 닉네임
-        gameMessage.setContent(gameStartSet.getLier()); // 준비됫다는 내용
-        gameMessage.setContent2(gameStartSet.getCategory()); // 준비됫다는 내용
-        gameMessage.setContent3(gameStartSet.getKeyword()); // 준비됫다는 내용
+        gameMessage.setContent(startset); // 준비됫다는 내용
         gameMessage.setType(GameMessage.MessageType.START); // 메세지 타입
 
 

@@ -9,18 +9,15 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class GameMessage {
-
+public class GameMessage<T> {
     private String roomId;
     private String senderId;
     private String sender;
-    private String content;
-    private String content2;
-    private String content3;
-    private MessageType type;
+    private T content;
+    private GameMessage.MessageType type;
 
     public enum MessageType {
-        JOIN, READY, UNREADY, ALLREADY, SPOTLIGHT, LEAVE, START, LIAR, TRUER, COMPLETE, ALLCOMPLETE, DRAW, ENDDRAW,
-        SELECT, TURNCHECK, ENDGAME, ENDTURN, UPDATE, SWITCHING, WAIT, RESULT, REWARD
+        JOIN, READY, SPOTLIGHT, LEAVE, START, PRECHECK, DRAW, ENDDRAW, TURNCHECK, ENDGAME, ENDTURN, UPDATE, SWITCHING,
+        CONTINUE, RESULT,DRAWANDENDGAME, LIER, NLIER, UNREADY, ALLREADY, LIAR, TRUER, COMPLETE, ALLCOMPLETE, WAIT, REWARD
     }
 }

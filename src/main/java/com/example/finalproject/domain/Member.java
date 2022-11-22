@@ -32,16 +32,6 @@ public class Member extends Timestamped{
     @Column(nullable = false)
     private String nickname;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Post> posts;
-
-    // 추가
-    @JsonIgnore
-    @JoinColumn(name="gameroommember_id")
-    @ManyToOne(fetch = FetchType.LAZY)
-    private GameRoomMember gameRoomMember;
-
     @Column
     private Long winNum = 0L;
 
@@ -61,8 +51,22 @@ public class Member extends Timestamped{
     private Long lossCITIZEN = 0L;
 
     @JsonIgnore
+    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts;
+
+    // 추가
+    @JsonIgnore
+    @JoinColumn(name="gameroommember_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private GameRoomMember gameRoomMember;
+
+    @JsonIgnore
     @OneToMany(mappedBy = "member",fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reward> rewards;
+
+    @JsonIgnore
+    @OneToOne(fetch = FetchType.LAZY)
+    private MemberActive memberActive;
 
     public void addWin(){
         this.winNum += 1L;
