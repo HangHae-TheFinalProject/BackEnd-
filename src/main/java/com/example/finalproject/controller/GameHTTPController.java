@@ -32,15 +32,15 @@ public class GameHTTPController {
         gameHTTPService.isAnswer(gameroomid, stringDto);
     }
 
-    // 한바퀴 더
-    @MessageMapping("/lier/manager/{gameroomid}/oneMoreRound")
-    public void oneMoerRound(@DestinationVariable("gameroomid") Long gameroomid) {
-        gameHTTPService.oneMoerRound(gameroomid);
-    }
+//    // 한바퀴 더
+//    @MessageMapping("/lier/manager/{gameroomid}/oneMoreRound")
+//    public void oneMoerRound(@DestinationVariable("gameroomid") Long gameroomid) {
+//        gameHTTPService.oneMoerRound(gameroomid);
+//    }
 
-    // winner, loser 전달 & 전적 업이트
-    @MessageMapping("/lier/manager/{gameroomid}/victory")
-    public void victory(@DestinationVariable("gameroomid") Long gameroomid) {
-        gameHTTPService.victory(gameroomid);
+    // winner, loser 전적 업데이트, 게임 종료
+    @MessageMapping("/lier/manager/{gameroomid}/endgame")
+    public void endGame(@DestinationVariable("gameroomid") Long gameroomid) {
+        gameHTTPService.endGame(gameroomid);
     }
 }
