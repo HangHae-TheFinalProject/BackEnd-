@@ -147,12 +147,20 @@ public class GameService {
                 .roomId(gameStartSet.getRoomId())
                 .build();
 
+        // 웹소켓으로 방에 참가한 인원 리스트 전달을 위한 리스트
+        List<String> memberset = new ArrayList<>();
 
+        // 닉네임만 필요하기에 닉네임만 담음
+        for(Member member : playingMembers){
+            memberset.add(member.getNickname());
+        }
+
+        // 웹소켓으로 전달드릴 content 내용
         HashMap<String, Object> startset = new HashMap<>();
-        startset.put("lier", gameStartSet.getLier());
-        startset.put("category", gameStartSet.getCategory());
-        startset.put("keyword", gameStartSet.getKeyword());
-        startset.put("memberlist", playingMembers);
+        startset.put("lier", gameStartSet.getLier()); // 라이어
+        startset.put("category", gameStartSet.getCategory()); // 카테고리
+        startset.put("keyword", gameStartSet.getKeyword()); // 키워드
+        startset.put("memberlist", memberset); // 방에 존재하는 모든 유저들
 
         gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 게임방 id
         gameMessage.setSenderId(""); // 준비된 유저의 id
@@ -339,7 +347,6 @@ public class GameService {
 
         // 구독 주소에 지금 스포트라이트 받고 있는 사람이 누군지 실시간으로 전달 (방 안에 있는 구독자 유저 전부 메세지 받음)
         messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
-
 
 
         GameStartSet gameStartSet = jpaQueryFactory
