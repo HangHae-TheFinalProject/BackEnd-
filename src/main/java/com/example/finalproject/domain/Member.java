@@ -68,6 +68,10 @@ public class Member extends Timestamped{
     @OneToOne(fetch = FetchType.LAZY)
     private MemberActive memberActive;
 
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Liked> likes;
+
     public void addWin(){
         this.winNum += 1L;
     }
