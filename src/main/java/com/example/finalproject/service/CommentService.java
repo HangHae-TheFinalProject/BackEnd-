@@ -23,6 +23,7 @@ import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 
 import static com.example.finalproject.domain.QComment.comment;
+import static com.example.finalproject.domain.QPost.post;
 
 @RequiredArgsConstructor
 @Service
@@ -84,10 +85,11 @@ public class CommentService {
         Comment update_comment = jpaQueryFactory
                 .selectFrom(comment)
                 .where(comment.commentId.eq(commentid))
+                .where(comment.commentId.eq(commentid).and(comment.member.eq(member)))
                 .fetchOne();
 
         if (update_comment == null) {
-            throw new PrivateException(StatusCode.COMMENT_ERROR);
+            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.COMMENT_ERROR,null),HttpStatus.BAD_REQUEST);
         }
 
         jpaQueryFactory
@@ -108,11 +110,11 @@ public class CommentService {
 
         Comment del_comment = jpaQueryFactory
                 .selectFrom(comment)
-                .where(comment.commentId.eq(commentid))
+                .where(comment.commentId.eq(commentid).and(comment.member.eq(member)))
                 .fetchOne();
 
         if (del_comment == null) {
-            throw new PrivateException(StatusCode.COMMENT_ERROR);
+            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.COMMENT_ERROR,null),HttpStatus.BAD_REQUEST);
         }
 
         del_comment.getPost().getComments().remove(del_comment);
