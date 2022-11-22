@@ -84,7 +84,7 @@ public class Member extends Timestamped{
     public void addLossCITIZEN(){
         this.lossCITIZEN += 1L;
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
