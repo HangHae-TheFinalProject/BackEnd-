@@ -23,7 +23,6 @@ import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 
 import static com.example.finalproject.domain.QComment.comment;
-import static com.example.finalproject.domain.QPost.post;
 
 @RequiredArgsConstructor
 @Service
@@ -100,12 +99,7 @@ public class CommentService {
         em.flush();
         em.clear();
 
-        CommentResponseDto commentResponseDto = CommentResponseDto.builder()
-                .commentid(update_comment.getCommentId())
-                .content(update_comment.getContent())
-                .author(update_comment.getAuthor())
-                .build();
-        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, commentResponseDto), HttpStatus.OK);
+        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, "수정 완료"), HttpStatus.OK);
     }
     @Transactional
     public ResponseEntity<?> deleteComment(Long commentid, HttpServletRequest request) {
@@ -120,6 +114,8 @@ public class CommentService {
         if (del_comment == null) {
             throw new PrivateException(StatusCode.COMMENT_ERROR);
         }
+
+        del_comment.getPost().getComments().remove(del_comment);
 
         jpaQueryFactory
                 .delete(comment)
