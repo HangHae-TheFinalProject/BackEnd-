@@ -154,7 +154,7 @@ public class GameHTTPService {
         gameMessage.setType(GameMessage.MessageType.RESULT);
         messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
-        if(gameStartSet.getKeyword().equals(answer)) {// 라이어가 정답을 맞추면
+        if(gameStartSet.getKeyword().strip().equals(answer.strip())) {// 라이어가 정답을 맞추면
             gameStartSet.setWinner(GameStartSet.Winner.LIER);
         }
         else {
