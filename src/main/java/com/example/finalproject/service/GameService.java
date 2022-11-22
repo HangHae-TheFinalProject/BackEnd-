@@ -356,9 +356,13 @@ public class GameService {
 
         // 현재 위치값이 마지막 유저의 위치와 같을 경우
         if (spotNum == gameRoomMembers.size()-1) {
+
+            int round = gameStartSet.getRound() + 1;
+            System.out.println("현재 끝난 라운드 : " + round);
+
             jpaQueryFactory
                     .update(QGameStartSet.gameStartSet)
-                    .set(QGameStartSet.gameStartSet.round, gameStartSet.getRound() + 1)
+                    .set(QGameStartSet.gameStartSet.round, round)
                     .where(QGameStartSet.gameStartSet.roomId.eq(gameStartSet.getRoomId()))
                     .execute();
 
