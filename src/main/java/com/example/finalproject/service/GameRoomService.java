@@ -163,8 +163,25 @@ public class GameRoomService {
             }
         }
 
+        // 페이지 수
+        int pageCnt = rooms.size() / size;
+
+        // 만약 페이지 수가 size 와 딱 맞아떨어지지 않고 더 많다면 +1을 해준다.
+        if(!(rooms.size() % size == 0)){
+            pageCnt = pageCnt + 1;
+        }
+
+        // page 번호와 페이지에 존재하는 방들을 담기위한 hashmap
+        HashMap<String, Object> pageRoomSet = new HashMap<>();
+
+        // 최대 페이지
+        pageRoomSet.put("pageCnt",pageCnt);
+        // 페이지 안에 있는 방들
+        pageRoomSet.put("roomsInPage",roomsInPage);
+
+
         // 결과 출력
-        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, roomsInPage), HttpStatus.OK);
+        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, pageRoomSet), HttpStatus.OK);
     }
 
 

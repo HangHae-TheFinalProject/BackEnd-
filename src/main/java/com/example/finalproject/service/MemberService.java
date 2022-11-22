@@ -65,6 +65,10 @@ public class MemberService {
                 .nickname(memberRequestDto.getNickname() + "#" + (int)(Math.random() * 9999))
                 .winNum(0L)
                 .lossNum(0L)
+                .winCITIZEN(0L)
+                .winLIER(0L)
+                .lossCITIZEN(0L)
+                .lossLIER(0L)
                 .build();
 
         memberRepository.save(member);
