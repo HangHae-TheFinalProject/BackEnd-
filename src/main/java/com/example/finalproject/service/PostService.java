@@ -3,14 +3,12 @@ package com.example.finalproject.service;
 import com.example.finalproject.controller.request.PostRequestDto;
 import com.example.finalproject.controller.response.CommentResponseDto;
 import com.example.finalproject.controller.response.PostResponseDto;
-import com.example.finalproject.domain.Comment;
-import com.example.finalproject.domain.Media;
-import com.example.finalproject.domain.Member;
-import com.example.finalproject.domain.Post;
+import com.example.finalproject.domain.*;
 import com.example.finalproject.exception.PrivateException;
 import com.example.finalproject.exception.PrivateResponseBody;
 import com.example.finalproject.exception.StatusCode;
 import com.example.finalproject.jwt.TokenProvider;
+import com.example.finalproject.repository.LikeRepository;
 import com.example.finalproject.repository.PostRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +37,7 @@ public class PostService {
 
     private final TokenProvider tokenProvider;
     private final PostRepository postRepository;
+    private final LikeRepository likeRepository;
     private final ImageUpload imageUpload;
     private final JPAQueryFactory jpaQueryFactory;
     private final EntityManager em;
@@ -80,6 +80,8 @@ public class PostService {
                 .content(postRequestDto.getContent()) // 게시글 내용
                 .author(member.getNickname()) // 게시글을 작성한 유저의 닉네임
                 .member(member) // 게시글을 작성한 유저 객
+                .likecnt(0L)
+                .viewcnt(0L)
                 .medias(medias)
                 .build();
 
@@ -107,6 +109,10 @@ public class PostService {
                 .title(writePost.getTitle()) // 작성 게시글 제목
                 .content(writePost.getContent()) // 작성 게시글 내용
                 .author(writePost.getAuthor()) // 작성 게시글 작성자
+                .likecnt(writePost.getLikecnt())
+                .viewcnt(writePost.getViewcnt())
+                .createdAt(writePost.getCreatedAt())
+                .modifiedAt(writePost.getModifiedAt())
                 .medias(writePost.getMedias()) // 작성 게시글 이미지 파일들
                 .build();
 
@@ -151,7 +157,7 @@ public class PostService {
                     .fetch();
 
             // 기존에 존재했던 이미지들 삭제
-            for(Media existMedia : mediaList) {
+            for (Media existMedia : mediaList) {
                 // s3에서 삭제
                 imageUpload.deleteFile(existMedia.getMediaName());
 
@@ -168,6 +174,7 @@ public class PostService {
                     .set(post.title, postRequestDto.getTitle())
                     .set(post.content, postRequestDto.getContent())
                     .set(post.medias, medias)
+                    .set(post.modifiedAt, LocalDateTime.now())
                     .where(post.postId.eq(postId))
                     .execute();
 
@@ -179,7 +186,7 @@ public class PostService {
             // 기등록된 이미지 중 어떠한 이미지가 새로운 이미지 중 하나로 변경되어할지 모르기 때문에
             // 삭제 후 업데이트 하는 형식을 취한 것이다.
 
-        }else if(multipartFiles != null && update_post.getMedias().isEmpty()){ // 수정할 이미지 파일들이  존재하고, 현재 등록된 이미지가 없을 경우
+        } else if (multipartFiles != null && update_post.getMedias().isEmpty()) { // 수정할 이미지 파일들이  존재하고, 현재 등록된 이미지가 없을 경우
             // 이미지 업로드 인터페이스를 이용해 이미지 등록 및 게시글에 반영
             medias = imageUpload.filesUpload(multipartFiles, update_post);
 
@@ -189,6 +196,7 @@ public class PostService {
                     .set(post.title, postRequestDto.getTitle())
                     .set(post.content, postRequestDto.getContent())
                     .set(post.medias, medias)
+                    .set(post.modifiedAt, LocalDateTime.now())
                     .where(post.postId.eq(postId))
                     .execute();
 
@@ -197,13 +205,30 @@ public class PostService {
 
         }
 
+        List<Comment> commentList = update_post.getComments();
+        List<CommentResponseDto> comments = new ArrayList<>();
+
+        for (Comment existcomment : commentList) {
+            comments.add(
+                    CommentResponseDto.builder()
+                            .commentid(existcomment.getCommentId())
+                            .content(existcomment.getContent())
+                            .author(existcomment.getAuthor())
+                            .build());
+        }
+
         // 수정된 게시글의 정보를 Dto에 저장
         PostResponseDto postResponseDto = PostResponseDto.builder()
                 .postId(update_post.getPostId()) // 수정된 게시글 id
                 .author(update_post.getAuthor()) // 수정된 게시글의 작성자
                 .title(update_post.getTitle()) // 수정된 게시글의 제목
                 .content(update_post.getContent()) // 수정된 게시글의 내용
+                .likecnt(update_post.getLikecnt()) // 좋아요 수
+                .viewcnt(update_post.getViewcnt()) // 조회 수
+                .createdAt(update_post.getCreatedAt()) // 생성일자
+                .modifiedAt(update_post.getModifiedAt()) // 수정일자
                 .medias(update_post.getMedias()) // 수정된 게시글의 이미지들
+                .comments(comments) // 게시글에 작성된 댓글들
                 .build();
 
         // 댓글 기능 합쳐지면 댓글도 PostResponseDto 에 넣어 수정된 게시글과 함께 보여줄 것
@@ -272,6 +297,16 @@ public class PostService {
                 .where(post.postId.eq(postId))
                 .fetchOne();
 
+        // 조회 수 증가
+        jpaQueryFactory
+                .update(post)
+                .set(post.viewcnt, getPost.getViewcnt() + 1L)
+                .where(post.postId.eq(getPost.getPostId()))
+                .execute();
+
+        em.flush();
+        em.clear();
+
         // 댓글 추가
         List<CommentResponseDto> commentResponseDtoList = new ArrayList<>();
 
@@ -291,8 +326,12 @@ public class PostService {
                 .author(getPost.getAuthor()) // 조회할 게시글 작성자
                 .title(getPost.getTitle()) // 조회할 게시글 제목
                 .content(getPost.getContent()) // 조회할 게시글 내용
+                .likecnt(getPost.getLikecnt()) // 좋아요 수
+                .viewcnt(getPost.getViewcnt()) // 조회 수
+                .createdAt(getPost.getCreatedAt()) // 생성일자
+                .modifiedAt(getPost.getModifiedAt()) // 수정일자
                 .medias(getPost.getMedias()) // 조회할 게시글에 속한 이미지파일들
-                .comments(commentResponseDtoList)
+                .comments(commentResponseDtoList) // 댓글들
                 .build();
 
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, postResponseDto), HttpStatus.OK);
@@ -358,6 +397,40 @@ public class PostService {
 //        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, pagingResult), HttpStatus.OK);
 
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, allPostlist), HttpStatus.OK);
+    }
+
+
+    // 게시글 좋아요
+    public void likePost(
+            HttpServletRequest request,
+            Long postId) {
+
+        // 유효성 검증
+        Member auth_member = authorizeToken(request);
+
+        // 좋아요할 게시글 조회
+        Post likePost = jpaQueryFactory
+                .selectFrom(post)
+                .where(post.postId.eq(postId))
+                .fetchOne();
+
+        Liked liked = Liked.builder()
+                .member(auth_member)
+                .post(likePost)
+                .build();
+
+        likeRepository.save(liked);
+
+        // 조회한 게시글 좋아요 + 1
+        jpaQueryFactory
+                .update(post)
+                .set(post.likecnt, likePost.getLikecnt() + 1L)
+                .where(post.postId.eq(likePost.getPostId()))
+                .execute();
+
+        em.flush();
+        em.clear();
+
     }
 
 }

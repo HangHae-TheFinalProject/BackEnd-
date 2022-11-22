@@ -148,10 +148,11 @@ public class GameService {
                 .build();
 
 
-        HashMap<String, String> startset = new HashMap<>();
+        HashMap<String, Object> startset = new HashMap<>();
         startset.put("lier", gameStartSet.getLier());
         startset.put("category", gameStartSet.getCategory());
         startset.put("keyword", gameStartSet.getKeyword());
+        startset.put("memberlist", playingMembers);
 
         gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 게임방 id
         gameMessage.setSenderId(""); // 준비된 유저의 id
