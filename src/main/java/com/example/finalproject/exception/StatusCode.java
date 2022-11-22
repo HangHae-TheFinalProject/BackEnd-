@@ -29,6 +29,7 @@ public enum StatusCode {
     NOT_READY(HttpStatus.BAD_REQUEST,"127","모든 인원이 준비완료 상태가 아니라 게임을 시작할 수 없습니다."),
     DUPLICATED_EMAIL(HttpStatus.BAD_REQUEST,"128","이미 존재하는 이메일입니다."),
     ROOMNAME_OVER(HttpStatus.BAD_REQUEST,"129","생성할 수 있는 방 이름 글자 수가 초과하였습니다."),
+    NOT_ENOUGH_MEMBER(HttpStatus.BAD_REQUEST,"130","게임 시작하기에 충분한 유저가 모이지 않았습니다."),
 
     INTERNAL_SERVER_ERROR_PLZ_CHECK(HttpStatus.INTERNAL_SERVER_ERROR, "999", "알수없는 서버 내부 에러 발생 , dladlsgur3334@gmail.com 으로 연락 부탁드립니다.");
 

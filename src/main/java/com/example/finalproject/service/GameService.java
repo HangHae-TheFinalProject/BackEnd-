@@ -67,7 +67,6 @@ public class GameService {
     // 게임 시작
     @Transactional
     public ResponseEntity<?> gameStart(GameMessage gameMessage, Long gameroomid) {
-
         // 현재 입장한 게임방의 정보를 가져옴
         GameRoom gameRoom1 = jpaQueryFactory
                 .selectFrom(gameRoom)
@@ -79,6 +78,17 @@ public class GameService {
             return new ResponseEntity<>(new PrivateResponseBody(StatusCode.UNAUTHORIZE, null), HttpStatus.BAD_REQUEST);
         }
 
+        // 게임방에 입장한 유저들 관리DB(GameRoomMember)에서 가져오기
+        List<GameRoomMember> gameRoomMembers = jpaQueryFactory
+                .selectFrom(gameRoomMember)
+                .where(gameRoomMember.gameroom_id.eq(gameroomid))
+                .fetch();
+
+        // 인원이 네명이면 게임시작할 수 없음
+//        if(gameRoomMembers.size() < 4){
+//            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.NOT_ENOUGH_MEMBER, null), HttpStatus.BAD_REQUEST);
+//        }
+
         // 게임방의 상태를 start 상태로 업데이트
         jpaQueryFactory
                 .update(gameRoom)
@@ -88,12 +98,6 @@ public class GameService {
 
         em.flush();
         em.clear();
-
-        // 게임방에 입장한 유저들 관리DB(GameRoomMember)에서 가져오기
-        List<GameRoomMember> gameRoomMembers = jpaQueryFactory
-                .selectFrom(gameRoomMember)
-                .where(gameRoomMember.gameroom_id.eq(gameroomid))
-                .fetch();
 
         // 입장한 멤버들 중 무작위로 라이어를 고르기 위한 리스트 생성
         List<Member> playingMembers = new ArrayList<>();
