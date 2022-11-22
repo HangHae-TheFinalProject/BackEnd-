@@ -5,6 +5,7 @@ import com.example.finalproject.domain.Member;
 import com.example.finalproject.domain.Reward;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
+import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 import static com.example.finalproject.domain.QReward.reward;
 import static com.example.finalproject.domain.QMember.member;
 
+@Service
 public class RewardRequired implements RewardRequiredInter{
 
     JPAQueryFactory jpaQueryFactory;
