@@ -1,7 +1,9 @@
 package com.example.finalproject.service;
 
 import com.example.finalproject.controller.request.PostRequestDto;
+import com.example.finalproject.controller.response.CommentResponseDto;
 import com.example.finalproject.controller.response.PostResponseDto;
+import com.example.finalproject.domain.Comment;
 import com.example.finalproject.domain.Media;
 import com.example.finalproject.domain.Member;
 import com.example.finalproject.domain.Post;
@@ -258,6 +260,7 @@ public class PostService {
 
 
     // 게시글 상세 조회
+    @Transactional
     public ResponseEntity<PrivateResponseBody> getPost(HttpServletRequest request, Long postId) {
 
         // 인증 정보 유효성 검증
@@ -269,7 +272,19 @@ public class PostService {
                 .where(post.postId.eq(postId))
                 .fetchOne();
 
-        // 댓글 기능 합쳐지면 댓글도 PostResponseDto, Post 엔티티에 추가 후 보완할 것
+        // 댓글 추가
+        List<CommentResponseDto> commentResponseDtoList = new ArrayList<>();
+
+        for (Comment comment : getPost.getComments()) {
+            commentResponseDtoList.add(
+                    CommentResponseDto.builder()
+                            .commentid(comment.getCommentId())
+                            .content(comment.getContent())
+                            .author(comment.getAuthor())
+                            .build()
+            );
+        }
+
         // 상세 조회할 게시글 정보를 Dto에 저장
         PostResponseDto postResponseDto = PostResponseDto.builder()
                 .postId(getPost.getPostId()) // 조회할 게시글 id
@@ -277,6 +292,7 @@ public class PostService {
                 .title(getPost.getTitle()) // 조회할 게시글 제목
                 .content(getPost.getContent()) // 조회할 게시글 내용
                 .medias(getPost.getMedias()) // 조회할 게시글에 속한 이미지파일들
+                .comments(commentResponseDtoList)
                 .build();
 
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, postResponseDto), HttpStatus.OK);

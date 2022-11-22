@@ -1,5 +1,6 @@
 package com.example.finalproject.controller.response;
 
+import com.example.finalproject.domain.Comment;
 import com.example.finalproject.domain.Media;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,4 +16,5 @@ public class PostResponseDto {
     private String title;
     private String content;
     private List<Media> medias;
+    private List<CommentResponseDto> comments;
 }
