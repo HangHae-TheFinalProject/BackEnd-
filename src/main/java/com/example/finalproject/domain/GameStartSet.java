@@ -1,9 +1,6 @@
 package com.example.finalproject.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
@@ -29,4 +26,22 @@ public class GameStartSet {
 
     @Column
     private Long roomId;
+
+    @Column
+    private Integer round;
+
+    @Column
+    private GameStartSet.Winner winner;
+
+    public enum Winner {
+        CITIZEN, LIER
+    }
+
+    public Integer oneMoerRound(){
+        this.round++;
+        return this.round;
+    }
+    public void setWinner(GameStartSet.Winner winner){
+        this.winner = winner;
+    }
 }

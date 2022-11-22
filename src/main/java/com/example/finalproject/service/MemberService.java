@@ -4,9 +4,11 @@ import com.example.finalproject.controller.request.LoginRequestDto;
 import com.example.finalproject.controller.request.MemberRequestDto;
 import com.example.finalproject.controller.request.TokenDto;
 import com.example.finalproject.domain.Member;
+import com.example.finalproject.domain.MemberActive;
 import com.example.finalproject.exception.PrivateResponseBody;
 import com.example.finalproject.exception.StatusCode;
 import com.example.finalproject.jwt.TokenProvider;
+import com.example.finalproject.repository.MemberActiveRepository;
 import com.example.finalproject.repository.MemberRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Optional;
 
+import static com.example.finalproject.domain.QMember.member;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,13 +35,15 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final JPAQueryFactory jpaQueryFactory;
     private final MemberRepository memberRepository;
+    private final MemberActiveRepository memberActiveRepository;
 
+    // 회원가입
     public ResponseEntity<PrivateResponseBody> signup(MemberRequestDto memberRequestDto) {
 
         // 아이디 중복 확인
         if (null != isPresentMember(memberRequestDto.getEmail())) {
             return new ResponseEntity<>(new PrivateResponseBody
-                    (StatusCode.DUPLICATED_NICKNAME, null), HttpStatus.BAD_REQUEST);
+                    (StatusCode.DUPLICATED_EMAIL, null), HttpStatus.BAD_REQUEST);
         }
 
         // 비밀번호 중복 확인
@@ -47,14 +52,45 @@ public class MemberService {
                     (StatusCode.DUPLICATED_PASSWORD, null), HttpStatus.BAD_REQUEST);
         }
 
+        // 닉네임 중복 확인
+        if (!(jpaQueryFactory
+                .selectFrom(member)
+                .where(member.nickname.eq(memberRequestDto.getNickname()))
+                .fetchOne() == null)) {
+            return new ResponseEntity<>(new PrivateResponseBody
+                    (StatusCode.DUPLICATED_NICKNAME, null), HttpStatus.BAD_REQUEST);
+        }
+
         // 회원 정보 저장
         Member member = Member.builder()
                 .email(memberRequestDto.getEmail())
                 .password(passwordEncoder.encode(memberRequestDto.getPassword())) // 비밀번호 인코딩하여 저장
-                .nickname(memberRequestDto.getNickname() + "#" + Integer.toString((int)(Math.random() * 9999)))
+                .nickname(memberRequestDto.getNickname() + "#" + (int)(Math.random() * 9999))
+                .winNum(0L)
+                .lossNum(0L)
+                .winCITIZEN(0L)
+                .winLIER(0L)
+                .lossCITIZEN(0L)
+                .lossLIER(0L)
                 .build();
 
         memberRepository.save(member);
+
+        // 유저 활동 기록 초기화 (업적용)
+        MemberActive memberActive = MemberActive.builder()
+                .createNum(0L) // 방 생성 횟수
+                .ownerNum(0L) // 방장이 된 횟수
+                .enterNum(0L) // 방에 들어간 횟수
+                .exitNum(0L) // 방을 나간 횟수
+                .gamereadyNum(0L) // 게임준비 한 횟수
+                .gamestartNum(0L) // 게임시작 한 횟수
+                .voteNum(0L) // 투표한 횟수
+                .correctanswerNum(0L) // 정답을 맞춘 횟수
+                .member(member)
+                .build();
+
+        // 활동 기록 초기화 저장
+        memberActiveRepository.save(memberActive);
 
         return new ResponseEntity<>(new PrivateResponseBody
                 (StatusCode.OK, "회원가입 성공"), HttpStatus.OK);
@@ -93,8 +129,7 @@ public class MemberService {
         log.info("리프레시 토큰 : {}", response.getHeader("Refresh-Token"));
 
         // Message 및 Status를 Return
-        return new ResponseEntity<>(new PrivateResponseBody
-                (StatusCode.OK, login_info), HttpStatus.OK);
+        return new ResponseEntity(new PrivateResponseBody(StatusCode.LOGIN_OK, login_info), HttpStatus.OK);
     }
 
     //로그아웃
