@@ -135,13 +135,14 @@ public class GameHTTPService {
         gameMessage.setRoomId(Long.toString(gameroomid));
         gameMessage.setSenderId("");
         gameMessage.setSender("");
-        gameMessage.setContent(gameStartSet.getKeyword().equals(answer));
+        gameMessage.setContent(gameStartSet.getKeyword().replaceAll(" ","").equals(answer.replaceAll(" ","")));
         gameMessage.setType(GameMessage.MessageType.RESULT);
         messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
-
-        if(gameStartSet.getKeyword().strip().equals(answer.strip())) {// 라이어가 정답을 맞추면
+        // 라이어가 정답을 맞추면 라이어 승리
+        if(gameStartSet.getKeyword().replaceAll(" ","").equals(answer.replaceAll(" ",""))) {
             gameStartSet.setWinner(GameStartSet.Winner.LIER);
         }
+        // 틀리면 시민 승리
         else {
             gameStartSet.setWinner(GameStartSet.Winner.CITIZEN);
         }
@@ -171,25 +172,28 @@ public class GameHTTPService {
 
             playingMembers.add(each_member);
 
-            // 게임 맴버 상태 ready
+//             게임 맴버 상태 ready
             jpaQueryFactory
                     .update(gameRoomMember)
                     .set(gameRoomMember.ready, "ready")
                     .where(gameRoomMember.member_id.eq(gameRoomMember2.getMember_id()))
                     .execute();
-            em.flush();
-            em.clear();
+//            em.flush();
+//            em.clear();
         }
 
         // 전적 계산
         VictoryDto victoryDto = new VictoryDto();
+        // 해당 게임의 승자가 라이어일 경우
         if(gameStartSet1.getWinner().equals(GameStartSet.Winner.LIER)){
             for(Member playingMember : playingMembers){
+                // 라이어는 승리
                 if(playingMember.getNickname().equals(gameStartSet1.getLier())){
                     playingMember.addWin();
                     victoryDto.getWinner().add(playingMember.getNickname());
                     playingMember.addWinLIER();
                 }
+                // 시민은 패배
                 else {
                     playingMember.addLose();
                     victoryDto.getLoser().add(playingMember.getNickname());
@@ -202,13 +206,16 @@ public class GameHTTPService {
                 rewardRequired.achieveLoseReward(playingMember, gameroomid);
             }
         }
+        // 해당 게임의 승자가 시민일 경우
         else{
             for(Member playingMember : playingMembers){
+                // 라이어는 패배
                 if(playingMember.getNickname().equals(gameStartSet1.getLier())){
                     playingMember.addLose();
                     victoryDto.getLoser().add(playingMember.getNickname());
                     playingMember.addLossLIER();
                 }
+                // 시민은 승리
                 else {
                     playingMember.addWin();
                     victoryDto.getWinner().add(playingMember.getNickname());
@@ -243,8 +250,8 @@ public class GameHTTPService {
                 .set(gameRoom.status, "wait")
                 .where(gameRoom.roomId.eq(gameRoom1.getRoomId()))
                 .execute();
-
-        em.flush();
-        em.clear();
+//
+//        em.flush();
+//        em.clear();
     }
 }
