@@ -21,6 +21,7 @@ import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -106,8 +107,8 @@ public class PostService {
                 .content(writePost.getContent()) // 작성 게시글 내용
                 .author(writePost.getAuthor()) // 작성 게시글 작성자
                 .viewcnt(writePost.getViewcnt())
-                .createdAt(writePost.getCreatedAt())
-                .modifiedAt(writePost.getModifiedAt())
+                .createdAt(writePost.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+                .modifiedAt(writePost.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
                 .medias(writePost.getMedias()) // 작성 게시글 이미지 파일들
                 .build();
 
@@ -219,8 +220,8 @@ public class PostService {
                 .title(update_post.getTitle()) // 수정된 게시글의 제목
                 .content(update_post.getContent()) // 수정된 게시글의 내용
                 .viewcnt(update_post.getViewcnt()) // 조회 수
-                .createdAt(update_post.getCreatedAt()) // 생성일자
-                .modifiedAt(update_post.getModifiedAt()) // 수정일자
+                .createdAt(update_post.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd"))) // 생성일자
+                .modifiedAt(update_post.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd"))) // 수정일자
                 .medias(update_post.getMedias()) // 수정된 게시글의 이미지들
                 .comments(comments) // 게시글에 작성된 댓글들
                 .build();
@@ -321,8 +322,8 @@ public class PostService {
                 .title(getPost.getTitle()) // 조회할 게시글 제목
                 .content(getPost.getContent()) // 조회할 게시글 내용
                 .viewcnt(getPost.getViewcnt()) // 조회 수
-                .createdAt(getPost.getCreatedAt()) // 생성일자
-                .modifiedAt(getPost.getModifiedAt()) // 수정일자
+                .createdAt(getPost.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd"))) // 생성일자
+                .modifiedAt(getPost.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd"))) // 수정일자
                 .medias(getPost.getMedias()) // 조회할 게시글에 속한 이미지파일들
                 .comments(commentResponseDtoList) // 댓글들
                 .build();
