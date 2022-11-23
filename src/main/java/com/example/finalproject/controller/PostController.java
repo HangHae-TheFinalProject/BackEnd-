@@ -1,6 +1,7 @@
 package com.example.finalproject.controller;
 
 import com.example.finalproject.controller.request.PostRequestDto;
+import com.example.finalproject.controller.request.StringDto;
 import com.example.finalproject.exception.PrivateResponseBody;
 import com.example.finalproject.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -68,10 +69,11 @@ public class PostController {
 //    @GetMapping("/posts/{pageNum}")
     @GetMapping("/posts")
     public ResponseEntity<PrivateResponseBody> getAllPost(
-            HttpServletRequest request // 인증 정보를 가진 request
+            HttpServletRequest request, // 인증 정보를 가진 request
+            @RequestBody(required = false) StringDto stringDto
 //            @PathVariable Integer pageNum // 페이지 번호
     ){
-        return postService.getAllPost(request);
+        return postService.getAllPost(request,stringDto);
     }
 
 

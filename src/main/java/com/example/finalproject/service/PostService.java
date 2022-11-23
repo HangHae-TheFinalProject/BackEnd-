@@ -1,6 +1,7 @@
 package com.example.finalproject.service;
 
 import com.example.finalproject.controller.request.PostRequestDto;
+import com.example.finalproject.controller.request.StringDto;
 import com.example.finalproject.controller.response.CommentResponseDto;
 import com.example.finalproject.controller.response.PostResponseDto;
 import com.example.finalproject.domain.*;
@@ -331,7 +332,7 @@ public class PostService {
 
 
     // 게시글 전체 목록 조회
-    public ResponseEntity<PrivateResponseBody> getAllPost(HttpServletRequest request) {
+    public ResponseEntity<PrivateResponseBody> getAllPost(HttpServletRequest request, StringDto stringDto) {
 
         // 인증 정보 유효성 검증
         authorizeToken(request);
@@ -340,25 +341,67 @@ public class PostService {
 //        int size = 10; // 페이지 안에 존재하는 게시글 수
 //        int postInPage = size * pageNum; // 페이징 처리를 위한 변수
 
-        // 최근 생성일자 기눚으로 작성된 게시글들 전체 리스트 저장
-        List<Post> postlist = jpaQueryFactory
-                .selectFrom(post)
-                .orderBy(post.createdAt.desc())
-                .fetch();
-
         // hashmap 으로 저장된 게시글의 내용들을 리스트로 저장
         List<HashMap<String, Object>> allPostlist = new ArrayList<>();
 
-        // 목록 출력 시 필요한 항목들 hashmap에 저장
-        for (Post post : postlist) {
-            // 목록 조회이기 때문에 Dto 가 아닌 hashmap 으로 일부 보여질 내용들을 저장
-            HashMap<String, Object> allPosts = new HashMap<>();
+        if(stringDto.getValue().equals("recent")){
 
-            allPosts.put("postId", post.getPostId()); // 게시글 id
-            allPosts.put("author", post.getAuthor()); // 게시글 작성자
-            allPosts.put("title", post.getTitle()); // 게시글 제목
+            // 최근 생성일자 기준으로 작성된 게시글들 전체 리스트 저장
+            List<Post> postlist = jpaQueryFactory
+                    .selectFrom(post)
+                    .orderBy(post.createdAt.desc())
+                    .fetch();
 
-            allPostlist.add(allPosts);
+            // 목록 출력 시 필요한 항목들 hashmap에 저장
+            for (Post post : postlist) {
+                // 목록 조회이기 때문에 Dto 가 아닌 hashmap 으로 일부 보여질 내용들을 저장
+                HashMap<String, Object> allPosts = new HashMap<>();
+
+                allPosts.put("postId", post.getPostId()); // 게시글 id
+                allPosts.put("author", post.getAuthor()); // 게시글 작성자
+                allPosts.put("title", post.getTitle()); // 게시글 제목
+
+                allPostlist.add(allPosts);
+            }
+
+        }else if(stringDto.getValue().equals("view")){ //
+
+            // 최근 조회수 기눚으로 작성된 게시글들 전체 리스트 저장
+            List<Post> postlist = jpaQueryFactory
+                    .selectFrom(post)
+                    .orderBy(post.viewcnt.desc())
+                    .fetch();
+
+            // 목록 출력 시 필요한 항목들 hashmap에 저장
+            for (Post post : postlist) {
+                // 목록 조회이기 때문에 Dto 가 아닌 hashmap 으로 일부 보여질 내용들을 저장
+                HashMap<String, Object> allPosts = new HashMap<>();
+
+                allPosts.put("postId", post.getPostId()); // 게시글 id
+                allPosts.put("author", post.getAuthor()); // 게시글 작성자
+                allPosts.put("title", post.getTitle()); // 게시글 제목
+
+                allPostlist.add(allPosts);
+            }
+
+        }else{
+
+            // 일반 초기 게시글 목록 조회
+            List<Post> postlist = jpaQueryFactory
+                    .selectFrom(post)
+                    .fetch();
+
+            // 목록 출력 시 필요한 항목들 hashmap에 저장
+            for (Post post : postlist) {
+                // 목록 조회이기 때문에 Dto 가 아닌 hashmap 으로 일부 보여질 내용들을 저장
+                HashMap<String, Object> allPosts = new HashMap<>();
+
+                allPosts.put("postId", post.getPostId()); // 게시글 id
+                allPosts.put("author", post.getAuthor()); // 게시글 작성자
+                allPosts.put("title", post.getTitle()); // 게시글 제목
+
+                allPostlist.add(allPosts);
+            }
         }
 
 //         페이징 처리 전용
