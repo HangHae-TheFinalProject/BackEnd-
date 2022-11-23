@@ -4,6 +4,7 @@ import com.example.finalproject.domain.GameMessage;
 import com.example.finalproject.domain.Member;
 import com.example.finalproject.domain.Reward;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 
@@ -13,12 +14,13 @@ import java.util.List;
 import static com.example.finalproject.domain.QReward.reward;
 import static com.example.finalproject.domain.QMember.member;
 
+@RequiredArgsConstructor
 @Service
 public class RewardRequired implements RewardRequiredInter{
 
-    JPAQueryFactory jpaQueryFactory;
-    EntityManager em;
-    SimpMessageSendingOperations messagingTemplate;
+    private final JPAQueryFactory jpaQueryFactory;
+    private final EntityManager em;
+    private final SimpMessageSendingOperations messagingTemplate;
 
 //    @Override
 //    public Reward achievePlayReward(){
