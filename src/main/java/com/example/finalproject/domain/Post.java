@@ -30,9 +30,6 @@ public class Post extends Timestamped{
     private String content;
 
     @Column
-    private Long likecnt;
-
-    @Column
     private Long viewcnt;
 
     @JsonIgnore
@@ -46,9 +43,5 @@ public class Post extends Timestamped{
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
-
-    @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Liked> likes;
 
 }

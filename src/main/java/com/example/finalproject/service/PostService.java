@@ -8,15 +8,11 @@ import com.example.finalproject.exception.PrivateException;
 import com.example.finalproject.exception.PrivateResponseBody;
 import com.example.finalproject.exception.StatusCode;
 import com.example.finalproject.jwt.TokenProvider;
-import com.example.finalproject.repository.LikeRepository;
 import com.example.finalproject.repository.PostRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,7 +33,6 @@ public class PostService {
 
     private final TokenProvider tokenProvider;
     private final PostRepository postRepository;
-    private final LikeRepository likeRepository;
     private final ImageUpload imageUpload;
     private final JPAQueryFactory jpaQueryFactory;
     private final EntityManager em;
@@ -81,7 +76,6 @@ public class PostService {
                 .content(postRequestDto.getContent()) // 게시글 내용
                 .author(member.getNickname()) // 게시글을 작성한 유저의 닉네임
                 .member(member) // 게시글을 작성한 유저 객
-                .likecnt(0L)
                 .viewcnt(0L)
                 .medias(medias)
                 .build();
@@ -110,7 +104,6 @@ public class PostService {
                 .title(writePost.getTitle()) // 작성 게시글 제목
                 .content(writePost.getContent()) // 작성 게시글 내용
                 .author(writePost.getAuthor()) // 작성 게시글 작성자
-                .likecnt(writePost.getLikecnt())
                 .viewcnt(writePost.getViewcnt())
                 .createdAt(writePost.getCreatedAt())
                 .modifiedAt(writePost.getModifiedAt())
@@ -224,7 +217,6 @@ public class PostService {
                 .author(update_post.getAuthor()) // 수정된 게시글의 작성자
                 .title(update_post.getTitle()) // 수정된 게시글의 제목
                 .content(update_post.getContent()) // 수정된 게시글의 내용
-                .likecnt(update_post.getLikecnt()) // 좋아요 수
                 .viewcnt(update_post.getViewcnt()) // 조회 수
                 .createdAt(update_post.getCreatedAt()) // 생성일자
                 .modifiedAt(update_post.getModifiedAt()) // 수정일자
@@ -327,7 +319,6 @@ public class PostService {
                 .author(getPost.getAuthor()) // 조회할 게시글 작성자
                 .title(getPost.getTitle()) // 조회할 게시글 제목
                 .content(getPost.getContent()) // 조회할 게시글 내용
-                .likecnt(getPost.getLikecnt()) // 좋아요 수
                 .viewcnt(getPost.getViewcnt()) // 조회 수
                 .createdAt(getPost.getCreatedAt()) // 생성일자
                 .modifiedAt(getPost.getModifiedAt()) // 수정일자
@@ -402,37 +393,5 @@ public class PostService {
     }
 
 
-    // 게시글 좋아요
-    public void likePost(
-            HttpServletRequest request,
-            Long postId) {
-
-        // 유효성 검증
-        Member auth_member = authorizeToken(request);
-
-        // 좋아요할 게시글 조회
-        Post likePost = jpaQueryFactory
-                .selectFrom(post)
-                .where(post.postId.eq(postId))
-                .fetchOne();
-
-        Liked liked = Liked.builder()
-                .member(auth_member)
-                .post(likePost)
-                .build();
-
-        likeRepository.save(liked);
-
-        // 조회한 게시글 좋아요 + 1
-        jpaQueryFactory
-                .update(post)
-                .set(post.likecnt, likePost.getLikecnt() + 1L)
-                .where(post.postId.eq(likePost.getPostId()))
-                .execute();
-
-        em.flush();
-        em.clear();
-
-    }
 
 }
