@@ -63,6 +63,7 @@ public class PostService {
     }
 
     // 게시글 작성
+    @Transactional
     public ResponseEntity<PrivateResponseBody> writePost(
             HttpServletRequest request,
             PostRequestDto postRequestDto,
@@ -356,11 +357,12 @@ public class PostService {
 
         // hashmap 으로 저장된 게시글의 내용들을 리스트로 저장
         List<HashMap<String, Object>> allPostlist = new ArrayList<>();
-        // 목록 조회이기 때문에 Dto 가 아닌 hashmap 으로 일부 보여질 내용들을 저장
-        HashMap<String, Object> allPosts = new HashMap<>();
 
         // 목록 출력 시 필요한 항목들 hashmap에 저장
         for (Post post : postlist) {
+            // 목록 조회이기 때문에 Dto 가 아닌 hashmap 으로 일부 보여질 내용들을 저장
+            HashMap<String, Object> allPosts = new HashMap<>();
+
             allPosts.put("postId", post.getPostId()); // 게시글 id
             allPosts.put("author", post.getAuthor()); // 게시글 작성자
             allPosts.put("title", post.getTitle()); // 게시글 제목
