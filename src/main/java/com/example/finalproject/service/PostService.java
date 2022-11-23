@@ -8,15 +8,11 @@ import com.example.finalproject.exception.PrivateException;
 import com.example.finalproject.exception.PrivateResponseBody;
 import com.example.finalproject.exception.StatusCode;
 import com.example.finalproject.jwt.TokenProvider;
-import com.example.finalproject.repository.LikeRepository;
 import com.example.finalproject.repository.PostRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,7 +33,6 @@ public class PostService {
 
     private final TokenProvider tokenProvider;
     private final PostRepository postRepository;
-    private final LikeRepository likeRepository;
     private final ImageUpload imageUpload;
     private final JPAQueryFactory jpaQueryFactory;
     private final EntityManager em;
@@ -399,40 +394,6 @@ public class PostService {
 //        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, pagingResult), HttpStatus.OK);
 
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, allPostlist), HttpStatus.OK);
-    }
-
-
-    // 게시글 좋아요
-    public void likePost(
-            HttpServletRequest request,
-            Long postId) {
-
-        // 유효성 검증
-        Member auth_member = authorizeToken(request);
-
-        // 좋아요할 게시글 조회
-        Post likePost = jpaQueryFactory
-                .selectFrom(post)
-                .where(post.postId.eq(postId))
-                .fetchOne();
-
-        Liked liked = Liked.builder()
-                .member(auth_member)
-                .post(likePost)
-                .build();
-
-        likeRepository.save(liked);
-
-        // 조회한 게시글 좋아요 + 1
-        jpaQueryFactory
-                .update(post)
-                .set(post.likecnt, likePost.getLikecnt() + 1L)
-                .where(post.postId.eq(likePost.getPostId()))
-                .execute();
-
-        em.flush();
-        em.clear();
-
     }
 
 }

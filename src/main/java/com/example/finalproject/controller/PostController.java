@@ -74,14 +74,4 @@ public class PostController {
         return postService.getAllPost(request);
     }
 
-
-    @PostMapping("/post/{postId}/like")
-    public void likePost(
-            HttpServletRequest request,
-            @PathVariable Long postId){
-
-        postService.likePost(request,postId);
-    }
-
-
 }
