@@ -41,17 +41,6 @@ public class GameHTTPService {
     static int cnt =0;
     static HashMap<String, Integer> voteHashMap = new HashMap<>();
 
-//    public void isLier(Long gameroomid, String name) {
-//        GameStartSet gameStartSet= gameStartSetRepository.findByRoomId(gameroomid);
-//
-//        GameMessage gameMessage = new GameMessage();
-//        gameMessage.setRoomId(Long.toString(gameroomid));
-//        gameMessage.setSenderId("");
-//        gameMessage.setSender("");
-//        gameMessage.setContent(gameStartSet.getLier().equals(name) +"");
-//        gameMessage.setType(GameMessage.MessageType.START);
-//        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
-//    }
     @Transactional
     public void vote(Long gameroomid, StringDto stringDto){
         String name = stringDto.getValue();
@@ -66,50 +55,46 @@ public class GameHTTPService {
                 .fetch();
         int memberNum = gameRoomMembers.size();
         if(cnt != memberNum){
-            VoteDto voteDto = new VoteDto(null);
-            GameMessage<VoteDto> gameMessage = new GameMessage<>();
+            GameMessage<?> gameMessage = new GameMessage<>();
             gameMessage.setRoomId(Long.toString(gameroomid));
             gameMessage.setSenderId("");
             gameMessage.setSender("");
-            gameMessage.setContent(voteDto);
+            gameMessage.setContent(null);
             gameMessage.setType(GameMessage.MessageType.CONTINUE);
             messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
             return;
         }
-        // 투표가 끝나면
-//        List<String> nickName = sortHash();
 
-        VoteDto voteDto = new VoteDto(sortHash());
-        GameMessage<VoteDto> gameMessage = new GameMessage<>();
+        List<String> votedName = sortHash(); // 투표가 끝나면 최다투표자 list 뽑음
+        GameMessage<List<String>> gameMessage = new GameMessage<>();
         gameMessage.setRoomId(Long.toString(gameroomid));
         gameMessage.setSenderId("");
         gameMessage.setSender("");
 
-        if(voteDto.getName().size()==1){
-            if(voteDto.getName().get(0).equals(gameStartSet.getLier())){
-//                content ="는 라이어가 맞습니다."; //LIER
+        if(votedName.size()==1){
+            // 라이어가 지목 당했을 때
+            if(votedName.get(0).equals(gameStartSet.getLier())){
                 gameMessage.setType(GameMessage.MessageType.LIER);
             }
+            // 시민이 지목 당했을 때
             else{
-//                content = "는 라이어가 아닙니다."; //NLIER
                 gameMessage.setType(GameMessage.MessageType.NLIER);
                 gameStartSet.setWinner(GameStartSet.Winner.LIER);
             }
         }
         else{
+            // 동점 상황일 때
             if (gameStartSet.getRound()<4){
-//                content = "동점입니다."; //DRAW
                 gameMessage.setType(GameMessage.MessageType.DRAW);
             }
+            // 동점 상황, 라운도 종료 됐을 때 (라이어 승리)
             else{
-//                content ="동점 입니다. 라이어의 승리 입니다. 라이어는 " +gameStartSet.getLier() + "입니다."; //DRAWANDENDGAME
                 gameMessage.setType(GameMessage.MessageType.DRAWANDENDGAME);
-                voteDto.setLierIs(gameStartSet.getLier());
                 gameStartSet.setWinner(GameStartSet.Winner.LIER);
             }
         }
-        gameMessage.setContent(voteDto);
+        gameMessage.setContent(votedName);
         messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
     }
@@ -162,19 +147,6 @@ public class GameHTTPService {
         }
     }
 
-//    @Transactional
-//    public void oneMoerRound(Long gameroomid) {
-//        GameStartSet gameStartSet= gameStartSetRepository.findByRoomId(gameroomid);
-//        Integer round = gameStartSet.oneMoerRound();
-//        GameMessageData<Integer> gameMessageData = new GameMessageData<>();
-//        gameMessageData.setRoomId(Long.toString(gameroomid));
-//        gameMessageData.setSenderId("");
-//        gameMessageData.setSender("");
-//        gameMessageData.setData(round);
-//        gameMessageData.setType(GameMessageData.MessageType.RESULT);
-//        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessageData);
-//
-//    }
     @Transactional
     public void endGame(Long gameroomid){
         GameStartSet gameStartSet1 = jpaQueryFactory
