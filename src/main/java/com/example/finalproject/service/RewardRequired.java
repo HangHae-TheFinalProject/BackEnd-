@@ -9,6 +9,7 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.example.finalproject.domain.QReward.reward;
@@ -32,6 +33,7 @@ public class RewardRequired implements RewardRequiredInter{
     public void achieveVitoryReward(Member playingMember, Long gameroomid){
 
         GameMessage gameMessage = new GameMessage();
+        List<Reward> rewardlist = new ArrayList<>();
 
         // 게임 전체 첫 번쨰 승리의 경우
         if(playingMember.getWinNum() == 1){
@@ -40,7 +42,9 @@ public class RewardRequired implements RewardRequiredInter{
                     .where(reward.rewardId.eq(3L))
                     .fetchOne();
 
-            List<Reward> rewardlist = playingMember.getRewards();
+            if(!playingMember.getRewards().isEmpty()){
+                rewardlist = playingMember.getRewards();
+            }
 
             rewardlist.add(reward1);
 
@@ -68,7 +72,9 @@ public class RewardRequired implements RewardRequiredInter{
                     .where(reward.rewardId.eq(5L))
                     .fetchOne();
 
-            List<Reward> rewardlist = playingMember.getRewards();
+            if(!playingMember.getRewards().isEmpty()){
+                rewardlist = playingMember.getRewards();
+            }
 
             rewardlist.add(reward1);
 
@@ -95,7 +101,9 @@ public class RewardRequired implements RewardRequiredInter{
                     .where(reward.rewardId.eq(4L))
                     .fetchOne();
 
-            List<Reward> rewardlist = playingMember.getRewards();
+            if(!playingMember.getRewards().isEmpty()){
+                rewardlist = playingMember.getRewards();
+            }
 
             rewardlist.add(reward1);
 
@@ -123,6 +131,7 @@ public class RewardRequired implements RewardRequiredInter{
     public void achieveLoseReward(Member playingMember, Long gameroomid){
 
         GameMessage gameMessage = new GameMessage();
+        List<Reward> rewardlist = new ArrayList<>();
 
         // 게임 전체 첫 번쨰 패배의 경우
         if(playingMember.getLossNum() == 1){
@@ -131,9 +140,12 @@ public class RewardRequired implements RewardRequiredInter{
                     .where(reward.rewardId.eq(6L))
                     .fetchOne();
 
-            List<Reward> rewardlist = playingMember.getRewards();
+            if(!playingMember.getRewards().isEmpty()){
+                rewardlist = playingMember.getRewards();
+            }
 
             rewardlist.add(reward1);
+
 
             jpaQueryFactory
                     .update(member)
@@ -159,7 +171,9 @@ public class RewardRequired implements RewardRequiredInter{
                     .where(reward.rewardId.eq(8L))
                     .fetchOne();
 
-            List<Reward> rewardlist = playingMember.getRewards();
+            if(!playingMember.getRewards().isEmpty()){
+                rewardlist = playingMember.getRewards();
+            }
 
             rewardlist.add(reward1);
 
@@ -186,7 +200,9 @@ public class RewardRequired implements RewardRequiredInter{
                     .where(reward.rewardId.eq(7L))
                     .fetchOne();
 
-            List<Reward> rewardlist = playingMember.getRewards();
+            if(!playingMember.getRewards().isEmpty()){
+                rewardlist = playingMember.getRewards();
+            }
 
             rewardlist.add(reward1);
 
