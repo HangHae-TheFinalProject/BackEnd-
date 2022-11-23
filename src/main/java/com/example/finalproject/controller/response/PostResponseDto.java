@@ -16,7 +16,6 @@ public class PostResponseDto {
     private String author;
     private String title;
     private String content;
-    private Long likecnt;
     private Long viewcnt;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
