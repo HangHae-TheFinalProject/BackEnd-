@@ -28,21 +28,32 @@ public class GameController {
 
     // /pub 사용 게임 준비
     @MessageMapping("/lier/game/{gameroomid}/ready")
-    public ResponseEntity<?> gameReady(
+    public void gameReady(
             GameMessage gameMessage, // 게임 메세지 안에 sender에 닉네임을 전달받는데 그걸 이용
             @DestinationVariable Long gameroomid) {
 
         log.info("게임 준비 - 게임 메세지 : {} , 게임방 아이디 : {}", gameMessage, gameroomid);
-        return gameService.gameReady(gameMessage, gameroomid);
+        gameService.gameReady(gameMessage, gameroomid);
     }
 
     // pub 사용 스포트라이트
     @MessageMapping("/lier/game/{gameroomid}/spotlight")
-    public ResponseEntity<?> spotlight(
+    public void spotlight(
             @DestinationVariable Long gameroomid) {
 
         log.info("스포트라이트 - 게임방 아이디 : {}", gameroomid);
-        return gameService.spotlight(gameroomid);
+        gameService.spotlight(gameroomid);
+    }
+
+
+    // 한바퀴더 혹은 투표하기 선택 알람
+    @MessageMapping("/lier/game/{gameroomid}/roundorvote")
+    public void oneMoreRoundOrVoteStartAlarm(
+            @DestinationVariable Long gameroomid,
+            GameMessage gameMessage){
+
+        log.info("한 바퀴 더 알람 - 게임방 아이디 : {}", gameroomid);
+        gameService.oneMoreRoundOrVoteStartAlarm(gameroomid, gameMessage);
     }
 
 }
