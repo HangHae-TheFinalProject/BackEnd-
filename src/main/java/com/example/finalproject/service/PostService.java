@@ -76,7 +76,6 @@ public class PostService {
                 .content(postRequestDto.getContent()) // 게시글 내용
                 .author(member.getNickname()) // 게시글을 작성한 유저의 닉네임
                 .member(member) // 게시글을 작성한 유저 객
-                .likecnt(0L)
                 .viewcnt(0L)
                 .medias(medias)
                 .build();
@@ -105,7 +104,6 @@ public class PostService {
                 .title(writePost.getTitle()) // 작성 게시글 제목
                 .content(writePost.getContent()) // 작성 게시글 내용
                 .author(writePost.getAuthor()) // 작성 게시글 작성자
-                .likecnt(writePost.getLikecnt())
                 .viewcnt(writePost.getViewcnt())
                 .createdAt(writePost.getCreatedAt())
                 .modifiedAt(writePost.getModifiedAt())
@@ -219,7 +217,6 @@ public class PostService {
                 .author(update_post.getAuthor()) // 수정된 게시글의 작성자
                 .title(update_post.getTitle()) // 수정된 게시글의 제목
                 .content(update_post.getContent()) // 수정된 게시글의 내용
-                .likecnt(update_post.getLikecnt()) // 좋아요 수
                 .viewcnt(update_post.getViewcnt()) // 조회 수
                 .createdAt(update_post.getCreatedAt()) // 생성일자
                 .modifiedAt(update_post.getModifiedAt()) // 수정일자
@@ -322,7 +319,6 @@ public class PostService {
                 .author(getPost.getAuthor()) // 조회할 게시글 작성자
                 .title(getPost.getTitle()) // 조회할 게시글 제목
                 .content(getPost.getContent()) // 조회할 게시글 내용
-                .likecnt(getPost.getLikecnt()) // 좋아요 수
                 .viewcnt(getPost.getViewcnt()) // 조회 수
                 .createdAt(getPost.getCreatedAt()) // 생성일자
                 .modifiedAt(getPost.getModifiedAt()) // 수정일자
@@ -395,5 +391,7 @@ public class PostService {
 
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, allPostlist), HttpStatus.OK);
     }
+
+
 
 }
