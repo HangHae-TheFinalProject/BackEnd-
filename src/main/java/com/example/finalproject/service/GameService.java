@@ -85,7 +85,7 @@ public class GameService {
                 .fetch();
 
         // 인원이 네명이면 게임시작할 수 없음
-//        if(gameRoomMembers.size() < 4){
+//        if(gameRoomMembers.size() < 3){
 //            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.NOT_ENOUGH_MEMBER, null), HttpStatus.BAD_REQUEST);
 //        }
 
@@ -228,7 +228,7 @@ public class GameService {
 
     // 게임 준비
     @Transactional
-    public ResponseEntity<?> gameReady(
+    public void gameReady(
             GameMessage gameMessage,
             Long gameroomid) {
 
@@ -243,11 +243,6 @@ public class GameService {
                 .selectFrom(gameRoomMember)
                 .where(gameRoomMember.gameroom_id.eq(gameroomid).and(gameRoomMember.member_id.eq(player.getMemberId())))
                 .fetchOne();
-
-        // 현재 게임방에 해당 유저가 존재하지않을 경우, 에러 처리
-        if (gameRoomMember1 == null) {
-            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.NOT_MATCH_PLAYER, null), HttpStatus.BAD_REQUEST);
-        }
 
         // 게임 유저의 준비상태가 unready일 경우
         if (gameRoomMember1.getReady().equals("unready")) {
@@ -311,7 +306,6 @@ public class GameService {
             messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
         }
 
-        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, "준비완료되었습니다."), HttpStatus.OK);
     }
 
 
@@ -400,16 +394,28 @@ public class GameService {
             // 한 바퀴를 다 돌았으면 위치값을 0으로 초기화
             spotNum = 0;
         }
+    }
 
-        // http 방식으로 넘겨드릴 현재 스포트라이트를 받고있는 유저의 정보 및 위치값을 hashmap으로 저장
-//        HashMap<String, String> whoIsNow = new HashMap<>();
-//        whoIsNow.put("memberId", Long.toString(speakNowMember.getMemberId())); // 스포트라이트를 받은 유저의 id
-//        whoIsNow.put("email", speakNowMember.getEmail()); // 스포트라이트를 받은 유저의 이메일
-//        whoIsNow.put("nickname", speakNowMember.getNickname()); // 스포트라이트를 받은 유저의 닉네임
-//        whoIsNow.put("spotNum", Integer.toString(spotNum)); // 현재 위치값
-//        whoIsNow.put("round", Integer.toString(gameStartSet.getRound())); // 현재 위치값
-//
-//        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, whoIsNow), HttpStatus.OK);
+    // 한바퀴 더 혹은 투표하기 알람
+    public void oneMoreRoundOrVoteStartAlarm(Long gameroomid, GameMessage gameMessage){
+
+        if(gameMessage.getType().equals(GameMessage.MessageType.VOTE)){
+            gameMessage.setRoomId(Long.toString(gameroomid)); // 게임 방 id
+            gameMessage.setSenderId(""); // senderId는 딱히 필요없으므로 공백처리
+            gameMessage.setSender("운영자"); // sender는 딱히 필요없으므로 공백처리
+            gameMessage.setContent("방장이 '한 바퀴 더'를 선택하셨습니다"); // 마지막 유저의 위치면 한 바퀴를 돌았다는 것으로 간주
+            gameMessage.setType(GameMessage.MessageType.ONEMOREROUND); // 메세지 타입
+
+        }else if(gameMessage.getType().equals(GameMessage.MessageType.ONEMOREROUND)){
+            gameMessage.setRoomId(Long.toString(gameroomid)); // 게임 방 id
+            gameMessage.setSenderId(""); // senderId는 딱히 필요없으므로 공백처리
+            gameMessage.setSender("운영자"); // sender는 딱히 필요없으므로 공백처리
+            gameMessage.setContent("방장이 '투표하기'를 선택하셨습니다."); // 마지막 유저의 위치면 한 바퀴를 돌았다는 것으로 간주
+            gameMessage.setType(GameMessage.MessageType.VOTE); // 메세지 타입
+        }
+
+        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
+
     }
 
 }
