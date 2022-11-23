@@ -10,6 +10,7 @@ import com.example.finalproject.repository.GameStartSetRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ import java.util.Comparator;
 import static com.example.finalproject.domain.QMember.member;
 import static com.example.finalproject.domain.QGameStartSet.gameStartSet;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class GameHTTPService {
@@ -184,6 +186,7 @@ public class GameHTTPService {
 
         // 전적 계산
         VictoryDto victoryDto = new VictoryDto();
+
         // 해당 게임의 승자가 라이어일 경우
         if(gameStartSet1.getWinner().equals(GameStartSet.Winner.LIER)){
             for(Member playingMember : playingMembers){
