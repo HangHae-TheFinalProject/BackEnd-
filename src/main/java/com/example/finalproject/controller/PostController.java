@@ -75,6 +75,7 @@ public class PostController {
     }
 
 
+    // 게시글 좋아요
     @PostMapping("/post/{postId}/like")
     public void likePost(
             HttpServletRequest request,

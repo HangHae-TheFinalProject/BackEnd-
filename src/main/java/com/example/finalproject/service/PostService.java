@@ -16,7 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,6 +29,7 @@ import java.util.List;
 
 import static com.example.finalproject.domain.QPost.post;
 import static com.example.finalproject.domain.QMedia.media;
+import static com.example.finalproject.domain.QLiked.liked;
 
 @RequiredArgsConstructor
 @Service
@@ -416,22 +416,47 @@ public class PostService {
                 .where(post.postId.eq(postId))
                 .fetchOne();
 
-        Liked liked = Liked.builder()
-                .member(auth_member)
-                .post(likePost)
-                .build();
+        List<Liked> postLikes = null;
 
-        likeRepository.save(liked);
+        if (jpaQueryFactory
+                .selectFrom(liked)
+                .where(liked.post.eq(likePost).and(liked.member.eq(auth_member)))
+                .fetchOne() == null) {
 
-        // 조회한 게시글 좋아요 + 1
+            Liked liked = Liked.builder()
+                    .member(auth_member)
+                    .post(likePost)
+                    .build();
+
+            likeRepository.save(liked);
+
+            postLikes.add(liked);
+
+        }else {
+            jpaQueryFactory
+                    .delete(liked)
+                    .where(liked.post.eq(likePost).and(liked.member.eq(auth_member)))
+                    .execute();
+        }
+
         jpaQueryFactory
                 .update(post)
-                .set(post.likecnt, likePost.getLikecnt() + 1L)
+                .set(post.likes, postLikes)
                 .where(post.postId.eq(likePost.getPostId()))
                 .execute();
 
         em.flush();
         em.clear();
+
+        // 조회한 게시글 좋아요 + 1
+//        jpaQueryFactory
+//                .update(post)
+//                .set(post.likecnt, likePost.getLikecnt() + 1L)
+//                .where(post.postId.eq(likePost.getPostId()))
+//                .execute();
+//
+//        em.flush();
+//        em.clear();
 
     }
 
