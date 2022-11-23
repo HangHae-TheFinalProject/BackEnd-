@@ -383,7 +383,7 @@ public class GameRoomService {
         messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage);
 
         // 방에서 나가려고 하는 멤버가 현재 방장이고, 게임방에 남아있는 인원이 존재할 경우에 남은 사람듣 중에 방장을 랜덤으로 지정
-        if (auth_member.getNickname() == gameRoom1.getOwner() && !gameRoomMembers.isEmpty()) {
+        if (auth_member.getNickname().equals(gameRoom1.getOwner()) && !gameRoomMembers.isEmpty()) {
 
             // 남은 사람들의 수 만큼 랜덤으로 돌려서 나온 멤버 id
             Long nextOwnerId = gameRoomMembers.get((int) (Math.random() * gameRoomMembers.size())).getMember_id();
@@ -404,13 +404,14 @@ public class GameRoomService {
             em.flush();
             em.clear();
 
-            gameMessage.setRoomId(Long.toString(gameRoom1.getRoomId())); // 방 id
-            gameMessage.setSenderId(Long.toString(nextOwner.getMemberId())); // 다음 방장이 된 유저 id
-            gameMessage.setSender(nextOwner.getNickname()); // 다음 방장이 된 유저의 닉네임
-            gameMessage.setContent(gameMessage.getSender() + "님이 방장이 되셨습니다."); // 새로운 방장 선언
-            gameMessage.setType(GameMessage.MessageType.LEAVE); // 메세지 타입
+            GameMessage gameMessage1 = new GameMessage<>();
+            gameMessage1.setRoomId(Long.toString(gameRoom1.getRoomId())); // 방 id
+            gameMessage1.setSenderId(Long.toString(nextOwner.getMemberId())); // 다음 방장이 된 유저 id
+            gameMessage1.setSender(nextOwner.getNickname()); // 다음 방장이 된 유저의 닉네임
+            gameMessage1.setContent(gameMessage1.getSender() + "님이 방장이 되셨습니다."); // 새로운 방장 선언
+            gameMessage1.setType(GameMessage.MessageType.NEWOWNER); // 메세지 타입
 
-            messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage);
+            messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage1);
         }
 
         // 정상적으로 방을 나가면 문구 출력
