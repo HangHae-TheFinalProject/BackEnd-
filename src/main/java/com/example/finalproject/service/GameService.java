@@ -402,14 +402,14 @@ public class GameService {
         if(gameMessage.getType().equals(GameMessage.MessageType.VOTE)){
             gameMessage.setRoomId(Long.toString(gameroomid)); // 게임 방 id
             gameMessage.setSenderId(""); // senderId는 딱히 필요없으므로 공백처리
-            gameMessage.setSender(""); // sender는 딱히 필요없으므로 공백처리
+            gameMessage.setSender("운영자"); // sender는 딱히 필요없으므로 공백처리
             gameMessage.setContent("방장이 '한 바퀴 더'를 선택하셨습니다"); // 마지막 유저의 위치면 한 바퀴를 돌았다는 것으로 간주
             gameMessage.setType(GameMessage.MessageType.ONEMOREROUND); // 메세지 타입
 
         }else if(gameMessage.getType().equals(GameMessage.MessageType.ONEMOREROUND)){
             gameMessage.setRoomId(Long.toString(gameroomid)); // 게임 방 id
             gameMessage.setSenderId(""); // senderId는 딱히 필요없으므로 공백처리
-            gameMessage.setSender(""); // sender는 딱히 필요없으므로 공백처리
+            gameMessage.setSender("운영자"); // sender는 딱히 필요없으므로 공백처리
             gameMessage.setContent("방장이 '투표하기'를 선택하셨습니다."); // 마지막 유저의 위치면 한 바퀴를 돌았다는 것으로 간주
             gameMessage.setType(GameMessage.MessageType.VOTE); // 메세지 타입
         }
