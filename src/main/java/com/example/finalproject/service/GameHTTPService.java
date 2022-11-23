@@ -137,13 +137,14 @@ public class GameHTTPService {
         gameMessage.setRoomId(Long.toString(gameroomid));
         gameMessage.setSenderId("");
         gameMessage.setSender("");
-        gameMessage.setContent(gameStartSet.getKeyword().equals(answer));
+        gameMessage.setContent(gameStartSet.getKeyword().replaceAll(" ","").equals(answer.replaceAll(" ","")));
         gameMessage.setType(GameMessage.MessageType.RESULT);
         messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
-
-        if(gameStartSet.getKeyword().strip().equals(answer.strip())) {// 라이어가 정답을 맞추면
+        // 라이어가 정답을 맞추면 라이어 승리
+        if(gameStartSet.getKeyword().replaceAll(" ","").equals(answer.replaceAll(" ",""))) {
             gameStartSet.setWinner(GameStartSet.Winner.LIER);
         }
+        // 틀리면 시민 승리
         else {
             gameStartSet.setWinner(GameStartSet.Winner.CITIZEN);
         }
@@ -173,56 +174,110 @@ public class GameHTTPService {
 
             playingMembers.add(each_member);
 
-            // 게임 맴버 상태 ready
+//             게임 맴버 상태 ready
             jpaQueryFactory
                     .update(gameRoomMember)
                     .set(gameRoomMember.ready, "ready")
                     .where(gameRoomMember.member_id.eq(gameRoomMember2.getMember_id()))
                     .execute();
-            em.flush();
-            em.clear();
+//            em.flush();
+//            em.clear();
         }
 
         // 전적 계산
         VictoryDto victoryDto = new VictoryDto();
-        log.info("승리한 사람 역할 : {}", gameStartSet1.getWinner());
 
+        // 해당 게임의 승자가 라이어일 경우
         if(gameStartSet1.getWinner().equals(GameStartSet.Winner.LIER)){
             for(Member playingMember : playingMembers){
+                // 라이어는 승리
                 if(playingMember.getNickname().equals(gameStartSet1.getLier())){
-                    playingMember.addWin();
+                    Long winNum1 = playingMember.getWinNum();
+                    Long winLier1 = playingMember.getWinLIER();
+//                    playingMember.addWin();
+                    jpaQueryFactory
+                            .update(member)
+                            .set(member.winNum, winNum1+1)
+                            .where(member.memberId.eq(playingMember.getMemberId()))
+                            .execute();
+//                    playingMember.addWinLIER();
+                    jpaQueryFactory
+                            .update(member)
+                            .set(member.winLIER, winLier1+1)
+                            .where(member.memberId.eq(playingMember.getMemberId()))
+                            .execute();
                     victoryDto.getWinner().add(playingMember.getNickname());
-                    playingMember.addWinLIER();
                 }
+                // 시민은 패배
                 else {
-                    playingMember.addLose();
+                    Long lossNum1 = playingMember.getLossNum();
+                    Long lossCITIZEN1 = playingMember.getLossCITIZEN();
+//                    playingMember.addLose();
+                    jpaQueryFactory
+                            .update(member)
+                            .set(member.lossNum, lossNum1+1)
+                            .where(member.memberId.eq(playingMember.getMemberId()))
+                            .execute();
+//                    playingMember.addLossCITIZEN();
+                    jpaQueryFactory
+                            .update(member)
+                            .set(member.lossCITIZEN, lossCITIZEN1+1)
+                            .where(member.memberId.eq(playingMember.getMemberId()))
+                            .execute();
+
                     victoryDto.getLoser().add(playingMember.getNickname());
-                    playingMember.addLossCITIZEN();
                 }
 
-                // 게임 승리 업적
-                rewardRequired.achieveVitoryReward(playingMember, gameroomid);
-                // 게임 패배 업적
-                rewardRequired.achieveLoseReward(playingMember, gameroomid);
+//                // 게임 승리 업적
+//                rewardRequired.achieveVitoryReward(playingMember, gameroomid);
+//                // 게임 패배 업적
+//                rewardRequired.achieveLoseReward(playingMember, gameroomid);
             }
         }
+        // 해당 게임의 승자가 시민일 경우
         else{
             for(Member playingMember : playingMembers){
+                // 라이어는 패배
                 if(playingMember.getNickname().equals(gameStartSet1.getLier())){
-                    playingMember.addLose();
+                    Long lossNum1 = playingMember.getLossNum();
+                    Long lossLIER1 = playingMember.getLossLIER();
+//                    playingMember.addLose();
+                    jpaQueryFactory
+                            .update(member)
+                            .set(member.lossNum, lossNum1+1)
+                            .where(member.memberId.eq(playingMember.getMemberId()))
+                            .execute();
+//                    playingMember.addLossLIER();
+                    jpaQueryFactory
+                            .update(member)
+                            .set(member.lossLIER, lossLIER1+1)
+                            .where(member.memberId.eq(playingMember.getMemberId()))
+                            .execute();
                     victoryDto.getLoser().add(playingMember.getNickname());
-                    playingMember.addLossLIER();
                 }
+                // 시민은 승리
                 else {
-                    playingMember.addWin();
+                    Long winNum1 = playingMember.getWinNum();
+                    Long winCITIZEN1 = playingMember.getWinCITIZEN();
+//                    playingMember.addWin();
+                    jpaQueryFactory
+                            .update(member)
+                            .set(member.winNum, winNum1+1)
+                            .where(member.memberId.eq(playingMember.getMemberId()))
+                            .execute();
+//                    playingMember.addWinCITIZEN();
+                    jpaQueryFactory
+                            .update(member)
+                            .set(member.winCITIZEN, winCITIZEN1+1)
+                            .where(member.memberId.eq(playingMember.getMemberId()))
+                            .execute();
                     victoryDto.getWinner().add(playingMember.getNickname());
-                    playingMember.addWinCITIZEN();
                 }
 
-                // 게임 승리 업적
-                rewardRequired.achieveVitoryReward(playingMember, gameroomid);
-                //게임 패배 업적
-                rewardRequired.achieveLoseReward(playingMember, gameroomid);
+//                // 게임 승리 업적
+//                rewardRequired.achieveVitoryReward(playingMember, gameroomid);
+//                //게임 패배 업적
+//                rewardRequired.achieveLoseReward(playingMember, gameroomid);
             }
         }
         GameMessage<VictoryDto> gameMessage = new GameMessage<>();

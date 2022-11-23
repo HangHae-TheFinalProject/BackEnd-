@@ -72,22 +72,6 @@ public class Member extends Timestamped{
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Liked> likes;
 
-    public void addWin(){
-        this.winNum += 1L;
-    }
-    public void addLose(){
-        this.lossNum += 1L;
-    }
-    public void addWinLIER(){this.winLIER += 1L;}
-    public void addWinCITIZEN(){
-        this.winCITIZEN += 1L;
-    }
-    public void addLossLIER(){
-        this.lossLIER += 1L;
-    }
-    public void addLossCITIZEN(){
-        this.lossCITIZEN += 1L;
-    }
 
     @Override
     public boolean equals(Object o) {
