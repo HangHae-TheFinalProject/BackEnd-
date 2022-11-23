@@ -2,7 +2,6 @@ package com.example.finalproject.service;
 
 import com.example.finalproject.controller.request.GameRoomRequestDto;
 import com.example.finalproject.controller.response.GameRoomResponseDto;
-import com.example.finalproject.controller.response.PostResponseDto;
 import com.example.finalproject.domain.*;
 import com.example.finalproject.exception.PrivateException;
 import com.example.finalproject.exception.PrivateResponseBody;
@@ -10,30 +9,22 @@ import com.example.finalproject.exception.StatusCode;
 import com.example.finalproject.jwt.TokenProvider;
 import com.example.finalproject.repository.GameRoomMemberRepository;
 import com.example.finalproject.repository.GameRoomRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openvidu.java.client.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.security.Principal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 import static com.example.finalproject.domain.QMember.member;
 import static com.example.finalproject.domain.QGameRoom.gameRoom;
@@ -163,8 +154,25 @@ public class GameRoomService {
             }
         }
 
+        // 페이지 수
+        int pageCnt = rooms.size() / size;
+
+        // 만약 페이지 수가 size 와 딱 맞아떨어지지 않고 더 많다면 +1을 해준다.
+        if(!(rooms.size() % size == 0)){
+            pageCnt = pageCnt + 1;
+        }
+
+        // page 번호와 페이지에 존재하는 방들을 담기위한 hashmap
+        HashMap<String, Object> pageRoomSet = new HashMap<>();
+
+        // 최대 페이지
+        pageRoomSet.put("pageCnt",pageCnt);
+        // 페이지 안에 있는 방들
+        pageRoomSet.put("roomsInPage",roomsInPage);
+
+
         // 결과 출력
-        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, roomsInPage), HttpStatus.OK);
+        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, pageRoomSet), HttpStatus.OK);
     }
 
 
@@ -375,7 +383,7 @@ public class GameRoomService {
         messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage);
 
         // 방에서 나가려고 하는 멤버가 현재 방장이고, 게임방에 남아있는 인원이 존재할 경우에 남은 사람듣 중에 방장을 랜덤으로 지정
-        if (auth_member.getNickname() == gameRoom1.getOwner() && !gameRoomMembers.isEmpty()) {
+        if (auth_member.getNickname().equals(gameRoom1.getOwner()) && !gameRoomMembers.isEmpty()) {
 
             // 남은 사람들의 수 만큼 랜덤으로 돌려서 나온 멤버 id
             Long nextOwnerId = gameRoomMembers.get((int) (Math.random() * gameRoomMembers.size())).getMember_id();
@@ -396,13 +404,14 @@ public class GameRoomService {
             em.flush();
             em.clear();
 
-            gameMessage.setRoomId(Long.toString(gameRoom1.getRoomId())); // 방 id
-            gameMessage.setSenderId(Long.toString(nextOwner.getMemberId())); // 다음 방장이 된 유저 id
-            gameMessage.setSender(nextOwner.getNickname()); // 다음 방장이 된 유저의 닉네임
-            gameMessage.setContent(gameMessage.getSender() + "님이 방장이 되셨습니다."); // 새로운 방장 선언
-            gameMessage.setType(GameMessage.MessageType.LEAVE); // 메세지 타입
+            GameMessage gameMessage1 = new GameMessage<>();
+            gameMessage1.setRoomId(Long.toString(gameRoom1.getRoomId())); // 방 id
+            gameMessage1.setSenderId(Long.toString(nextOwner.getMemberId())); // 다음 방장이 된 유저 id
+            gameMessage1.setSender(nextOwner.getNickname()); // 다음 방장이 된 유저의 닉네임
+            gameMessage1.setContent(gameMessage1.getSender() + "님이 방장이 되셨습니다."); // 새로운 방장 선언
+            gameMessage1.setType(GameMessage.MessageType.NEWOWNER); // 메세지 타입
 
-            messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage);
+            messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage1);
         }
 
         // 정상적으로 방을 나가면 문구 출력

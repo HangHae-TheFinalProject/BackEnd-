@@ -4,9 +4,11 @@ import com.example.finalproject.controller.request.LoginRequestDto;
 import com.example.finalproject.controller.request.MemberRequestDto;
 import com.example.finalproject.controller.request.TokenDto;
 import com.example.finalproject.domain.Member;
+import com.example.finalproject.domain.MemberActive;
 import com.example.finalproject.exception.PrivateResponseBody;
 import com.example.finalproject.exception.StatusCode;
 import com.example.finalproject.jwt.TokenProvider;
+import com.example.finalproject.repository.MemberActiveRepository;
 import com.example.finalproject.repository.MemberRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,7 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final JPAQueryFactory jpaQueryFactory;
     private final MemberRepository memberRepository;
+    private final MemberActiveRepository memberActiveRepository;
 
     // 회원가입
     public ResponseEntity<PrivateResponseBody> signup(MemberRequestDto memberRequestDto) {
@@ -72,6 +75,22 @@ public class MemberService {
                 .build();
 
         memberRepository.save(member);
+
+        // 유저 활동 기록 초기화 (업적용)
+        MemberActive memberActive = MemberActive.builder()
+                .createNum(0L) // 방 생성 횟수
+                .ownerNum(0L) // 방장이 된 횟수
+                .enterNum(0L) // 방에 들어간 횟수
+                .exitNum(0L) // 방을 나간 횟수
+                .gamereadyNum(0L) // 게임준비 한 횟수
+                .gamestartNum(0L) // 게임시작 한 횟수
+                .voteNum(0L) // 투표한 횟수
+                .correctanswerNum(0L) // 정답을 맞춘 횟수
+                .member(member)
+                .build();
+
+        // 활동 기록 초기화 저장
+        memberActiveRepository.save(memberActive);
 
         return new ResponseEntity<>(new PrivateResponseBody
                 (StatusCode.OK, "회원가입 성공"), HttpStatus.OK);

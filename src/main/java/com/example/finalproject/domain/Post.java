@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Entity
-public class Post {
+public class Post extends Timestamped{
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
@@ -29,6 +29,12 @@ public class Post {
     @Column(nullable = false)
     private String content;
 
+    @Column
+    private Long likecnt;
+
+    @Column
+    private Long viewcnt;
+
     @JsonIgnore
     @JoinColumn(name = "memberId")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -38,5 +44,11 @@ public class Post {
     @OneToMany(mappedBy = "post",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Media> medias;
 
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments;
+
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Liked> likes;
 
 }
