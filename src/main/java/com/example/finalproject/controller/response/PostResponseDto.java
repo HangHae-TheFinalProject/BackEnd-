@@ -19,6 +19,6 @@ public class PostResponseDto {
     private Long viewcnt;
     private String createdAt;
     private String modifiedAt;
-    private List<Media> medias;
+    private List<MediaResponseDto> medias;
     private List<CommentResponseDto> comments;
 }
