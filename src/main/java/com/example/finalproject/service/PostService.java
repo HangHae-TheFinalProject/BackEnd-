@@ -13,6 +13,7 @@ import com.example.finalproject.jwt.TokenProvider;
 import com.example.finalproject.repository.PostRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ import java.util.List;
 import static com.example.finalproject.domain.QPost.post;
 import static com.example.finalproject.domain.QMedia.media;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class PostService {
@@ -374,7 +376,7 @@ public class PostService {
 
 
     // 게시글 전체 목록 조회
-    public ResponseEntity<PrivateResponseBody> getAllPost(HttpServletRequest request, StringDto stringDto) {
+    public ResponseEntity<PrivateResponseBody> getAllPost(HttpServletRequest request, String sort) {
 
         // 인증 정보 유효성 검증
         authorizeToken(request);
@@ -386,7 +388,8 @@ public class PostService {
         // hashmap 으로 저장된 게시글의 내용들을 리스트로 저장
         List<HashMap<String, Object>> allPostlist = new ArrayList<>();
 
-        if(stringDto.getValue().equals("recent")){
+        if(sort.equals("recent")){
+            log.info("최신 순 조회 : {}", sort);
 
             // 최근 생성일자 기준으로 작성된 게시글들 전체 리스트 저장
             List<Post> postlist = jpaQueryFactory
@@ -406,7 +409,8 @@ public class PostService {
                 allPostlist.add(allPosts);
             }
 
-        }else if(stringDto.getValue().equals("view")){ //
+        }else if(sort.equals("view")){ //
+            log.info("조회 수 조회 : {}", sort);
 
             // 최근 조회수 기눚으로 작성된 게시글들 전체 리스트 저장
             List<Post> postlist = jpaQueryFactory
@@ -427,6 +431,7 @@ public class PostService {
             }
 
         }else{
+            log.info("초기 게시판 목록 조회 : {}", sort);
 
             // 일반 초기 게시글 목록 조회
             List<Post> postlist = jpaQueryFactory
