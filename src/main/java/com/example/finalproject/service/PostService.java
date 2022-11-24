@@ -3,6 +3,7 @@ package com.example.finalproject.service;
 import com.example.finalproject.controller.request.PostRequestDto;
 import com.example.finalproject.controller.request.StringDto;
 import com.example.finalproject.controller.response.CommentResponseDto;
+import com.example.finalproject.controller.response.MediaResponseDto;
 import com.example.finalproject.controller.response.PostResponseDto;
 import com.example.finalproject.domain.*;
 import com.example.finalproject.exception.PrivateException;
@@ -84,6 +85,8 @@ public class PostService {
 
         postRepository.save(writePost);
 
+        List<MediaResponseDto> mediaResponseDtos = new ArrayList<>();
+
         // 업로드할 이미지 파일이 존재할 경우
         if (multipartFiles != null) {
             // 이미지 업로드 인터페이스를 이용하여 s3와 media entity에 저장하고 이미지들이 담긴 리스트를 반환받는다.
@@ -98,6 +101,17 @@ public class PostService {
 
             em.flush();
             em.clear();
+
+            for(Media media1 : writePost.getMedias()){
+                MediaResponseDto mediaResponseDto = MediaResponseDto.builder()
+                        .mediaId(media1.getMediaId())
+                        .mediaName(media1.getMediaName())
+                        .mediaUrl(media1.getMediaUrl())
+                        .build();
+
+                mediaResponseDtos.add(mediaResponseDto);
+            }
+
         }
 
         // Dto 로 출력할 내용들을 저장
@@ -109,7 +123,7 @@ public class PostService {
                 .viewcnt(writePost.getViewcnt())
                 .createdAt(writePost.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
                 .modifiedAt(writePost.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-                .medias(writePost.getMedias()) // 작성 게시글 이미지 파일들
+                .medias(mediaResponseDtos) // 작성 게시글 이미지 파일들
                 .build();
 
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, postResponseDto), HttpStatus.OK);
@@ -140,6 +154,7 @@ public class PostService {
 
         // 수정할 이미지 파일들을 저장할 리스트
         List<Media> medias = null;
+        List<MediaResponseDto> mediaResponseDtos = new ArrayList<>();
 
         // 수정할 이미지 파일들이  존재하고, 현재 등록된 이미지들이 존재할 경우
         if (multipartFiles != null && !update_post.getMedias().isEmpty()) {
@@ -176,6 +191,16 @@ public class PostService {
 
             em.flush();
             em.clear();
+
+            for(Media media1 : update_post.getMedias()){
+                MediaResponseDto mediaResponseDto = MediaResponseDto.builder()
+                        .mediaId(media1.getMediaId())
+                        .mediaName(media1.getMediaName())
+                        .mediaUrl(media1.getMediaUrl())
+                        .build();
+
+                mediaResponseDtos.add(mediaResponseDto);
+            }
 
             // <이미지들을 삭제 후 업데이트하는 이유>
             // 예를 들어, 기존에 등록된 이미지가 2장이고 새로이 수정하고자 하는 이미지가 3장일 경우
@@ -222,7 +247,7 @@ public class PostService {
                 .viewcnt(update_post.getViewcnt()) // 조회 수
                 .createdAt(update_post.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd"))) // 생성일자
                 .modifiedAt(update_post.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd"))) // 수정일자
-                .medias(update_post.getMedias()) // 수정된 게시글의 이미지들
+                .medias(mediaResponseDtos) // 수정된 게시글의 이미지들
                 .comments(comments) // 게시글에 작성된 댓글들
                 .build();
 
@@ -292,6 +317,34 @@ public class PostService {
                 .where(post.postId.eq(postId))
                 .fetchOne();
 
+        // 댓글 추가
+        List<CommentResponseDto> commentResponseDtoList = new ArrayList<>();
+        List<MediaResponseDto> mediaResponseDtos = new ArrayList<>();
+
+        if(!getPost.getComments().isEmpty()){
+            for (Comment comment : getPost.getComments()) {
+                commentResponseDtoList.add(
+                        CommentResponseDto.builder()
+                                .commentid(comment.getCommentId())
+                                .content(comment.getContent())
+                                .author(comment.getAuthor())
+                                .build()
+                );
+            }
+        }
+
+        if(!getPost.getMedias().isEmpty()){
+            for (Media media1  : getPost.getMedias()) {
+                mediaResponseDtos.add(
+                        MediaResponseDto.builder()
+                                .mediaId(media1.getMediaId())
+                                .mediaName(media1.getMediaName())
+                                .mediaUrl(media1.getMediaUrl())
+                                .build()
+                );
+            }
+        }
+
         // 조회 수 증가
         jpaQueryFactory
                 .update(post)
@@ -299,21 +352,6 @@ public class PostService {
                 .where(post.postId.eq(getPost.getPostId()))
                 .execute();
 
-        em.flush();
-        em.clear();
-
-        // 댓글 추가
-        List<CommentResponseDto> commentResponseDtoList = new ArrayList<>();
-
-        for (Comment comment : getPost.getComments()) {
-            commentResponseDtoList.add(
-                    CommentResponseDto.builder()
-                            .commentid(comment.getCommentId())
-                            .content(comment.getContent())
-                            .author(comment.getAuthor())
-                            .build()
-            );
-        }
 
         // 상세 조회할 게시글 정보를 Dto에 저장
         PostResponseDto postResponseDto = PostResponseDto.builder()
@@ -324,9 +362,12 @@ public class PostService {
                 .viewcnt(getPost.getViewcnt()) // 조회 수
                 .createdAt(getPost.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd"))) // 생성일자
                 .modifiedAt(getPost.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd"))) // 수정일자
-                .medias(getPost.getMedias()) // 조회할 게시글에 속한 이미지파일들
+                .medias(mediaResponseDtos) // 조회할 게시글에 속한 이미지파일들
                 .comments(commentResponseDtoList) // 댓글들
                 .build();
+
+        em.flush();
+        em.clear();
 
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, postResponseDto), HttpStatus.OK);
     }
