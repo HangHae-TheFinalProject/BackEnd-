@@ -162,11 +162,28 @@ public class GameService {
         startset.put("keyword", gameStartSet.getKeyword()); // 키워드
         startset.put("memberlist", memberset); // 방에 존재하는 모든 유저들
 
-        gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 게임방 id
-        gameMessage.setSenderId(""); // 준비된 유저의 id
-        gameMessage.setSender("운영자"); // 준비된 유저의 닉네임
-        gameMessage.setContent(startset); // 준비됫다는 내용
-        gameMessage.setType(GameMessage.MessageType.START); // 메세지 타입
+        if(gameRoom1.getMode().equals(Mode.일반)){
+            gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 게임방 id
+            gameMessage.setSenderId(""); // 준비된 유저의 id
+            gameMessage.setSender("운영자"); // 준비된 유저의 닉네임
+            gameMessage.setContent(startset); // 준비됫다는 내용
+            gameMessage.setType(GameMessage.MessageType.START); // 메세지 타입
+
+        }else if(gameRoom1.getMode().equals(Mode.바보)){
+            // 랜덤으로 걸린 키워드 (라이어용)
+            keywordList.remove(chooseKeyword);
+            Keyword lierkeyword = keywordList.get((int) (Math.random() * keywordList.size()));
+
+            startset.put("liercategory", lierkeyword.getCategory()); // 바보 모드용 라이어 카테고리
+            startset.put("lierkeyword", lierkeyword.getWord()); // 바보 모드용 라이어 키워드
+
+            gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 게임방 id
+            gameMessage.setSenderId(""); // 준비된 유저의 id
+            gameMessage.setSender("운영자"); // 준비된 유저의 닉네임
+            gameMessage.setContent(startset); // 준비됫다는 내용
+            gameMessage.setType(GameMessage.MessageType.START); // 메세지 타입
+        }
+
 
 
         // 게임 시작 알림을 방에 구독이 된 유저들에게 알려줌
