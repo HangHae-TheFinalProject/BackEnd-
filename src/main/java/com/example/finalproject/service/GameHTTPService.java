@@ -285,7 +285,7 @@ public class GameHTTPService {
         gameMessage.setSenderId("");
         gameMessage.setSender("");
         gameMessage.setContent(victoryDto);
-        gameMessage.setType(GameMessage.MessageType.RESULT);
+        gameMessage.setType(GameMessage.MessageType.VICTORY);
         messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
         // GameStartSet 삭제
