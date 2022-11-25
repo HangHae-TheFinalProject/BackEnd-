@@ -75,8 +75,8 @@ public class CommentService {
                 .commentid(comment.getCommentId())
                 .content(comment.getContent())
                 .author(comment.getAuthor())
-                .createdAt(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-                .modifiedAt(comment.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+                .createdAt(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm")))
+                .modifiedAt(comment.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm")))
                 .build();
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, commentResponseDto), HttpStatus.OK);
     }
