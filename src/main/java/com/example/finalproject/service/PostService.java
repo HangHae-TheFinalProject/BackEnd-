@@ -247,8 +247,8 @@ public class PostService {
                 .title(update_post.getTitle()) // 수정된 게시글의 제목
                 .content(update_post.getContent()) // 수정된 게시글의 내용
                 .viewcnt(update_post.getViewcnt()) // 조회 수
-                .createdAt(update_post.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd hh:mm"))) // 생성일자
-                .modifiedAt(update_post.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd hh:mm"))) // 수정일자
+                .createdAt(update_post.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd"))) // 생성일자
+                .modifiedAt(update_post.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd"))) // 수정일자
                 .medias(mediaResponseDtos) // 수정된 게시글의 이미지들
                 .comments(comments) // 게시글에 작성된 댓글들
                 .build();
