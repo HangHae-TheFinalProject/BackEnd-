@@ -13,6 +13,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openvidu.java.client.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
@@ -41,7 +43,8 @@ public class GameRoomService {
     private final ChatRoomService chatRoomService;
     private final EntityManager em;
     private final SimpMessageSendingOperations messagingTemplate;
-
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final ChannelTopic channelTopic;
 
     // 인증 정보 검증 부분을 한 곳으로 모아놓음
     public Member authorizeToken(HttpServletRequest request) {
@@ -331,6 +334,14 @@ public class GameRoomService {
         // 구독 주소에 어떤 유저가 집입했는지 메세지 전달 (구독한 유저 전부 메세지 받음)
         messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage);
 
+        // 채팅창에 입장 메세지 출력
+        ChatMessage chatMessage = new ChatMessage();
+        chatMessage.setRoomId(Long.toString(roomId));
+        chatMessage.setType(ChatMessage.MessageType.ENTER);
+        chatMessage.setSender(auth_member.getNickname());
+        chatMessage.setMessage(auth_member.getNickname().substring(0,auth_member.getNickname().length()-5) + "님이 게임에 참가하셨습니다.");
+
+        redisTemplate.convertAndSend(channelTopic.getTopic(), chatMessage);
 
         // 결과 출력
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, gameRoomResponseDto), HttpStatus.OK);
