@@ -330,6 +330,8 @@ public class PostService {
                                 .commentid(comment.getCommentId())
                                 .content(comment.getContent())
                                 .author(comment.getAuthor())
+                                .createdAt(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+                                .modifiedAt(comment.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
                                 .build()
                 );
             }

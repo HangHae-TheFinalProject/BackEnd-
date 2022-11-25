@@ -13,4 +13,6 @@ public class CommentResponseDto {
   private Long commentid;
   private String content;
   private String author;
+  private String createdAt;
+  private String modifiedAt;
 }

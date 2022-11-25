@@ -22,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 
+import java.time.format.DateTimeFormatter;
+
 import static com.example.finalproject.domain.QComment.comment;
 import static com.example.finalproject.domain.QPost.post;
 
@@ -73,6 +75,8 @@ public class CommentService {
                 .commentid(comment.getCommentId())
                 .content(comment.getContent())
                 .author(comment.getAuthor())
+                .createdAt(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
+                .modifiedAt(comment.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
                 .build();
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, commentResponseDto), HttpStatus.OK);
     }
