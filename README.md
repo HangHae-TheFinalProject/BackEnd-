@@ -1,39 +1,47 @@
-# SpringBoot Project - 너가 라이어다!(가제)
-SpringBoot로 게임 내부 로직을 구현한 프로젝트
+<컨셉 배너>
+# 👿 라이어게임:비밀의 문
+
+## ✋ 프로젝트 소개
+#### 예능으로만 보던 그 게임을 실시간으로 즐기는 온라인 게임입니다.
+
+### 🔍 주요 기능
+- `화상` 실시간으로 상대방의 표정을 관찰하면서 라이어를 찾아내세요.
+- `채팅` 채팅으로 참가자들과 대화를 나누며 라이어를 찾아내세요.
+
+<details>
+<summary>주요 기술</summary>
+
+  #### OpenVidu
+  - content
+  #### SockJS/StompJS
+  - content
+  #### CI/CD
+  - content
+
+</details>
+
+### 🎮 인게임 대표 이미지
+
+### 🛠️ 트러블슈팅
+▶ https://www.notion.so/Trouble-shooting-ea14209f725342b68610b5c0fa77728a
+
+### 🗂️ 기술스택
+<img src="https://img.shields.io/badge/HTML-E34F26?style=for-the-badge&logo=HTML5&logoColor=white"/> <img src="https://img.shields.io/badge/Sass-CC6699?style=for-the-badge&logo=Sass&logoColor=white"/> <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=JavaScript&logoColor=black"/> <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=black"/> <img src="https://img.shields.io/badge/Redux Toolkit-764ABC?style=for-the-badge&logo=Redux&logoColor=white"/> <br> <img src="https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=Axios&logoColor=white"/> <img src="https://img.shields.io/badge/MUI-007FFF?style=for-the-badge&logo=MUI&logoColor=white"/> <img src="https://img.shields.io/badge/WebRTC-333333?style=for-the-badge&logo=WebRTC&logoColor=white"/> <img src="https://img.shields.io/badge/openVidu-06d362?style=for-the-badge&logo=oepnVidu&logoColor=white"/> <img src="https://img.shields.io/badge/sockjs-333333?style=for-the-badge&logo=sockjs&logoColor=white"/> <img src="https://img.shields.io/badge/stomp-333333?style=for-the-badge&logo=stomp&logoColor=white"/> <img src="https://img.shields.io/badge/WebSocket?style=for-the-badge&logo=WebSocket&logoColor=white">
 
 
+### 🏗️ 프로젝트 아키텍처
+![image](https://user-images.githubusercontent.com/112993031/203712629-d18f4bb6-9f67-48a0-8b91-cae658e3d657.png)
+▶ https://www.notion.so/Service-Architecture-a0a8b52c030641d59b1ad31fce0893a0
 
-## 프로젝트 소개
-TV, 유튜브와 같은 미디어 매체에서만 보던 라이어게임을 SpringBoot구현했습니다!
+### 📆 프로젝트 기간
 
+> 2022.11.04 ~ 2022.12.16  
+> 1차 배포 : 2022.00.00  
+> 2차 배포 : 2022.00.00
 
+### 🙋🏻‍♀️🙋🏻 프로젝트 멤버
 
-## 개발 기간
-2022.11.04 ~ 2022.12.23
-
-
-
-## 개발 인력 및 담당 기능
-- 진세훈
-  - 화상채팅
-    - WebRTC 화상채팅
-  - 게임방 관리
-    - 전체 게임방 조회, 게임방 생성, 게임방 입장, 게임방 나가기
-  - 회원관리
-    - 로그인, 회원가입, 소셜 로그인(구글)
-  - 게임 로직
-    - 게임준비, 게임시작, 스포트라이트
-  - 게시판 관리 
-    - 게시글 작성, 게시글 수정, 게시글 조회, 게시글 삭제, 게시글 전체 조회
-  - 마이페이지 관리
-    - 작성 게시글들 조회, 작성 댓글들 조회, 전체 게임 승리/패배 전적, 라이어 승리/패배 전적, 시민 승리/패배 전적, 조건에 따른 리워드 업적
-
-
-
-
-## 개발 환경
-- Java
-
-
-
-## 기능 소개
+|김민주 🌞|신혜정|정건희|진세훈 🌝|조혜수|박성빈|
+|:---:|:---:|:---:|:---:|:---:|:---:|
+|프로필|프로필|프로필|프로필|프로필|프로필|
+|FRONT-END|FRONT-END|FRONT-END|BECK-END|BECK-END|DESIGN|
