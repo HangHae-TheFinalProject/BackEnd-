@@ -162,44 +162,6 @@ public class MemberService {
                 (StatusCode.OK, "로그아웃"), HttpStatus.OK);
     }
 
-
-    // 회원탈퇴
-    @Transactional
-    public ResponseEntity<PrivateResponseBody> signout(HttpServletRequest request) {
-
-        log.info("회원탈퇴 : {}", request.getHeader("Authorization"));
-
-        // 리프레쉬 토큰 확인
-        if (!tokenProvider.validateToken(request.getHeader("Refresh-Token"))) {
-            return new ResponseEntity<>(new PrivateResponseBody
-                    (StatusCode.LOGIN_WRONG_FORM_JWT_TOKEN, null), HttpStatus.BAD_REQUEST);
-        }
-
-        // 현재 로그인한 유저 조회
-        Member auth_member = tokenProvider.getMemberFromAuthentication();
-
-        // 회원 확인
-        if (null == auth_member) {
-            return new ResponseEntity<>(new PrivateResponseBody
-                    (StatusCode.LOGIN_MEMBER_ID_FAIL, null), HttpStatus.NOT_FOUND);
-        }
-
-        // 리프레시 토큰을 삭제한다.
-        tokenProvider.deleteRefreshToken(auth_member);
-
-        // 가입하여 저장된 유저의 정보를 삭제한다.
-        jpaQueryFactory
-                .delete(member)
-                .where(member.memberId.eq(auth_member.getMemberId()).and(member.nickname.eq(auth_member.getNickname())))
-                .execute();
-
-        // contextholder 에 저장된 토큰 정보들을 삭제한다.
-        SecurityContextHolder.clearContext();
-
-        return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, "회원 탈퇴 하셨습니다. 이용해 주셔서 감사합니다."), HttpStatus.OK);
-    }
-
-
     //Email 확인
     @Transactional(readOnly = true)
     public Member isPresentMember(String email) {
