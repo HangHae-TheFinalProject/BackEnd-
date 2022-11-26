@@ -4,30 +4,32 @@ import com.example.finalproject.controller.request.StringDto;
 import com.example.finalproject.controller.response.VictoryDto;
 import com.example.finalproject.controller.response.VoteDto;
 import com.example.finalproject.domain.*;
-import com.example.finalproject.exception.PrivateException;
-import com.example.finalproject.exception.PrivateResponseBody;
-import com.example.finalproject.exception.StatusCode;
+
 import com.example.finalproject.jwt.TokenProvider;
 import com.example.finalproject.repository.GameStartSetRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.persistence.EntityManager;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.example.finalproject.domain.QGameRoom.gameRoom;
 import static com.example.finalproject.domain.QGameRoomMember.gameRoomMember;
 
 import java.util.Map.Entry;
 import java.util.ArrayList;
 import java.util.Comparator;
 import static com.example.finalproject.domain.QMember.member;
+import static com.example.finalproject.domain.QGameStartSet.gameStartSet;
+
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class GameHTTPService {
@@ -36,20 +38,11 @@ public class GameHTTPService {
     private final SimpMessageSendingOperations messagingTemplate;
     private final JPAQueryFactory jpaQueryFactory;
     private final TokenProvider tokenProvider;
+    private final RewardRequired rewardRequired;
+    private final EntityManager em;
     static int cnt =0;
     static HashMap<String, Integer> voteHashMap = new HashMap<>();
 
-//    public void isLier(Long gameroomid, String name) {
-//        GameStartSet gameStartSet= gameStartSetRepository.findByRoomId(gameroomid);
-//
-//        GameMessage gameMessage = new GameMessage();
-//        gameMessage.setRoomId(Long.toString(gameroomid));
-//        gameMessage.setSenderId("");
-//        gameMessage.setSender("");
-//        gameMessage.setContent(gameStartSet.getLier().equals(name) +"");
-//        gameMessage.setType(GameMessage.MessageType.START);
-//        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
-//    }
     @Transactional
     public void vote(Long gameroomid, StringDto stringDto){
         String name = stringDto.getValue();
@@ -64,51 +57,47 @@ public class GameHTTPService {
                 .fetch();
         int memberNum = gameRoomMembers.size();
         if(cnt != memberNum){
-            VoteDto voteDto = new VoteDto(null);
-            GameMessageData<VoteDto> gameMessageData = new GameMessageData<>();
-            gameMessageData.setRoomId(Long.toString(gameroomid));
-            gameMessageData.setSenderId("");
-            gameMessageData.setSender("");
-            gameMessageData.setData(voteDto);
-            gameMessageData.setType(GameMessageData.MessageType.CONTINUE);
-            messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessageData);
+            GameMessage<?> gameMessage = new GameMessage<>();
+            gameMessage.setRoomId(Long.toString(gameroomid));
+            gameMessage.setSenderId("");
+            gameMessage.setSender("");
+            gameMessage.setContent(null);
+            gameMessage.setType(GameMessage.MessageType.CONTINUE);
+            messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
             return;
         }
-        // 투표가 끝나면
-//        List<String> nickName = sortHash();
 
-        VoteDto voteDto = new VoteDto(sortHash());
-        GameMessageData<VoteDto> gameMessageData = new GameMessageData<>();
-        gameMessageData.setRoomId(Long.toString(gameroomid));
-        gameMessageData.setSenderId("");
-        gameMessageData.setSender("");
+        List<String> votedName = sortHash(); // 투표가 끝나면 최다투표자 list 뽑음
+        GameMessage<List<String>> gameMessage = new GameMessage<>();
+        gameMessage.setRoomId(Long.toString(gameroomid));
+        gameMessage.setSenderId("");
+        gameMessage.setSender("");
 
-        if(voteDto.getName().size()==1){
-            if(voteDto.getName().get(0).equals(gameStartSet.getLier())){
-//                content ="는 라이어가 맞습니다."; //LIER
-                gameMessageData.setType(GameMessageData.MessageType.LIER);
+        if(votedName.size()==1){
+            // 라이어가 지목 당했을 때
+            if(votedName.get(0).equals(gameStartSet.getLier())){
+                gameMessage.setType(GameMessage.MessageType.LIER);
             }
+            // 시민이 지목 당했을 때
             else{
-//                content = "는 라이어가 아닙니다."; //NLIER
-                gameMessageData.setType(GameMessageData.MessageType.NLIER);
+                gameMessage.setType(GameMessage.MessageType.NLIER);
                 gameStartSet.setWinner(GameStartSet.Winner.LIER);
             }
         }
         else{
+            // 동점 상황일 때
             if (gameStartSet.getRound()<4){
-//                content = "동점입니다."; //DRAW
-                gameMessageData.setType(GameMessageData.MessageType.DRAW);
+                gameMessage.setType(GameMessage.MessageType.DRAW);
             }
+            // 동점 상황, 라운도 종료 됐을 때 (라이어 승리)
             else{
-//                content ="동점 입니다. 라이어의 승리 입니다. 라이어는 " +gameStartSet.getLier() + "입니다."; //DRAWANDENDGAME
-                gameMessageData.setType(GameMessageData.MessageType.DRAWANDENDGAME);
-                voteDto.setLierIs(gameStartSet.getLier());
+                gameMessage.setType(GameMessage.MessageType.DRAWANDENDGAME);
                 gameStartSet.setWinner(GameStartSet.Winner.LIER);
             }
         }
-        gameMessageData.setData(voteDto);
-        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessageData);
+        gameMessage.setContent(votedName);
+        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
     }
     public List<String> sortHash(){
@@ -144,39 +133,30 @@ public class GameHTTPService {
         String answer = stringDto.getValue();
         GameStartSet gameStartSet= gameStartSetRepository.findByRoomId(gameroomid);
 
-        GameMessageData<Boolean> gameMessageData = new GameMessageData<>();
-        gameMessageData.setRoomId(Long.toString(gameroomid));
-        gameMessageData.setSenderId("");
-        gameMessageData.setSender("");
-        gameMessageData.setData(gameStartSet.getKeyword().equals(answer));
-        gameMessageData.setType(GameMessageData.MessageType.RESULT);
-        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessageData);
-
-        if(gameStartSet.getKeyword().equals(answer)) {// 라이어가 정답을 맞추면
+        GameMessage<Boolean> gameMessage = new GameMessage<>();
+        gameMessage.setRoomId(Long.toString(gameroomid));
+        gameMessage.setSenderId("");
+        gameMessage.setSender("");
+        gameMessage.setContent(gameStartSet.getKeyword().replaceAll(" ","").equals(answer.replaceAll(" ","")));
+        gameMessage.setType(GameMessage.MessageType.RESULT);
+        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
+        // 라이어가 정답을 맞추면 라이어 승리
+        if(gameStartSet.getKeyword().replaceAll(" ","").equals(answer.replaceAll(" ",""))) {
             gameStartSet.setWinner(GameStartSet.Winner.LIER);
         }
+        // 틀리면 시민 승리
         else {
             gameStartSet.setWinner(GameStartSet.Winner.CITIZEN);
         }
     }
 
     @Transactional
-    public void oneMoerRound(Long gameroomid) {
-        GameStartSet gameStartSet= gameStartSetRepository.findByRoomId(gameroomid);
-        Integer round = gameStartSet.oneMoerRound();
-        GameMessageData<Integer> gameMessageData = new GameMessageData<>();
-        gameMessageData.setRoomId(Long.toString(gameroomid));
-        gameMessageData.setSenderId("");
-        gameMessageData.setSender("");
-        gameMessageData.setData(round);
-        gameMessageData.setType(GameMessageData.MessageType.RESULT);
-        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessageData);
-
-    }
-    @Transactional
-    public void victory(Long gameroomid){
-        GameStartSet gameStartSet= gameStartSetRepository.findByRoomId(gameroomid);
-        System.out.println(gameStartSet.getGamestartsetId());
+    public void endGame(Long gameroomid){
+        GameStartSet gameStartSet1 = jpaQueryFactory
+                .selectFrom(gameStartSet)
+                .where(gameStartSet.roomId.eq(gameroomid))
+                .fetchOne();
+        System.out.println(gameStartSet1.getGamestartsetId());
 
         List<GameRoomMember> gameRoomMembers = jpaQueryFactory
                 .selectFrom(gameRoomMember)
@@ -193,43 +173,137 @@ public class GameHTTPService {
                     .fetchOne();
 
             playingMembers.add(each_member);
+
+//             게임 맴버 상태 ready
+            jpaQueryFactory
+                    .update(gameRoomMember)
+                    .set(gameRoomMember.ready, "ready")
+                    .where(gameRoomMember.member_id.eq(gameRoomMember2.getMember_id()))
+                    .execute();
+//            em.flush();
+//            em.clear();
         }
+
+        // 전적 계산
         VictoryDto victoryDto = new VictoryDto();
-        if(gameStartSet.getWinner().equals(GameStartSet.Winner.LIER)){
+
+        // 해당 게임의 승자가 라이어일 경우
+        if(gameStartSet1.getWinner().equals(GameStartSet.Winner.LIER)){
             for(Member playingMember : playingMembers){
-                if(playingMember.getNickname().equals(gameStartSet.getLier())){
-                    playingMember.addWin();
+                // 라이어는 승리
+                if(playingMember.getNickname().equals(gameStartSet1.getLier())){
+                    Long winNum1 = playingMember.getWinNum();
+                    Long winLier1 = playingMember.getWinLIER();
+//                    playingMember.addWin();
+                    jpaQueryFactory
+                            .update(member)
+                            .set(member.winNum, winNum1+1)
+                            .where(member.memberId.eq(playingMember.getMemberId()))
+                            .execute();
+//                    playingMember.addWinLIER();
+                    jpaQueryFactory
+                            .update(member)
+                            .set(member.winLIER, winLier1+1)
+                            .where(member.memberId.eq(playingMember.getMemberId()))
+                            .execute();
                     victoryDto.getWinner().add(playingMember.getNickname());
-                    playingMember.addWinLIER();
                 }
+                // 시민은 패배
                 else {
-                    playingMember.addLose();
+                    Long lossNum1 = playingMember.getLossNum();
+                    Long lossCITIZEN1 = playingMember.getLossCITIZEN();
+//                    playingMember.addLose();
+                    jpaQueryFactory
+                            .update(member)
+                            .set(member.lossNum, lossNum1+1)
+                            .where(member.memberId.eq(playingMember.getMemberId()))
+                            .execute();
+//                    playingMember.addLossCITIZEN();
+                    jpaQueryFactory
+                            .update(member)
+                            .set(member.lossCITIZEN, lossCITIZEN1+1)
+                            .where(member.memberId.eq(playingMember.getMemberId()))
+                            .execute();
+
                     victoryDto.getLoser().add(playingMember.getNickname());
-                    playingMember.addLossCITIZEN();
                 }
+
+//                // 게임 승리 업적
+//                rewardRequired.achieveVitoryReward(playingMember, gameroomid);
+//                // 게임 패배 업적
+//                rewardRequired.achieveLoseReward(playingMember, gameroomid);
             }
         }
+        // 해당 게임의 승자가 시민일 경우
         else{
             for(Member playingMember : playingMembers){
-                if(playingMember.getNickname().equals(gameStartSet.getLier())){
-                    playingMember.addLose();
+                // 라이어는 패배
+                if(playingMember.getNickname().equals(gameStartSet1.getLier())){
+                    Long lossNum1 = playingMember.getLossNum();
+                    Long lossLIER1 = playingMember.getLossLIER();
+//                    playingMember.addLose();
+                    jpaQueryFactory
+                            .update(member)
+                            .set(member.lossNum, lossNum1+1)
+                            .where(member.memberId.eq(playingMember.getMemberId()))
+                            .execute();
+//                    playingMember.addLossLIER();
+                    jpaQueryFactory
+                            .update(member)
+                            .set(member.lossLIER, lossLIER1+1)
+                            .where(member.memberId.eq(playingMember.getMemberId()))
+                            .execute();
                     victoryDto.getLoser().add(playingMember.getNickname());
-                    playingMember.addLossLIER();
                 }
+                // 시민은 승리
                 else {
-                    playingMember.addWin();
+                    Long winNum1 = playingMember.getWinNum();
+                    Long winCITIZEN1 = playingMember.getWinCITIZEN();
+//                    playingMember.addWin();
+                    jpaQueryFactory
+                            .update(member)
+                            .set(member.winNum, winNum1+1)
+                            .where(member.memberId.eq(playingMember.getMemberId()))
+                            .execute();
+//                    playingMember.addWinCITIZEN();
+                    jpaQueryFactory
+                            .update(member)
+                            .set(member.winCITIZEN, winCITIZEN1+1)
+                            .where(member.memberId.eq(playingMember.getMemberId()))
+                            .execute();
                     victoryDto.getWinner().add(playingMember.getNickname());
-                    playingMember.addWinCITIZEN();
                 }
+
+//                // 게임 승리 업적
+//                rewardRequired.achieveVitoryReward(playingMember, gameroomid);
+//                //게임 패배 업적
+//                rewardRequired.achieveLoseReward(playingMember, gameroomid);
             }
         }
-        GameMessageData<VictoryDto> gameMessageData = new GameMessageData<>();
-        gameMessageData.setRoomId(Long.toString(gameroomid));
-        gameMessageData.setSenderId("");
-        gameMessageData.setSender("");
-        gameMessageData.setData(victoryDto);
-        gameMessageData.setType(GameMessageData.MessageType.RESULT);
-        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessageData);
+        GameMessage<VictoryDto> gameMessage = new GameMessage<>();
+        gameMessage.setRoomId(Long.toString(gameroomid));
+        gameMessage.setSenderId("");
+        gameMessage.setSender("");
+        gameMessage.setContent(victoryDto);
+        gameMessage.setType(GameMessage.MessageType.VICTORY);
+        messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
+        // GameStartSet 삭제
+        gameStartSetRepository.delete(gameStartSet1);
+
+        // 게임 룸 상태 wait
+        GameRoom gameRoom1 = jpaQueryFactory
+                .selectFrom(gameRoom)
+                .where(gameRoom.roomId.eq(gameroomid))
+                .fetchOne();
+
+        jpaQueryFactory
+                .update(gameRoom)
+                .set(gameRoom.status, "wait")
+                .where(gameRoom.roomId.eq(gameRoom1.getRoomId()))
+                .execute();
+
+        em.flush();
+        em.clear();
     }
 }

@@ -32,16 +32,6 @@ public class Member extends Timestamped{
     @Column(nullable = false)
     private String nickname;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Post> posts;
-
-    // 추가
-    @JsonIgnore
-    @JoinColumn(name="gameroommember_id")
-    @ManyToOne(fetch = FetchType.LAZY)
-    private GameRoomMember gameRoomMember;
-
     @Column
     private Long winNum = 0L;
 
@@ -60,23 +50,28 @@ public class Member extends Timestamped{
     @Column
     private Long lossCITIZEN = 0L;
 
-    public void addWin(){
-        this.winNum += 1L;
-    }
-    public void addLose(){
-        this.lossNum += 1L;
-    }
-    public void addWinLIER(){this.winLIER += 1L;}
-    public void addWinCITIZEN(){
-        this.winCITIZEN += 1L;
-    }
-    public void addLossLIER(){
-        this.lossLIER += 1L;
-    }
-    public void addLossCITIZEN(){
-        this.lossCITIZEN += 1L;
-    }
-    
+    @JsonIgnore
+    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments;
+
+    // 추가
+    @JsonIgnore
+    @JoinColumn(name="gameroommember_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private GameRoomMember gameRoomMember;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reward> rewards;
+
+    @JsonIgnore
+    @OneToOne(fetch = FetchType.LAZY)
+    private MemberActive memberActive;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

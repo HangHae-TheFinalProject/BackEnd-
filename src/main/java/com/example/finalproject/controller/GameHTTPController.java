@@ -21,26 +21,26 @@ public class GameHTTPController {
 //    }
 
     // 투표
-    @MessageMapping("/lier/manager/{gameroomid}/vote")
+    @MessageMapping("/lier/game/{gameroomid}/vote")
     public void vote(@DestinationVariable("gameroomid") Long gameroomid, StringDto stringDto) {
         gameHTTPService.vote(gameroomid, stringDto);
     }
 
     // 라이어 정답 맞추기
-    @MessageMapping("/lier/manager/{gameroomid}/isAnswer")
+    @MessageMapping("/lier/game/{gameroomid}/isAnswer")
     public void isAnswer(@DestinationVariable("gameroomid") Long gameroomid, StringDto stringDto) {
         gameHTTPService.isAnswer(gameroomid, stringDto);
     }
 
-    // 한바퀴 더
-    @MessageMapping("/lier/manager/{gameroomid}/oneMoreRound")
-    public void oneMoerRound(@DestinationVariable("gameroomid") Long gameroomid) {
-        gameHTTPService.oneMoerRound(gameroomid);
-    }
+//    // 한바퀴 더
+//    @MessageMapping("/lier/manager/{gameroomid}/oneMoreRound")
+//    public void oneMoerRound(@DestinationVariable("gameroomid") Long gameroomid) {
+//        gameHTTPService.oneMoerRound(gameroomid);
+//    }
 
-    // winner, loser 전달 & 전적 업이트
-    @MessageMapping("/lier/manager/{gameroomid}/victory")
-    public void victory(@DestinationVariable("gameroomid") Long gameroomid) {
-        gameHTTPService.victory(gameroomid);
+    // winner, loser 전적 업데이트, 게임 종료
+    @MessageMapping("/lier/game/{gameroomid}/endgame")
+    public void endGame(@DestinationVariable("gameroomid") Long gameroomid) {
+        gameHTTPService.endGame(gameroomid);
     }
 }

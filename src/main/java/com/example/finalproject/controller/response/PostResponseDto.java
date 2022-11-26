@@ -1,9 +1,11 @@
 package com.example.finalproject.controller.response;
 
+import com.example.finalproject.domain.Comment;
 import com.example.finalproject.domain.Media;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -14,5 +16,9 @@ public class PostResponseDto {
     private String author;
     private String title;
     private String content;
-    private List<Media> medias;
+    private Long viewcnt;
+    private String createdAt;
+    private String modifiedAt;
+    private List<MediaResponseDto> medias;
+    private List<CommentResponseDto> comments;
 }

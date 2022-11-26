@@ -2,7 +2,6 @@ package com.example.finalproject.service;
 
 import com.example.finalproject.controller.request.GameRoomRequestDto;
 import com.example.finalproject.controller.response.GameRoomResponseDto;
-import com.example.finalproject.controller.response.PostResponseDto;
 import com.example.finalproject.domain.*;
 import com.example.finalproject.exception.PrivateException;
 import com.example.finalproject.exception.PrivateResponseBody;
@@ -10,30 +9,24 @@ import com.example.finalproject.exception.StatusCode;
 import com.example.finalproject.jwt.TokenProvider;
 import com.example.finalproject.repository.GameRoomMemberRepository;
 import com.example.finalproject.repository.GameRoomRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openvidu.java.client.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.security.Principal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 import static com.example.finalproject.domain.QMember.member;
 import static com.example.finalproject.domain.QGameRoom.gameRoom;
@@ -50,7 +43,8 @@ public class GameRoomService {
     private final ChatRoomService chatRoomService;
     private final EntityManager em;
     private final SimpMessageSendingOperations messagingTemplate;
-
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final ChannelTopic channelTopic;
 
     // 인증 정보 검증 부분을 한 곳으로 모아놓음
     public Member authorizeToken(HttpServletRequest request) {
@@ -163,8 +157,25 @@ public class GameRoomService {
             }
         }
 
+        // 페이지 수
+        int pageCnt = rooms.size() / size;
+
+        // 만약 페이지 수가 size 와 딱 맞아떨어지지 않고 더 많다면 +1을 해준다.
+        if(!(rooms.size() % size == 0)){
+            pageCnt = pageCnt + 1;
+        }
+
+        // page 번호와 페이지에 존재하는 방들을 담기위한 hashmap
+        HashMap<String, Object> pageRoomSet = new HashMap<>();
+
+        // 최대 페이지
+        pageRoomSet.put("pageCnt",pageCnt);
+        // 페이지 안에 있는 방들
+        pageRoomSet.put("roomsInPage",roomsInPage);
+
+
         // 결과 출력
-        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, roomsInPage), HttpStatus.OK);
+        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, pageRoomSet), HttpStatus.OK);
     }
 
 
@@ -173,7 +184,8 @@ public class GameRoomService {
     public ResponseEntity<?> makeGameRoom(
             GameRoomRequestDto gameRoomRequestDto, // 방 생성을 위해 input 값이 담긴 DTO
             HttpServletRequest request) // 인증정보를 가진 request
-            throws io.openvidu.java.client.OpenViduJavaClientException, io.openvidu.java.client.OpenViduHttpException {
+            throws io.openvidu.java.client.OpenViduJavaClientException, io.openvidu.java.client.OpenViduHttpException
+    {
 
         // 토큰 유효성 검증
         Member auth_member = authorizeToken(request);
@@ -322,6 +334,14 @@ public class GameRoomService {
         // 구독 주소에 어떤 유저가 집입했는지 메세지 전달 (구독한 유저 전부 메세지 받음)
         messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage);
 
+        // 채팅창에 입장 메세지 출력
+        ChatMessage chatMessage = new ChatMessage();
+        chatMessage.setRoomId(Long.toString(roomId));
+        chatMessage.setType(ChatMessage.MessageType.ENTER);
+        chatMessage.setSender(auth_member.getNickname());
+        chatMessage.setMessage(auth_member.getNickname().substring(0,auth_member.getNickname().length()-5) + "님이 게임에 참가하셨습니다.");
+
+        redisTemplate.convertAndSend(channelTopic.getTopic(), chatMessage);
 
         // 결과 출력
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, gameRoomResponseDto), HttpStatus.OK);
@@ -375,7 +395,7 @@ public class GameRoomService {
         messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage);
 
         // 방에서 나가려고 하는 멤버가 현재 방장이고, 게임방에 남아있는 인원이 존재할 경우에 남은 사람듣 중에 방장을 랜덤으로 지정
-        if (auth_member.getNickname() == gameRoom1.getOwner() && !gameRoomMembers.isEmpty()) {
+        if (auth_member.getNickname().equals(gameRoom1.getOwner()) && !gameRoomMembers.isEmpty()) {
 
             // 남은 사람들의 수 만큼 랜덤으로 돌려서 나온 멤버 id
             Long nextOwnerId = gameRoomMembers.get((int) (Math.random() * gameRoomMembers.size())).getMember_id();
@@ -396,13 +416,14 @@ public class GameRoomService {
             em.flush();
             em.clear();
 
-            gameMessage.setRoomId(Long.toString(gameRoom1.getRoomId())); // 방 id
-            gameMessage.setSenderId(Long.toString(nextOwner.getMemberId())); // 다음 방장이 된 유저 id
-            gameMessage.setSender(nextOwner.getNickname()); // 다음 방장이 된 유저의 닉네임
-            gameMessage.setContent(gameMessage.getSender() + "님이 방장이 되셨습니다."); // 새로운 방장 선언
-            gameMessage.setType(GameMessage.MessageType.LEAVE); // 메세지 타입
+            GameMessage gameMessage1 = new GameMessage<>();
+            gameMessage1.setRoomId(Long.toString(gameRoom1.getRoomId())); // 방 id
+            gameMessage1.setSenderId(Long.toString(nextOwner.getMemberId())); // 다음 방장이 된 유저 id
+            gameMessage1.setSender(nextOwner.getNickname()); // 다음 방장이 된 유저의 닉네임
+            gameMessage1.setContent(gameMessage1.getSender() + "님이 방장이 되셨습니다."); // 새로운 방장 선언
+            gameMessage1.setType(GameMessage.MessageType.NEWOWNER); // 메세지 타입
 
-            messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage);
+            messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage1);
         }
 
         // 정상적으로 방을 나가면 문구 출력
@@ -417,14 +438,16 @@ public class GameRoomService {
         // 2. git bash로 리눅스 언어, docker를 사용하여 OpenVidu를 설정 및 구축함
 
         // 현재 구축해놓은 OpenVidu 서버 주소
-        String OPENVIDU_URL = "https://cheiks.shop";
+        String OPENVIDU_URL = "https://openvidu.haetae.shop";
         // 서버 주소를 사용하기 위한 SECRET키
         String OPENVIDU_SECRET = "MY_SECRET";
 
         // OpenVidu 객체에 주소와 SECRET키를 넣어 사용 준비
         OpenVidu openvidu = new OpenVidu(OPENVIDU_URL, OPENVIDU_SECRET);
+
         // 화상채팅을 사용하려면 session을 사용하게 되는데, session 설정값을 가져옴.
         SessionProperties properties = new SessionProperties.Builder().build();
+
 
         // OpenVidu에 세션 설정값을 input 하여 session 생성
         Session session = openvidu.createSession(properties);
@@ -437,6 +460,7 @@ public class GameRoomService {
                 .build();
         // 빌드된 세션 설정 값으로 세션의 연결점(커넥션) 생성
         Connection connection = session.createConnection(connectionProperties);
+
         // 커넥션을 사용해 token 생성 (session 과 마찬가지로 OpenVidu 컨텐츠를 사용하기 위해 token도 필요함)
         String token = connection.getToken();
 
