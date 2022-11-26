@@ -50,4 +50,12 @@ public class MemberController {
         return memberService.logout(request);
     }
 
+
+    // 회원탈퇴
+    @DeleteMapping("/signout")
+    public ResponseEntity<PrivateResponseBody> signout(
+            HttpServletRequest request){
+        return memberService.signout(request);
+    }
+
 }
