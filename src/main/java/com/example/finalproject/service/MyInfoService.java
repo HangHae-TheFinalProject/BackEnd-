@@ -91,7 +91,9 @@ public class MyInfoService {
 
         // 전적 저장
         HashMap<String, Long> allRecordSet = new HashMap<>();
-        allRecordSet.put("allPlayCnt",auth_member.getWinNum()+auth_member.getLossNum()); // 총 플레이 수
+        allRecordSet.put("allPlayRecord",auth_member.getWinNum()+auth_member.getLossNum()); // 총 플레이 수
+        allRecordSet.put("allLierPlayRecord",auth_member.getWinLIER()+auth_member.getLossLIER()); // 총 라이어 플레이 수
+        allRecordSet.put("allCitizenPlayRecord",auth_member.getWinCITIZEN()+auth_member.getLossCITIZEN()); // 총 시민 플레이 수
         allRecordSet.put("winNum", auth_member.getWinNum()); // 전체 승리 수
         allRecordSet.put("lossNum", auth_member.getLossNum()); // 전체 패배 수
         allRecordSet.put("winLIER", auth_member.getWinLIER()); // 라이어로 승리한 수
