@@ -69,11 +69,12 @@ public class SearchService {
 
         // 최종적으로 반환될 게시글 리스트
         List<HashMap<String, String>> searchPostList = new ArrayList<>();
-        // hashMap으로 저장된 필요한 조회 정보들
-        HashMap<String, String> searchPosts = new HashMap<>();
 
         // 검색 결과로 나온 게시글들을 필요한 정보들을 hashmap으로 담는 과정
         for (Post post1 : searchPost) {
+            // hashMap으로 저장된 필요한 조회 정보들
+            HashMap<String, String> searchPosts = new HashMap<>();
+
             searchPosts.put("postId", Long.toString(post1.getPostId())); // 게시글 id
             searchPosts.put("title", post1.getTitle()); // 게시글 제목
             searchPosts.put("author", post1.getAuthor()); // 게시글 작성자
@@ -104,11 +105,12 @@ public class SearchService {
 
         // 최종적으로 반환될 게임방 리스트
         List<HashMap<String, Object>> searchRoomList = new ArrayList<>();
-        // hashMap으로 저장된 필요한 조회 정보들
-        HashMap<String, Object> searchRooms = new HashMap<>();
 
         // 검색 결과로 나온 게임방들의 필요한 정보들을 hashmap으로 담는 과정
         for (GameRoom gameRoom1 : searchRoom) {
+            // hashMap으로 저장된 필요한 조회 정보들
+            HashMap<String, Object> searchRooms = new HashMap<>();
+
             // 서브 쿼리를 사용하여 게임방에 참가한 유저들의 정보들을 조회
             List<Member> memberList = jpaQueryFactory
                     .selectFrom(member)
@@ -117,6 +119,11 @@ public class SearchService {
                             .from(gameRoomMember)
                             .where(gameRoomMember.gameRoom.eq(gameRoom1))))
                     .fetch();
+
+            ///////////////////
+            // 쿼리문 수정 필요///
+            ///////////////////
+
 
             searchRooms.put("id", gameRoom1.getRoomId()); // 게임방 id
             searchRooms.put("roomName", gameRoom1.getRoomName()); // 게임방 제목
