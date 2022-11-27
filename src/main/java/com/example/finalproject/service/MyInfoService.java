@@ -91,6 +91,7 @@ public class MyInfoService {
 
         // 전적 저장
         HashMap<String, Long> allRecordSet = new HashMap<>();
+        allRecordSet.put("allPlayCnt",auth_member.getWinNum()+auth_member.getLossNum()); // 총 플레이 수
         allRecordSet.put("winNum", auth_member.getWinNum()); // 전체 승리 수
         allRecordSet.put("lossNum", auth_member.getLossNum()); // 전체 패배 수
         allRecordSet.put("winLIER", auth_member.getWinLIER()); // 라이어로 승리한 수
@@ -102,6 +103,7 @@ public class MyInfoService {
     }
 
 
+    // 회원 정보 조회
     public ResponseEntity<PrivateResponseBody> getMyPersonalInfo(HttpServletRequest request){
         // 인증된 유저 정보
         Member auth_member = authorizeToken(request);
