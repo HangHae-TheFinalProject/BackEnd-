@@ -111,19 +111,28 @@ public class SearchService {
             // hashMap으로 저장된 필요한 조회 정보들
             HashMap<String, Object> searchRooms = new HashMap<>();
 
-            // 서브 쿼리를 사용하여 게임방에 참가한 유저들의 정보들을 조회
-            List<Member> memberList = jpaQueryFactory
-                    .selectFrom(member)
-                    .where(member.memberId.eq(jpaQueryFactory // 해당 게임방과 매핑된 gameRoomMember들의 유저 id를 대조하여 member db 정보 조회
-                            .select(gameRoomMember.member_id)
-                            .from(gameRoomMember)
-                            .where(gameRoomMember.gameRoom.eq(gameRoom1))))
-                    .fetch();
+            List<Member> memberList = null;
+
+            if(jpaQueryFactory
+                    .select(gameRoomMember.member_id)
+                    .from(gameRoomMember)
+                    .where(gameRoomMember.gameRoom.eq(gameRoom1))
+                    .fetch() != null){
+
+                // 서브 쿼리를 사용하여 게임방에 참가한 유저들의 정보들을 조회
+                memberList = jpaQueryFactory
+                        .selectFrom(member)
+                        .where(member.memberId.eq(jpaQueryFactory // 해당 게임방과 매핑된 gameRoomMember들의 유저 id를 대조하여 member db 정보 조회
+                                .select(gameRoomMember.member_id)
+                                .from(gameRoomMember)
+                                .where(gameRoomMember.gameRoom.eq(gameRoom1))))
+                        .fetch();
+
+            }
 
             ///////////////////
             // 쿼리문 수정 필요///
             ///////////////////
-
 
             searchRooms.put("id", gameRoom1.getRoomId()); // 게임방 id
             searchRooms.put("roomName", gameRoom1.getRoomName()); // 게임방 제목
