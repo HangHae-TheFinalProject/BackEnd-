@@ -54,6 +54,10 @@ public class Member extends Timestamped{
     @OneToMany(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts;
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments;
+
     // 추가
     @JsonIgnore
     @JoinColumn(name="gameroommember_id")

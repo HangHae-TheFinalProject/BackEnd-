@@ -1,9 +1,11 @@
 package com.example.finalproject.controller;
 
 import com.example.finalproject.controller.request.PostRequestDto;
+import com.example.finalproject.controller.request.StringDto;
 import com.example.finalproject.exception.PrivateResponseBody;
 import com.example.finalproject.service.PostService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -16,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/lier")
 @Controller
@@ -66,12 +69,14 @@ public class PostController {
 
     // 게시글 전체 목록 조회
 //    @GetMapping("/posts/{pageNum}")
-    @GetMapping("/posts")
+    @GetMapping("/posts/{sort}")
     public ResponseEntity<PrivateResponseBody> getAllPost(
-            HttpServletRequest request // 인증 정보를 가진 request
+            HttpServletRequest request, // 인증 정보를 가진 request
+            @PathVariable String sort
 //            @PathVariable Integer pageNum // 페이지 번호
     ){
-        return postService.getAllPost(request);
+        log.info("전체 목록 조회 : {}", sort);
+        return postService.getAllPost(request,sort);
     }
 
 

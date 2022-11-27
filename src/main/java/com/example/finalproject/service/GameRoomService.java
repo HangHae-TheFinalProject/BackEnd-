@@ -13,6 +13,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import io.openvidu.java.client.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
@@ -41,7 +43,8 @@ public class GameRoomService {
     private final ChatRoomService chatRoomService;
     private final EntityManager em;
     private final SimpMessageSendingOperations messagingTemplate;
-
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final ChannelTopic channelTopic;
 
     // 인증 정보 검증 부분을 한 곳으로 모아놓음
     public Member authorizeToken(HttpServletRequest request) {
@@ -181,7 +184,8 @@ public class GameRoomService {
     public ResponseEntity<?> makeGameRoom(
             GameRoomRequestDto gameRoomRequestDto, // 방 생성을 위해 input 값이 담긴 DTO
             HttpServletRequest request) // 인증정보를 가진 request
-            throws io.openvidu.java.client.OpenViduJavaClientException, io.openvidu.java.client.OpenViduHttpException {
+            throws io.openvidu.java.client.OpenViduJavaClientException, io.openvidu.java.client.OpenViduHttpException
+    {
 
         // 토큰 유효성 검증
         Member auth_member = authorizeToken(request);
@@ -330,6 +334,14 @@ public class GameRoomService {
         // 구독 주소에 어떤 유저가 집입했는지 메세지 전달 (구독한 유저 전부 메세지 받음)
         messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage);
 
+        // 채팅창에 입장 메세지 출력
+        ChatMessage chatMessage = new ChatMessage();
+        chatMessage.setRoomId(Long.toString(roomId));
+        chatMessage.setType(ChatMessage.MessageType.ENTER);
+        chatMessage.setSender(auth_member.getNickname());
+        chatMessage.setMessage(auth_member.getNickname().substring(0,auth_member.getNickname().length()-5) + "님이 게임에 참가하셨습니다.");
+
+        redisTemplate.convertAndSend(channelTopic.getTopic(), chatMessage);
 
         // 결과 출력
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, gameRoomResponseDto), HttpStatus.OK);
@@ -426,14 +438,16 @@ public class GameRoomService {
         // 2. git bash로 리눅스 언어, docker를 사용하여 OpenVidu를 설정 및 구축함
 
         // 현재 구축해놓은 OpenVidu 서버 주소
-        String OPENVIDU_URL = "https://cheiks.shop";
+        String OPENVIDU_URL = "https://openvidu.haetae.shop";
         // 서버 주소를 사용하기 위한 SECRET키
         String OPENVIDU_SECRET = "MY_SECRET";
 
         // OpenVidu 객체에 주소와 SECRET키를 넣어 사용 준비
         OpenVidu openvidu = new OpenVidu(OPENVIDU_URL, OPENVIDU_SECRET);
+
         // 화상채팅을 사용하려면 session을 사용하게 되는데, session 설정값을 가져옴.
         SessionProperties properties = new SessionProperties.Builder().build();
+
 
         // OpenVidu에 세션 설정값을 input 하여 session 생성
         Session session = openvidu.createSession(properties);
@@ -446,6 +460,7 @@ public class GameRoomService {
                 .build();
         // 빌드된 세션 설정 값으로 세션의 연결점(커넥션) 생성
         Connection connection = session.createConnection(connectionProperties);
+
         // 커넥션을 사용해 token 생성 (session 과 마찬가지로 OpenVidu 컨텐츠를 사용하기 위해 token도 필요함)
         String token = connection.getToken();
 

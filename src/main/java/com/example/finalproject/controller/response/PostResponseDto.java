@@ -17,8 +17,8 @@ public class PostResponseDto {
     private String title;
     private String content;
     private Long viewcnt;
-    private LocalDateTime createdAt;
-    private LocalDateTime modifiedAt;
-    private List<Media> medias;
+    private String createdAt;
+    private String modifiedAt;
+    private List<MediaResponseDto> medias;
     private List<CommentResponseDto> comments;
 }

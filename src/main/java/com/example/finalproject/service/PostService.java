@@ -1,7 +1,9 @@
 package com.example.finalproject.service;
 
 import com.example.finalproject.controller.request.PostRequestDto;
+import com.example.finalproject.controller.request.StringDto;
 import com.example.finalproject.controller.response.CommentResponseDto;
+import com.example.finalproject.controller.response.MediaResponseDto;
 import com.example.finalproject.controller.response.PostResponseDto;
 import com.example.finalproject.domain.*;
 import com.example.finalproject.exception.PrivateException;
@@ -11,6 +13,7 @@ import com.example.finalproject.jwt.TokenProvider;
 import com.example.finalproject.repository.PostRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,7 @@ import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +31,7 @@ import java.util.List;
 import static com.example.finalproject.domain.QPost.post;
 import static com.example.finalproject.domain.QMedia.media;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class PostService {
@@ -82,6 +87,8 @@ public class PostService {
 
         postRepository.save(writePost);
 
+        List<MediaResponseDto> mediaResponseDtos = new ArrayList<>();
+
         // 업로드할 이미지 파일이 존재할 경우
         if (multipartFiles != null) {
             // 이미지 업로드 인터페이스를 이용하여 s3와 media entity에 저장하고 이미지들이 담긴 리스트를 반환받는다.
@@ -96,6 +103,17 @@ public class PostService {
 
             em.flush();
             em.clear();
+
+            for(Media media1 : writePost.getMedias()){
+                MediaResponseDto mediaResponseDto = MediaResponseDto.builder()
+                        .mediaId(media1.getMediaId())
+                        .mediaName(media1.getMediaName())
+                        .mediaUrl(media1.getMediaUrl())
+                        .build();
+
+                mediaResponseDtos.add(mediaResponseDto);
+            }
+
         }
 
         // Dto 로 출력할 내용들을 저장
@@ -105,9 +123,9 @@ public class PostService {
                 .content(writePost.getContent()) // 작성 게시글 내용
                 .author(writePost.getAuthor()) // 작성 게시글 작성자
                 .viewcnt(writePost.getViewcnt())
-                .createdAt(writePost.getCreatedAt())
-                .modifiedAt(writePost.getModifiedAt())
-                .medias(writePost.getMedias()) // 작성 게시글 이미지 파일들
+                .createdAt(writePost.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm")))
+                .modifiedAt(writePost.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm")))
+                .medias(mediaResponseDtos) // 작성 게시글 이미지 파일들
                 .build();
 
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, postResponseDto), HttpStatus.OK);
@@ -138,6 +156,7 @@ public class PostService {
 
         // 수정할 이미지 파일들을 저장할 리스트
         List<Media> medias = null;
+        List<MediaResponseDto> mediaResponseDtos = new ArrayList<>();
 
         // 수정할 이미지 파일들이  존재하고, 현재 등록된 이미지들이 존재할 경우
         if (multipartFiles != null && !update_post.getMedias().isEmpty()) {
@@ -174,6 +193,16 @@ public class PostService {
 
             em.flush();
             em.clear();
+
+            for(Media media1 : update_post.getMedias()){
+                MediaResponseDto mediaResponseDto = MediaResponseDto.builder()
+                        .mediaId(media1.getMediaId())
+                        .mediaName(media1.getMediaName())
+                        .mediaUrl(media1.getMediaUrl())
+                        .build();
+
+                mediaResponseDtos.add(mediaResponseDto);
+            }
 
             // <이미지들을 삭제 후 업데이트하는 이유>
             // 예를 들어, 기존에 등록된 이미지가 2장이고 새로이 수정하고자 하는 이미지가 3장일 경우
@@ -218,11 +247,14 @@ public class PostService {
                 .title(update_post.getTitle()) // 수정된 게시글의 제목
                 .content(update_post.getContent()) // 수정된 게시글의 내용
                 .viewcnt(update_post.getViewcnt()) // 조회 수
-                .createdAt(update_post.getCreatedAt()) // 생성일자
-                .modifiedAt(update_post.getModifiedAt()) // 수정일자
-                .medias(update_post.getMedias()) // 수정된 게시글의 이미지들
+                .createdAt(update_post.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm"))) // 생성일자
+                .modifiedAt(update_post.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm"))) // 수정일자
+                .medias(mediaResponseDtos) // 수정된 게시글의 이미지들
                 .comments(comments) // 게시글에 작성된 댓글들
                 .build();
+
+
+
 
         // 댓글 기능 합쳐지면 댓글도 PostResponseDto 에 넣어 수정된 게시글과 함께 보여줄 것
 
@@ -290,6 +322,36 @@ public class PostService {
                 .where(post.postId.eq(postId))
                 .fetchOne();
 
+        // 댓글 추가
+        List<CommentResponseDto> commentResponseDtoList = new ArrayList<>();
+        List<MediaResponseDto> mediaResponseDtos = new ArrayList<>();
+
+        if(!getPost.getComments().isEmpty()){
+            for (Comment comment : getPost.getComments()) {
+                commentResponseDtoList.add(
+                        CommentResponseDto.builder()
+                                .commentid(comment.getCommentId())
+                                .content(comment.getContent())
+                                .author(comment.getAuthor())
+                                .createdAt(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm")))
+                                .modifiedAt(comment.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm")))
+                                .build()
+                );
+            }
+        }
+
+        if(!getPost.getMedias().isEmpty()){
+            for (Media media1  : getPost.getMedias()) {
+                mediaResponseDtos.add(
+                        MediaResponseDto.builder()
+                                .mediaId(media1.getMediaId())
+                                .mediaName(media1.getMediaName())
+                                .mediaUrl(media1.getMediaUrl())
+                                .build()
+                );
+            }
+        }
+
         // 조회 수 증가
         jpaQueryFactory
                 .update(post)
@@ -297,21 +359,6 @@ public class PostService {
                 .where(post.postId.eq(getPost.getPostId()))
                 .execute();
 
-        em.flush();
-        em.clear();
-
-        // 댓글 추가
-        List<CommentResponseDto> commentResponseDtoList = new ArrayList<>();
-
-        for (Comment comment : getPost.getComments()) {
-            commentResponseDtoList.add(
-                    CommentResponseDto.builder()
-                            .commentid(comment.getCommentId())
-                            .content(comment.getContent())
-                            .author(comment.getAuthor())
-                            .build()
-            );
-        }
 
         // 상세 조회할 게시글 정보를 Dto에 저장
         PostResponseDto postResponseDto = PostResponseDto.builder()
@@ -320,18 +367,21 @@ public class PostService {
                 .title(getPost.getTitle()) // 조회할 게시글 제목
                 .content(getPost.getContent()) // 조회할 게시글 내용
                 .viewcnt(getPost.getViewcnt()) // 조회 수
-                .createdAt(getPost.getCreatedAt()) // 생성일자
-                .modifiedAt(getPost.getModifiedAt()) // 수정일자
-                .medias(getPost.getMedias()) // 조회할 게시글에 속한 이미지파일들
+                .createdAt(getPost.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm"))) // 생성일자
+                .modifiedAt(getPost.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm"))) // 수정일자
+                .medias(mediaResponseDtos) // 조회할 게시글에 속한 이미지파일들
                 .comments(commentResponseDtoList) // 댓글들
                 .build();
+
+        em.flush();
+        em.clear();
 
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, postResponseDto), HttpStatus.OK);
     }
 
 
     // 게시글 전체 목록 조회
-    public ResponseEntity<PrivateResponseBody> getAllPost(HttpServletRequest request) {
+    public ResponseEntity<PrivateResponseBody> getAllPost(HttpServletRequest request, String sort) {
 
         // 인증 정보 유효성 검증
         authorizeToken(request);
@@ -340,25 +390,70 @@ public class PostService {
 //        int size = 10; // 페이지 안에 존재하는 게시글 수
 //        int postInPage = size * pageNum; // 페이징 처리를 위한 변수
 
-        // 최근 생성일자 기눚으로 작성된 게시글들 전체 리스트 저장
-        List<Post> postlist = jpaQueryFactory
-                .selectFrom(post)
-                .orderBy(post.createdAt.desc())
-                .fetch();
-
         // hashmap 으로 저장된 게시글의 내용들을 리스트로 저장
         List<HashMap<String, Object>> allPostlist = new ArrayList<>();
 
-        // 목록 출력 시 필요한 항목들 hashmap에 저장
-        for (Post post : postlist) {
-            // 목록 조회이기 때문에 Dto 가 아닌 hashmap 으로 일부 보여질 내용들을 저장
-            HashMap<String, Object> allPosts = new HashMap<>();
+        if(sort.equals("recent")){
+            log.info("최신 순 조회 : {}", sort);
 
-            allPosts.put("postId", post.getPostId()); // 게시글 id
-            allPosts.put("author", post.getAuthor()); // 게시글 작성자
-            allPosts.put("title", post.getTitle()); // 게시글 제목
+            // 최근 생성일자 기준으로 작성된 게시글들 전체 리스트 저장
+            List<Post> postlist = jpaQueryFactory
+                    .selectFrom(post)
+                    .orderBy(post.createdAt.desc())
+                    .fetch();
 
-            allPostlist.add(allPosts);
+            // 목록 출력 시 필요한 항목들 hashmap에 저장
+            for (Post post : postlist) {
+                // 목록 조회이기 때문에 Dto 가 아닌 hashmap 으로 일부 보여질 내용들을 저장
+                HashMap<String, Object> allPosts = new HashMap<>();
+
+                allPosts.put("postId", post.getPostId()); // 게시글 id
+                allPosts.put("author", post.getAuthor()); // 게시글 작성자
+                allPosts.put("title", post.getTitle()); // 게시글 제목
+
+                allPostlist.add(allPosts);
+            }
+
+        }else if(sort.equals("view")){ //
+            log.info("조회 수 조회 : {}", sort);
+
+            // 최근 조회수 기눚으로 작성된 게시글들 전체 리스트 저장
+            List<Post> postlist = jpaQueryFactory
+                    .selectFrom(post)
+                    .orderBy(post.viewcnt.desc())
+                    .fetch();
+
+            // 목록 출력 시 필요한 항목들 hashmap에 저장
+            for (Post post : postlist) {
+                // 목록 조회이기 때문에 Dto 가 아닌 hashmap 으로 일부 보여질 내용들을 저장
+                HashMap<String, Object> allPosts = new HashMap<>();
+
+                allPosts.put("postId", post.getPostId()); // 게시글 id
+                allPosts.put("author", post.getAuthor()); // 게시글 작성자
+                allPosts.put("title", post.getTitle()); // 게시글 제목
+
+                allPostlist.add(allPosts);
+            }
+
+        }else{
+            log.info("초기 게시판 목록 조회 : {}", sort);
+
+            // 일반 초기 게시글 목록 조회
+            List<Post> postlist = jpaQueryFactory
+                    .selectFrom(post)
+                    .fetch();
+
+            // 목록 출력 시 필요한 항목들 hashmap에 저장
+            for (Post post : postlist) {
+                // 목록 조회이기 때문에 Dto 가 아닌 hashmap 으로 일부 보여질 내용들을 저장
+                HashMap<String, Object> allPosts = new HashMap<>();
+
+                allPosts.put("postId", post.getPostId()); // 게시글 id
+                allPosts.put("author", post.getAuthor()); // 게시글 작성자
+                allPosts.put("title", post.getTitle()); // 게시글 제목
+
+                allPostlist.add(allPosts);
+            }
         }
 
 //         페이징 처리 전용

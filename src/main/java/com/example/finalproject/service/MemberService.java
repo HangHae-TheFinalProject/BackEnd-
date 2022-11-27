@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,15 +64,15 @@ public class MemberService {
 
         // 회원 정보 저장
         Member member = Member.builder()
-                .email(memberRequestDto.getEmail())
+                .email(memberRequestDto.getEmail()) // 이메일
                 .password(passwordEncoder.encode(memberRequestDto.getPassword())) // 비밀번호 인코딩하여 저장
-                .nickname(memberRequestDto.getNickname() + "#" + (int)(Math.random() * 9999))
-                .winNum(0L)
-                .lossNum(0L)
-                .winCITIZEN(0L)
-                .winLIER(0L)
-                .lossCITIZEN(0L)
-                .lossLIER(0L)
+                .nickname(memberRequestDto.getNickname() + "#" + (int) (Math.random() * 9999)) // 닉네임 + 고유 숫자값 부여
+                .winNum(0L) // 전체 승리 횟수
+                .lossNum(0L) // 전체 패배 횟수
+                .winCITIZEN(0L) // 시민으로써 승리한 횟수
+                .winLIER(0L) // 라이어로써 승리한 횟수
+                .lossCITIZEN(0L) // 시민으로써 패배한 횟수
+                .lossLIER(0L) // 라이어로써 패배한 횟수
                 .build();
 
         memberRepository.save(member);
@@ -122,8 +123,8 @@ public class MemberService {
 
         // 전달드릴 내용이 매우 적기 때문에 굳이 Dto를 생성하지 않고 hashmap으로 전달
         HashMap<String, String> login_info = new HashMap<>();
-        login_info.put("email", member.getEmail());
-        login_info.put("nickname", member.getNickname());
+        login_info.put("email", member.getEmail()); // 이메일
+        login_info.put("nickname", member.getNickname()); // 닉네임
 
         log.info("액세스 토큰 : {}", response.getHeader("Authorization"));
         log.info("리프레시 토큰 : {}", response.getHeader("Refresh-Token"));
@@ -132,17 +133,19 @@ public class MemberService {
         return new ResponseEntity(new PrivateResponseBody(StatusCode.LOGIN_OK, login_info), HttpStatus.OK);
     }
 
+
     //로그아웃
     public ResponseEntity<PrivateResponseBody> logout(HttpServletRequest request) {
 
         log.info("로그아웃 진입 : {}", request.getHeader("Authorization"));
 
-        // 토큰 확인
+        // 리프레쉬 토큰 확인
         if (!tokenProvider.validateToken(request.getHeader("Refresh-Token"))) {
             return new ResponseEntity<>(new PrivateResponseBody
                     (StatusCode.LOGIN_WRONG_FORM_JWT_TOKEN, null), HttpStatus.BAD_REQUEST);
         }
 
+        // 현재 로그인한 유저 조회
         Member member = tokenProvider.getMemberFromAuthentication();
 
         // 회원 확인
@@ -151,6 +154,7 @@ public class MemberService {
                     (StatusCode.LOGIN_MEMBER_ID_FAIL, null), HttpStatus.NOT_FOUND);
         }
 
+        // 리프레쉬 토큰 삭제
         tokenProvider.deleteRefreshToken(member);
 
         // Message 및 Status를 Return

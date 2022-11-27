@@ -35,7 +35,8 @@ public class GemeRoomController {
     public ResponseEntity<?> makeGameRoom(
             @RequestBody GameRoomRequestDto gameRoomRequestDto, // 방 생성을 위한 정보를 기입할 DTO
             HttpServletRequest request) // 인증정보를 가진 request
-            throws io.openvidu.java.client.OpenViduJavaClientException, io.openvidu.java.client.OpenViduHttpException {
+            throws io.openvidu.java.client.OpenViduJavaClientException, io.openvidu.java.client.OpenViduHttpException
+    {
         log.info("메인페이지 이동 - 방 이름 : {}, 방 패스워드 : {}, 게임 모드 : {}", gameRoomRequestDto.getRoomName(), gameRoomRequestDto.getRoomPassword(), gameRoomRequestDto.getMode());
         return gameRoomService.makeGameRoom(gameRoomRequestDto, request);
     }
