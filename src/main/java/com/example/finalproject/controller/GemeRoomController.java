@@ -2,6 +2,7 @@ package com.example.finalproject.controller;
 
 
 import com.example.finalproject.controller.request.GameRoomRequestDto;
+import com.example.finalproject.controller.request.StringDto;
 import com.example.finalproject.service.GameRoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +26,9 @@ public class GemeRoomController {
     @GetMapping("/rooms/{pageNum}")
     public ResponseEntity<?> lierMainPage(
             HttpServletRequest request,
-            @PathVariable int pageNum) { // 인증정보를 가진 request
-        return gameRoomService.lierMainPage(request, pageNum);
+            @PathVariable int pageNum,
+            @RequestBody(required = false)StringDto stringDto) { // 인증정보를 가진 request
+        return gameRoomService.lierMainPage(request, pageNum, stringDto);
     }
 
 
@@ -62,13 +64,5 @@ public class GemeRoomController {
         return gameRoomService.roomExit(roomId, request);
     }
 
-
-    // openvidu 연결
-//    @PostMapping("/openvidu")
-//    public ResponseEntity<?> connectOpenvidu(
-//            HttpServletRequest request
-//    ) throws io.openvidu.java.client.OpenViduJavaClientException, io.openvidu.java.client.OpenViduHttpException{
-//        return gameRoomServiceImpl.connectOpenvidu(request);
-//    }
 
 }

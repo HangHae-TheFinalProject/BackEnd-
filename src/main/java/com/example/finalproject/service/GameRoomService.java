@@ -1,6 +1,7 @@
 package com.example.finalproject.service;
 
 import com.example.finalproject.controller.request.GameRoomRequestDto;
+import com.example.finalproject.controller.request.StringDto;
 import com.example.finalproject.controller.response.GameRoomResponseDto;
 import com.example.finalproject.domain.*;
 import com.example.finalproject.exception.PrivateException;
@@ -73,19 +74,11 @@ public class GameRoomService {
     // 메인페이지 (방 전체 목록 조회) - 페이징 처리 완료
     public ResponseEntity<?> lierMainPage(
             HttpServletRequest request,
-            int pageNum) { // 인증정보를 가진 request
+            int pageNum,
+            StringDto stringDto) { // 인증정보를 가진 request
 
         // 토큰 유효성 검증
         authorizeToken(request);
-
-        // 테스트 시 활용할 임의 멤버
-//        Member member = jpaQueryFactory
-//                .selectFrom(QMember.member)
-//                .where(QMember.member.id.eq(1L))
-//                .fetchOne();
-//        if (member == null) {
-//            throw new PrivateException(StatusCode.LOGIN_EXPIRED_JWT_TOKEN);
-//        }
 
         // 한 페이지 당 보여지는 방 수 (4개)
         int size = 4;
@@ -93,10 +86,38 @@ public class GameRoomService {
         int sizeInPage = pageNum * size;
 
         // 생성된 전체 게임방 불러오기
-        List<GameRoom> rooms = jpaQueryFactory
-                .selectFrom(gameRoom)
-                .orderBy(gameRoom.createdAt.asc())
-                .fetch();
+        List<GameRoom> rooms = null;
+
+        if(stringDto.getValue().equals("normal")){
+            rooms = jpaQueryFactory
+                    .selectFrom(gameRoom)
+                    .where(gameRoom.mode.eq(Mode.일반))
+                    .orderBy(gameRoom.createdAt.asc())
+                    .fetch();
+        }else if(stringDto.getValue().equals("fool")){
+            rooms = jpaQueryFactory
+                    .selectFrom(gameRoom)
+                    .where(gameRoom.mode.eq(Mode.바보))
+                    .orderBy(gameRoom.createdAt.asc())
+                    .fetch();
+        }else if(stringDto.getValue().equals("start")){
+            rooms = jpaQueryFactory
+                    .selectFrom(gameRoom)
+                    .where(gameRoom.status.eq(stringDto.getValue()))
+                    .orderBy(gameRoom.createdAt.asc())
+                    .fetch();
+        }else if(stringDto.getValue().equals("wait")){
+            rooms = jpaQueryFactory
+                    .selectFrom(gameRoom)
+                    .where(gameRoom.status.eq(stringDto.getValue()))
+                    .orderBy(gameRoom.createdAt.asc())
+                    .fetch();
+        }else{
+            rooms = jpaQueryFactory
+                    .selectFrom(gameRoom)
+                    .orderBy(gameRoom.createdAt.asc())
+                    .fetch();
+        }
 
         // 메인페이지에 보여줄 전체 방과 방의 주인 및 방 참여 인원을 출력하기 위한 리스트
         List<GameRoomResponseDto> gameroomlist = new ArrayList<>();
