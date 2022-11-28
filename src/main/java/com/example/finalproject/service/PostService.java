@@ -154,6 +154,22 @@ public class PostService {
             throw new PrivateException(StatusCode.NOT_MATCH_POST);
         }
 
+        List<CommentResponseDto> comments = new ArrayList<>();
+
+        if(!update_post.getComments().isEmpty()){
+            List<Comment> commentList = update_post.getComments();
+
+            for (Comment existcomment : commentList) {
+                comments.add(
+                        CommentResponseDto.builder()
+                                .commentid(existcomment.getCommentId())
+                                .content(existcomment.getContent())
+                                .author(existcomment.getAuthor())
+                                .build());
+            }
+        }
+
+
         // 수정할 이미지 파일들을 저장할 리스트
         List<Media> medias = null;
         List<MediaResponseDto> mediaResponseDtos = new ArrayList<>();
@@ -181,6 +197,17 @@ public class PostService {
                         .execute();
             }
 
+
+            for(Media media1 : update_post.getMedias()){
+                MediaResponseDto mediaResponseDto = MediaResponseDto.builder()
+                        .mediaId(media1.getMediaId())
+                        .mediaName(media1.getMediaName())
+                        .mediaUrl(media1.getMediaUrl())
+                        .build();
+
+                mediaResponseDtos.add(mediaResponseDto);
+            }
+
             // 수정할 게시글 내용과 이미지를 업데이트
             jpaQueryFactory
                     .update(post)
@@ -193,16 +220,6 @@ public class PostService {
 
             em.flush();
             em.clear();
-
-            for(Media media1 : update_post.getMedias()){
-                MediaResponseDto mediaResponseDto = MediaResponseDto.builder()
-                        .mediaId(media1.getMediaId())
-                        .mediaName(media1.getMediaName())
-                        .mediaUrl(media1.getMediaUrl())
-                        .build();
-
-                mediaResponseDtos.add(mediaResponseDto);
-            }
 
             // <이미지들을 삭제 후 업데이트하는 이유>
             // 예를 들어, 기존에 등록된 이미지가 2장이고 새로이 수정하고자 하는 이미지가 3장일 경우
@@ -226,19 +243,23 @@ public class PostService {
             em.flush();
             em.clear();
 
+        }else{
+
+            // 수정할 게시글 내용과 이미지를 업데이트
+            jpaQueryFactory
+                    .update(post)
+                    .set(post.title, postRequestDto.getTitle())
+                    .set(post.content, postRequestDto.getContent())
+                    .set(post.modifiedAt, LocalDateTime.now())
+                    .where(post.postId.eq(postId))
+                    .execute();
+
+            em.flush();
+            em.clear();
+
         }
 
-        List<Comment> commentList = update_post.getComments();
-        List<CommentResponseDto> comments = new ArrayList<>();
 
-        for (Comment existcomment : commentList) {
-            comments.add(
-                    CommentResponseDto.builder()
-                            .commentid(existcomment.getCommentId())
-                            .content(existcomment.getContent())
-                            .author(existcomment.getAuthor())
-                            .build());
-        }
 
         // 수정된 게시글의 정보를 Dto에 저장
         PostResponseDto postResponseDto = PostResponseDto.builder()
@@ -435,25 +456,6 @@ public class PostService {
                 allPostlist.add(allPosts);
             }
 
-        }else{
-            log.info("초기 게시판 목록 조회 : {}", sort);
-
-            // 일반 초기 게시글 목록 조회
-            List<Post> postlist = jpaQueryFactory
-                    .selectFrom(post)
-                    .fetch();
-
-            // 목록 출력 시 필요한 항목들 hashmap에 저장
-            for (Post post : postlist) {
-                // 목록 조회이기 때문에 Dto 가 아닌 hashmap 으로 일부 보여질 내용들을 저장
-                HashMap<String, Object> allPosts = new HashMap<>();
-
-                allPosts.put("postId", post.getPostId()); // 게시글 id
-                allPosts.put("author", post.getAuthor()); // 게시글 작성자
-                allPosts.put("title", post.getTitle()); // 게시글 제목
-
-                allPostlist.add(allPosts);
-            }
         }
 
 //         페이징 처리 전용
