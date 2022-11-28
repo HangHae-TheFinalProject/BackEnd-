@@ -431,6 +431,8 @@ public class PostService {
                 allPosts.put("postId", post.getPostId()); // 게시글 id
                 allPosts.put("author", post.getAuthor()); // 게시글 작성자
                 allPosts.put("title", post.getTitle()); // 게시글 제목
+                allPosts.put("createdAt", post.getCreatedAt()); // 게시글 생성일자
+                allPosts.put("viewcnt", post.getViewcnt()); // 게시글 조회수
 
                 allPostlist.add(allPosts);
             }
@@ -452,6 +454,8 @@ public class PostService {
                 allPosts.put("postId", post.getPostId()); // 게시글 id
                 allPosts.put("author", post.getAuthor()); // 게시글 작성자
                 allPosts.put("title", post.getTitle()); // 게시글 제목
+                allPosts.put("createdAt", post.getCreatedAt()); // 게시글 생성일자
+                allPosts.put("viewcnt", post.getViewcnt()); // 게시글 조회수
 
                 allPostlist.add(allPosts);
             }
