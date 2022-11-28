@@ -25,28 +25,12 @@ public class MyInfoController {
         return myInfoService.getMyPosts(request);
     }
 
-    // 작성한 댓글 조회
-//    @GetMapping("/comments")
-//    public ResponseEntity<?> getMyComments(
-//            HttpServletRequest request){
-//
-//        return myInfoService.getMyComments(request);
-//    }
 
-
-    // 전적 조회
+    // 회웑정보 + 전적 조회
     @GetMapping("/allrecord")
     public ResponseEntity<PrivateResponseBody>  getMyAllRecord(
             HttpServletRequest request){
         return myInfoService.getMyAllRecord(request);
-    }
-
-
-    // 회원 정보
-    @GetMapping("/personal")
-    public ResponseEntity<PrivateResponseBody> getMyPersonalInfo(
-            HttpServletRequest request){
-        return myInfoService.getMyPersonalInfo(request);
     }
 
     // 리워드 조회
