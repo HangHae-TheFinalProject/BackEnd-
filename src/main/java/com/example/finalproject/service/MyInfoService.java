@@ -74,15 +74,6 @@ public class MyInfoService {
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, postlistset), HttpStatus.OK);
     }
 
-    // 작성한 댓글들 조회
-//    public ResponseEntity<?> getMyComments(HttpServletRequest request){
-//
-//        // 인증된 유저 정보
-//        Member auth_member = authorizeToken(request);
-//
-//        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, ""), HttpStatus.OK);
-//    }
-
 
     // 모든 전적 조회
     public ResponseEntity<PrivateResponseBody> getMyAllRecord(HttpServletRequest request){
@@ -90,32 +81,20 @@ public class MyInfoService {
         Member auth_member = authorizeToken(request);
 
         // 전적 저장
-        HashMap<String, Long> allRecordSet = new HashMap<>();
-        allRecordSet.put("allPlayRecord",auth_member.getWinNum()+auth_member.getLossNum()); // 총 플레이 수
-        allRecordSet.put("allLierPlayRecord",auth_member.getWinLIER()+auth_member.getLossLIER()); // 총 라이어 플레이 수
-        allRecordSet.put("allCitizenPlayRecord",auth_member.getWinCITIZEN()+auth_member.getLossCITIZEN()); // 총 시민 플레이 수
-        allRecordSet.put("winNum", auth_member.getWinNum()); // 전체 승리 수
-        allRecordSet.put("lossNum", auth_member.getLossNum()); // 전체 패배 수
-        allRecordSet.put("winLIER", auth_member.getWinLIER()); // 라이어로 승리한 수
-        allRecordSet.put("loseLIER", auth_member.getLossLIER()); // 라이어로 패배한 수
-        allRecordSet.put("winCITIZEN", auth_member.getWinCITIZEN()); //시민으로 승리한 수
-        allRecordSet.put("loseCITIZEN", auth_member.getLossCITIZEN()); // 시민으로 패배한 수
+        HashMap<String, String> allRecordSet = new HashMap<>();
+
+        allRecordSet.put("nickname", auth_member.getNickname()); // 닉네임
+        allRecordSet.put("allPlayRecord",Long.toString(auth_member.getWinNum()+auth_member.getLossNum())); // 총 플레이 수
+        allRecordSet.put("allLierPlayRecord",Long.toString(auth_member.getWinLIER()+auth_member.getLossLIER())); // 총 라이어 플레이 수
+        allRecordSet.put("allCitizenPlayRecord",Long.toString(auth_member.getWinCITIZEN()+auth_member.getLossCITIZEN())); // 총 시민 플레이 수
+        allRecordSet.put("winNum", Long.toString(auth_member.getWinNum())); // 전체 승리 수
+        allRecordSet.put("lossNum", Long.toString(auth_member.getLossNum())); // 전체 패배 수
+        allRecordSet.put("winLIER", Long.toString(auth_member.getWinLIER())); // 라이어로 승리한 수
+        allRecordSet.put("loseLIER", Long.toString(auth_member.getLossLIER())); // 라이어로 패배한 수
+        allRecordSet.put("winCITIZEN", Long.toString(auth_member.getWinCITIZEN())); //시민으로 승리한 수
+        allRecordSet.put("loseCITIZEN", Long.toString(auth_member.getLossCITIZEN())); // 시민으로 패배한 수
 
         return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, allRecordSet), HttpStatus.OK);
-    }
-
-
-    // 회원 정보 조회
-    public ResponseEntity<PrivateResponseBody> getMyPersonalInfo(HttpServletRequest request){
-        // 인증된 유저 정보
-        Member auth_member = authorizeToken(request);
-
-        // 개인정보 저장
-        HashMap<String, String> personalInfo = new HashMap<>();
-        personalInfo.put("email", auth_member.getEmail()); // 로그인 이메일
-        personalInfo.put("nickname", auth_member.getNickname()); // 닉네임
-
-        return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, personalInfo), HttpStatus.OK);
     }
 
 
