@@ -6,10 +6,7 @@ import com.example.finalproject.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -21,20 +18,22 @@ public class SearchController {
     private final SearchService searchService;
 
     // 게시글 검색
-    @PostMapping("/post")
+    @PostMapping("/post/{pageNum}")
     public ResponseEntity<PrivateResponseBody> searchPost(
             HttpServletRequest request, // 인증 정보
-            @RequestBody StringDto stringDto){ // 검색 키워드
+            @RequestBody StringDto stringDto,
+            @PathVariable int pageNum){ // 검색 키워드
 
-        return searchService.searchPost(request, stringDto);
+        return searchService.searchPost(request, stringDto, pageNum);
     }
 
-    // 게시글 검색
-    @PostMapping("/room")
+    // 게임방 검색
+    @PostMapping("/room/{pageNum}")
     public ResponseEntity<PrivateResponseBody> searchRoom(
             HttpServletRequest request, // 인증 정보
-            @RequestBody StringDto stringDto){ // 검색 키워드
+            @RequestBody StringDto stringDto,
+            @PathVariable int pageNum){ // 검색 키워드
 
-        return searchService.searchRoom(request, stringDto);
+        return searchService.searchRoom(request, stringDto, pageNum);
     }
 }

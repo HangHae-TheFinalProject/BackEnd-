@@ -1,6 +1,7 @@
 package com.example.finalproject.service;
 
 import com.example.finalproject.controller.request.StringDto;
+import com.example.finalproject.controller.response.GameRoomResponseDto;
 import com.example.finalproject.domain.GameRoom;
 import com.example.finalproject.domain.Member;
 import com.example.finalproject.domain.Post;
@@ -56,16 +57,23 @@ public class SearchService {
     // 게시글 검색 (타이틀 기준 검색)
     public ResponseEntity<PrivateResponseBody> searchPost(
             HttpServletRequest request,
-            StringDto stringDto) {
+            StringDto stringDto,
+            int pageNum) {
 
         // 인증 정보 검증
         authorizeToken(request);
+
+        // 한 페이지 당 보여지는 게시글 수 (10개)
+        int size = 10;
+        // 페이징 처리를 위해 현재 페이지와 보여지는 게시글 수를 곱해놓는다. (10개의 게시글 수 중 가장 마지막에 나올 위치값)
+        int sizeInPage = pageNum * size;
 
         // 게시글 제목을 기준으로 검색 키워드로 패턴 비교하여 게시글들 조회
         List<Post> searchPost = jpaQueryFactory
                 .selectFrom(post)
                 .where(post.title.like("%" + stringDto.getValue().replace(" ", "%") + "%"))
                 .fetch();
+
 
         // 최종적으로 반환될 게시글 리스트
         List<HashMap<String, String>> searchPostList = new ArrayList<>();
@@ -85,17 +93,38 @@ public class SearchService {
             searchPostList.add(searchPosts);
         }
 
-        return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, searchPostList), HttpStatus.OK);
+        // 페이징 처리 후 10개의 게시글을 우선적으로 보여줄 리스트
+        List<HashMap<String, String>> postsInPage = new ArrayList<>();
+
+        // 페이징 처리 후 나온 페이지에 존재하는 10개의 게시글을 담는다.
+        for(int i = sizeInPage - size ; i < sizeInPage ; i++){
+
+            // 게시글담기
+            postsInPage.add(searchPostList.get(i));
+
+            // 지금 존재하는 전체 게시글의 개수와 i 값이 같다면 break로 더이상 담지 않고 빠져나온다.
+            if(i == searchPostList.size()-1){
+                break;
+            }
+        }
+
+        return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, postsInPage), HttpStatus.OK);
     }
 
 
     // 게임방 검색 (방이름 기준 검색)
     public ResponseEntity<PrivateResponseBody> searchRoom(
             HttpServletRequest request,
-            StringDto stringDto) {
+            StringDto stringDto,
+            int pageNum) {
 
         // 인증 정보 검증
         authorizeToken(request);
+
+        // 한 페이지 당 보여지는 방 수 (4개)
+        int size = 4;
+        // 페이징 처리를 위해 현재 페이지와 보여지는 방 수를 곱해놓는다. (4개의 방 수 중 가장 마지막에 나올 위치값)
+        int sizeInPage = pageNum * size;
 
         // 게임방 제목을 기준으로 검색 키워드로 패턴 비교하여 게시글들 조회
         List<GameRoom> searchRoom = jpaQueryFactory
@@ -122,17 +151,13 @@ public class SearchService {
                 // 서브 쿼리를 사용하여 게임방에 참가한 유저들의 정보들을 조회
                 memberList = jpaQueryFactory
                         .selectFrom(member)
-                        .where(member.memberId.eq(jpaQueryFactory // 해당 게임방과 매핑된 gameRoomMember들의 유저 id를 대조하여 member db 정보 조회
+                        .where(member.memberId.eqAny(jpaQueryFactory // 해당 게임방과 매핑된 gameRoomMember들의 유저 id를 대조하여 member db 정보 조회
                                 .select(gameRoomMember.member_id)
                                 .from(gameRoomMember)
                                 .where(gameRoomMember.gameRoom.eq(gameRoom1))))
                         .fetch();
 
             }
-
-            ///////////////////
-            // 쿼리문 수정 필요///
-            ///////////////////
 
             searchRooms.put("id", gameRoom1.getRoomId()); // 게임방 id
             searchRooms.put("roomName", gameRoom1.getRoomName()); // 게임방 제목
@@ -146,7 +171,22 @@ public class SearchService {
             searchRoomList.add(searchRooms);
         }
 
-        return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, searchRoomList), HttpStatus.OK);
+        // 페이징 처리 후 4개의 방만을 보여줄 리스트
+        List<HashMap<String, Object>> roomsInPage = new ArrayList<>();
+
+        // 페이징 처리 후 나온 페이지에 존재하는 4개의 방을 담는다.
+        for(int i = sizeInPage - size ; i < sizeInPage ; i++){
+
+            // 방을 담는다.
+            roomsInPage.add(searchRoomList.get(i));
+
+            // 지금 존재하는 전체 방의 개수와 i 값이 같다면 break로 더이상 담지 않고 빠져나온다.
+            if(i == searchRoomList.size()-1){
+                break;
+            }
+        }
+
+        return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, roomsInPage), HttpStatus.OK);
     }
 
 }
