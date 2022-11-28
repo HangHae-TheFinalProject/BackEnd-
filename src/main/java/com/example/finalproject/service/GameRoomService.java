@@ -7,6 +7,7 @@ import com.example.finalproject.exception.PrivateException;
 import com.example.finalproject.exception.PrivateResponseBody;
 import com.example.finalproject.exception.StatusCode;
 import com.example.finalproject.jwt.TokenProvider;
+import com.example.finalproject.repository.ChatRoomRepository;
 import com.example.finalproject.repository.GameRoomMemberRepository;
 import com.example.finalproject.repository.GameRoomRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -40,6 +41,7 @@ public class GameRoomService {
     private final JPAQueryFactory jpaQueryFactory;
     private final GameRoomRepository gameRoomRepository;
     private final GameRoomMemberRepository gameRoomMemberRepository;
+    private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomService chatRoomService;
     private final EntityManager em;
     private final SimpMessageSendingOperations messagingTemplate;
@@ -213,6 +215,7 @@ public class GameRoomService {
         // 게임방 생성 (저장)
         gameRoomRepository.save(gameRoom1);
 
+        // 채팅방 생성
         chatRoomService.createChatRoom( gameRoom1.getRoomId().toString(), gameRoom1.getRoomName());
 
         // 원하는 정보들만 출력될 수 있도록 HashMap을 생성
@@ -381,6 +384,9 @@ public class GameRoomService {
                     .delete(gameRoom)
                     .where(gameRoom.roomId.eq(gameRoom1.getRoomId()))
                     .execute();
+
+            // 채팅방 삭제
+            chatRoomRepository.deleteRoom(gameRoom1.getRoomId().toString());
         }
 
         // 누가 방을 나갔는지 소켓으로 전체 공유

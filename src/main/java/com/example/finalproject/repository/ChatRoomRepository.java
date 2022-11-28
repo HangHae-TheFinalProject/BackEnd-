@@ -32,14 +32,13 @@ public class ChatRoomRepository {
         return opsHashChatRoom.get(CHAT_ROOMS, id);
     }
 
-    // 채팅방 생성 : 서버간 채팅방 공유를 위해 redis hash에 저장한다.
-//    public ChatRoom createChatRoom(String name) {
-//        ChatRoom chatRoom = ChatRoom.create(name);
-//        opsHashChatRoom.put(CHAT_ROOMS, chatRoom.getRoomId(), chatRoom);
-//        return chatRoom;
-//    }
+    // 채팅룸 생성
     public ChatRoom saveRoom(ChatRoom chatRoom){
         opsHashChatRoom.put(CHAT_ROOMS, chatRoom.getRoomId(), chatRoom);
         return chatRoom;
+    }
+    // 채팅룸 삭제
+    public void deleteRoom(String chatRoomId){
+        opsHashChatRoom.delete(CHAT_ROOMS, chatRoomId);
     }
 }
