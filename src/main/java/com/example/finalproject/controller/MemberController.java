@@ -50,4 +50,12 @@ public class MemberController {
         return memberService.logout(request);
     }
 
+    // 회원탈퇴
+    @DeleteMapping(value = "/removal")
+    public ResponseEntity<PrivateResponseBody> cleansing(
+            HttpServletRequest request
+    ) {
+        return memberService.cleansing(request);
+    }
+
 }

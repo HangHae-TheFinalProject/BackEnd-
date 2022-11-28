@@ -61,7 +61,7 @@ public class Member extends Timestamped{
     // 추가
     @JsonIgnore
     @JoinColumn(name="gameroommember_id")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private GameRoomMember gameRoomMember;
 
     @JsonIgnore
@@ -69,7 +69,7 @@ public class Member extends Timestamped{
     private List<Reward> rewards;
 
     @JsonIgnore
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     private MemberActive memberActive;
 
     @Override
