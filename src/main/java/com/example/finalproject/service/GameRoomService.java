@@ -202,6 +202,10 @@ public class GameRoomService {
             return new ResponseEntity<>(new PrivateResponseBody
                     (StatusCode.ROOMNAME_OVER, null), HttpStatus.BAD_REQUEST);
         }
+        if(gameRoomRequestDto.getRoomName() == null || gameRoomRequestDto.getRoomName().equals("")){
+            return new ResponseEntity<>(new PrivateResponseBody
+                    (StatusCode.ROOMNAME_BLANK, null), HttpStatus.BAD_REQUEST);
+        }
 
         // 게임 방 생성을 위한 DTO 정보 기입
         GameRoom gameRoom1 = GameRoom.builder()
