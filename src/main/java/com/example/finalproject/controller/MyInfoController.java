@@ -34,11 +34,11 @@ public class MyInfoController {
     }
 
     // 리워드 조회
-//    @GetMapping("/reward")
-//    public ResponseEntity<PrivateResponseBody> getMyReward(
-//            HttpServletRequest request){
-//        return myInfoService.getMyReward(request);
-//    }
+    @GetMapping("/reward")
+    public ResponseEntity<PrivateResponseBody> getMyReward(
+            HttpServletRequest request){
+        return myInfoService.getMyReward(request);
+    }
 
 
 }
