@@ -190,8 +190,16 @@ public class GameService {
             gameMessage.setType(GameMessage.MessageType.START); // 메세지 타입
 
         }else if(gameRoom1.getMode().equals(Mode.바보)){
-            // 랜덤으로 걸린 키워드 (라이어용)
+            // 바보모드에서 라이어에 걸린 유저를 위한 같은 카테고리의 키워드들 리스트화
+            keywordList = jpaQueryFactory
+                    .selectFrom(keyword)
+                    .where(keyword.category.eq(chooseKeyword.getCategory()))
+                    .fetch();
+
+            // 해당 키워드 리스트에서 정답 키워드 제외
             keywordList.remove(chooseKeyword);
+
+            // 정답 키워드를 제외한 키워드 리스트 중에서 라이어용 키워드 추출
             Keyword lierkeyword = keywordList.get((int) (Math.random() * keywordList.size()));
 
             startset.put("liercategory", lierkeyword.getCategory()); // 바보 모드용 라이어 카테고리
