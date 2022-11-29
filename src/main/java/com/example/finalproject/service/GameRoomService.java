@@ -77,7 +77,7 @@ public class GameRoomService {
     public ResponseEntity<?> lierMainPage(
             HttpServletRequest request,
             int pageNum,
-            StringDto stringDto
+            String view
     ) { // 인증정보를 가진 request
 
         // 토큰 유효성 검증
@@ -89,7 +89,7 @@ public class GameRoomService {
         int sizeInPage = pageNum * size;
 
         // 동적QueryDSL로 생성된 전체 게임방 불러오기
-        List<GameRoom> rooms = dynamicQueryDsl.findGameRooms(stringDto.getValue());
+        List<GameRoom> rooms = dynamicQueryDsl.findGameRooms(view);
 
         // 메인페이지에 보여줄 전체 방과 방의 주인 및 방 참여 인원을 출력하기 위한 리스트
         List<GameRoomResponseDto> gameroomlist = new ArrayList<>();
