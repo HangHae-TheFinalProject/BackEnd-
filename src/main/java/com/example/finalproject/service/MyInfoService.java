@@ -3,6 +3,7 @@ package com.example.finalproject.service;
 import com.example.finalproject.controller.response.PostResponseDto;
 import com.example.finalproject.domain.Member;
 import com.example.finalproject.domain.Post;
+import com.example.finalproject.domain.Reward;
 import com.example.finalproject.exception.PrivateException;
 import com.example.finalproject.exception.PrivateResponseBody;
 import com.example.finalproject.exception.StatusCode;
@@ -97,13 +98,23 @@ public class MyInfoService {
         return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, allRecordSet), HttpStatus.OK);
     }
 
+    // 얻은 업적 조회
+    public ResponseEntity<PrivateResponseBody> getMyReward(HttpServletRequest request){
+        // 인증된 유저 정보
+        Member auth_member = authorizeToken(request);
 
-//    public ResponseEntity<PrivateResponseBody> getMyReward(HttpServletRequest request){
-//        // 인증된 유저 정보
-//        Member auth_member = authorizeToken(request);
-//
-//
-//
-//        return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, ""), HttpStatus.OK);
-//    }
+        List<Reward> rewards = auth_member.getRewards();
+        List<HashMap<String, Object>> rewardlist = new ArrayList<>();
+
+        for(Reward reward1 : rewards){
+            HashMap<String, Object> rewardInfo = new HashMap<>();
+            rewardInfo.put("rewardId",reward1.getRewardId());
+            rewardInfo.put("rewardName",reward1.getRewardName());
+
+            rewardlist.add(rewardInfo);
+        }
+
+
+        return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, rewardlist), HttpStatus.OK);
+    }
 }
