@@ -28,6 +28,7 @@ import static com.example.finalproject.domain.QGameRoomMember.gameRoomMember;
 import static com.example.finalproject.domain.QGameRoom.gameRoom;
 import static com.example.finalproject.domain.QMember.member;
 import static com.example.finalproject.domain.QKeyword.keyword;
+import static com.example.finalproject.domain.QMemberActive.memberActive;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -77,6 +78,25 @@ public class GameService {
         if (!gameMessage.getSender().equals(gameRoom1.getOwner())) {
             return new ResponseEntity<>(new PrivateResponseBody(StatusCode.UNAUTHORIZE, null), HttpStatus.BAD_REQUEST);
         }
+
+        // 방장이 된 유저의 활동 이력 업데이트를 위한 정보 유저 정보 조회
+        Member owner = jpaQueryFactory
+                .selectFrom(member)
+                .where(member.nickname.eq(gameRoom1.getOwner()))
+                .fetchOne();
+
+        // 방장이 된 유저의 활동이력 정보 조회
+        MemberActive ownerActive = jpaQueryFactory
+                .selectFrom(memberActive)
+                .where(memberActive.member.eq(owner))
+                .fetchOne();
+
+        // 게임시작은 방장만이 할 수 있으므로 방장이 된 유저의 gamestart 이력을 업데이트
+        jpaQueryFactory
+                .update(memberActive)
+                .set(memberActive.gamestartNum, ownerActive.getGamestartNum()+1L)
+                .where(memberActive.member.eq(owner))
+                .execute();
 
         // 게임방에 입장한 유저들 관리DB(GameRoomMember)에서 가져오기
         List<GameRoomMember> gameRoomMembers = jpaQueryFactory
@@ -170,8 +190,16 @@ public class GameService {
             gameMessage.setType(GameMessage.MessageType.START); // 메세지 타입
 
         }else if(gameRoom1.getMode().equals(Mode.바보)){
-            // 랜덤으로 걸린 키워드 (라이어용)
+            // 바보모드에서 라이어에 걸린 유저를 위한 같은 카테고리의 키워드들 리스트화
+            keywordList = jpaQueryFactory
+                    .selectFrom(keyword)
+                    .where(keyword.category.eq(chooseKeyword.getCategory()))
+                    .fetch();
+
+            // 해당 키워드 리스트에서 정답 키워드 제외
             keywordList.remove(chooseKeyword);
+
+            // 정답 키워드를 제외한 키워드 리스트 중에서 라이어용 키워드 추출
             Keyword lierkeyword = keywordList.get((int) (Math.random() * keywordList.size()));
 
             startset.put("liercategory", lierkeyword.getCategory()); // 바보 모드용 라이어 카테고리
@@ -254,6 +282,19 @@ public class GameService {
                 .selectFrom(member)
                 .where(member.nickname.eq(gameMessage.getSender())) // message에 담겨있는 유저의 닉네임으로 조회
                 .fetchOne();
+
+        // 게임준비 한 유저의 활동이력 정보를 조회
+        MemberActive userActive = jpaQueryFactory
+                .selectFrom(memberActive)
+                .where(memberActive.member.eq(player))
+                .fetchOne();
+
+        // 게임준비한 유저의 이력을 업데이트
+        jpaQueryFactory
+                .update(memberActive)
+                .set(memberActive.gamereadyNum, userActive.getGamereadyNum()+1L)
+                .where(memberActive.member.eq(player))
+                .execute();
 
         // 현재 게임방에 게임 준비하고자하는 유저의 정보가 매핑되어있는지 확인
         GameRoomMember gameRoomMember1 = jpaQueryFactory
