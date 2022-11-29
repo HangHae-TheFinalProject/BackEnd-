@@ -370,6 +370,17 @@ public class GameService {
     // 스포트라이트
     @Transactional
     public void spotlight(Long gameroomid) {
+
+        GameRoom playRoom = jpaQueryFactory
+                .selectFrom(gameRoom)
+                .where(gameRoom.roomId.eq(gameroomid))
+                .fetchOne();
+
+        // 라이어가 게임 도중 방을 나갔을 경우 초기화가 되기때문에 위치값도 초기화
+        if(playRoom.getStatus().equals("wait")){
+            spotNum = 0;
+        }
+
         // 게임방에 참가하고 있는 유저들 불러오기
         List<GameRoomMember> gameRoomMembers = jpaQueryFactory
                 .selectFrom(gameRoomMember)
