@@ -402,23 +402,25 @@ public class PostService {
 
 
     // 게시글 전체 목록 조회
-    public ResponseEntity<PrivateResponseBody> getAllPost(HttpServletRequest request, String sort) {
+    public ResponseEntity<PrivateResponseBody> getAllPost(HttpServletRequest request, String sort, Integer pageNum) {
 
         // 인증 정보 유효성 검증
         authorizeToken(request);
 
-//        // 페이징 처리 전용 지역 변수
-//        int size = 10; // 페이지 안에 존재하는 게시글 수
-//        int postInPage = size * pageNum; // 페이징 처리를 위한 변수
+        // 페이징 처리 전용 지역 변수
+        int size = 8; // 페이지 안에 존재하는 게시글 수
+        int postInPage = size * pageNum; // 페이징 처리를 위한 변수
 
         // hashmap 으로 저장된 게시글의 내용들을 리스트로 저장
         List<HashMap<String, Object>> allPostlist = new ArrayList<>();
+
+        List<Post> postlist = null;
 
         if(sort.equals("recent")){
             log.info("최신 순 조회 : {}", sort);
 
             // 최근 생성일자 기준으로 작성된 게시글들 전체 리스트 저장
-            List<Post> postlist = jpaQueryFactory
+            postlist = jpaQueryFactory
                     .selectFrom(post)
                     .orderBy(post.createdAt.desc())
                     .fetch();
@@ -441,7 +443,7 @@ public class PostService {
             log.info("조회 수 조회 : {}", sort);
 
             // 최근 조회수 기눚으로 작성된 게시글들 전체 리스트 저장
-            List<Post> postlist = jpaQueryFactory
+            postlist = jpaQueryFactory
                     .selectFrom(post)
                     .orderBy(post.viewcnt.desc())
                     .fetch();
@@ -462,35 +464,33 @@ public class PostService {
 
         }
 
-//         페이징 처리 전용
-//        List<HashMap<String, Object>> pagingAllPostlist = new ArrayList<>();
-//
-//        // 페이지에 따른 일정한 게시글을 담는다.
-//        for(int i = postInPage - 10 ; i < postInPage ; i++){
-//            if(i >= postlist.size()){ // 게시글 수 만큼 반복문이 돌았다면 탈출
-//                break;
-//            }
-//            // 페이징 처리용 리스트에 포스트를 담는다.
-//            pagingAllPostlist.add(allPostlist.get(i));
-//        }
-//
-//        // 총 페이지 수
-//        int pageCnt = (int)postlist.size() / size;
-//
-//        // 만약, 총 게시글 수에서 size를 나누었을 때 딱 나누어 떨어지지 않고 나머지가 남아있다면 총 페이지 수에 +1
-//        if(!(postlist.size() % size == 0)){
-//            pageCnt = pageCnt + 1;
-//        }
-//
-//        // 총 페이지 수와 페이징 처리된 게시글들을 같이 저장
-//        HashMap<String, Object> pagingResult = new HashMap<>();
-//        pagingResult.put("pageCnt", pageCnt); // 총 페이지 수
-//        pagingResult.put("pageInPosts", pagingAllPostlist); // 페이지 안에 존재하는 게시글들
-//
-//         페이징 처리 전용 반환값
-//        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, pagingResult), HttpStatus.OK);
+        // 페이징 처리 전용
+        List<HashMap<String, Object>> pagingAllPostlist = new ArrayList<>();
 
-        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, allPostlist), HttpStatus.OK);
+        // 페이지에 따른 일정한 게시글을 담는다.
+        for(int i = postInPage - 8 ; i < postInPage ; i++){
+            if(i >= postlist.size()){ // 게시글 수 만큼 반복문이 돌았다면 탈출
+                break;
+            }
+            // 페이징 처리용 리스트에 포스트를 담는다.
+            pagingAllPostlist.add(allPostlist.get(i));
+        }
+
+        // 총 페이지 수
+        int pageCnt = (int)postlist.size() / size;
+
+        // 만약, 총 게시글 수에서 size를 나누었을 때 딱 나누어 떨어지지 않고 나머지가 남아있다면 총 페이지 수에 +1
+        if(!(postlist.size() % size == 0)){
+            pageCnt = pageCnt + 1;
+        }
+
+        // 총 페이지 수와 페이징 처리된 게시글들을 같이 저장
+        HashMap<String, Object> pagingResult = new HashMap<>();
+        pagingResult.put("pageCnt", pageCnt); // 총 페이지 수
+        pagingResult.put("pageInPosts", pagingAllPostlist); // 페이지 안에 존재하는 게시글들
+
+        // 페이징 처리 전용 반환값
+        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, pagingResult), HttpStatus.OK);
     }
 
 

@@ -68,15 +68,14 @@ public class PostController {
 
 
     // 게시글 전체 목록 조회
-//    @GetMapping("/posts/{pageNum}")
-    @GetMapping("/posts/{sort}")
+    @GetMapping("/posts/{pageNum}/sort/{sort}")
     public ResponseEntity<PrivateResponseBody> getAllPost(
             HttpServletRequest request, // 인증 정보를 가진 request
-            @PathVariable String sort
-//            @PathVariable Integer pageNum // 페이지 번호
+            @PathVariable String sort,
+            @PathVariable Integer pageNum // 페이지 번호
     ){
         log.info("전체 목록 조회 : {}", sort);
-        return postService.getAllPost(request,sort);
+        return postService.getAllPost(request,sort,pageNum);
     }
 
 
