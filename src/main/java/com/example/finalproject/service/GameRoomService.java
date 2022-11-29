@@ -35,6 +35,7 @@ import static com.example.finalproject.domain.QMember.member;
 import static com.example.finalproject.domain.QGameRoom.gameRoom;
 import static com.example.finalproject.domain.QGameRoomMember.gameRoomMember;
 import static com.example.finalproject.domain.QMemberActive.memberActive;
+import static com.example.finalproject.domain.QGameStartSet.gameStartSet;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -482,6 +483,50 @@ public class GameRoomService {
             gameMessage1.setType(GameMessage.MessageType.NEWOWNER); // 메세지 타입
 
             messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage1);
+
+        }
+
+        // 게임이 시작된 방에서 나갈 경우
+        if(gameRoom1.getStatus().equals("start")){
+            // 해당 게임방 게임세트를 조회
+            GameStartSet gameSet = jpaQueryFactory
+                    .selectFrom(gameStartSet)
+                    .where(gameStartSet.roomId.eq(gameRoom1.getRoomId()))
+                    .fetchOne();
+
+            // 게임세트의 라이어와 나가고자하는 유저의 닉네임이 같다면
+            if(gameSet.getLier().equals(auth_member.getNickname())){
+
+                // StartSet 삭제(초기화)
+                jpaQueryFactory
+                        .delete(gameStartSet)
+                        .where(gameStartSet.gamestartsetId.eq(gameSet.getGamestartsetId()))
+                        .execute();
+
+                // 방의 상태 초기화
+                jpaQueryFactory
+                        .update(gameRoom)
+                        .set(gameRoom.status, "wait")
+                        .execute();
+
+                // 해당 게임방에 남아있는 유저들의 상태 unready로 초기화
+                for(GameRoomMember gameRoomMember1 : gameRoomMembers){
+                    jpaQueryFactory
+                            .update(gameRoomMember)
+                            .set(gameRoomMember.ready, "unready")
+                            .where(gameRoomMember.gameRoomMemberId.eq(gameRoomMember1.getGameRoomMemberId()))
+                            .execute();
+                }
+
+                GameMessage gameMessage1 = new GameMessage<>();
+                gameMessage1.setRoomId(Long.toString(gameRoom1.getRoomId())); // 방 id
+                gameMessage1.setSenderId("");
+                gameMessage1.setSender("운영자");
+                gameMessage1.setContent("라이어 유저의 퇴장으로 인해 게임 준비 단계로 돌아갑니다."); // 라이어 퇴장으로 인한 메세지 내용
+                gameMessage1.setType(GameMessage.MessageType.RESET); // 메세지 타입
+
+                messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage1);
+            }
         }
 
         em.flush();
