@@ -27,7 +27,7 @@ public class GemeRoomController {
     public ResponseEntity<?> lierMainPage(
             HttpServletRequest request,
             @PathVariable int pageNum,
-            @RequestBody(required = false)StringDto stringDto) { // 인증정보를 가진 request
+            @RequestBody StringDto stringDto){ // 인증정보를 가진 request
         return gameRoomService.lierMainPage(request, pageNum, stringDto);
     }
 
