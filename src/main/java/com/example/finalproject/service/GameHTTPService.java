@@ -177,7 +177,7 @@ public class GameHTTPService {
 //             게임 맴버 상태 ready
             jpaQueryFactory
                     .update(gameRoomMember)
-                    .set(gameRoomMember.ready, "ready")
+                    .set(gameRoomMember.ready, "unready")
                     .where(gameRoomMember.member_id.eq(gameRoomMember2.getMember_id()))
                     .execute();
 //            em.flush();
