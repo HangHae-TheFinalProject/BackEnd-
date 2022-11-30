@@ -29,7 +29,7 @@ public class Reward {
     private String rewardImg;
 
     @JsonIgnore
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "memberId")
     @ManyToOne(fetch = FetchType.LAZY)
     private Member member;
 

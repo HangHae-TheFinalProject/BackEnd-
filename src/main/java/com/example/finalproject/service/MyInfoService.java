@@ -1,6 +1,7 @@
 package com.example.finalproject.service;
 
 import com.example.finalproject.controller.response.PostResponseDto;
+import com.example.finalproject.controller.response.RewardResponseDto;
 import com.example.finalproject.domain.Member;
 import com.example.finalproject.domain.Post;
 import com.example.finalproject.domain.Reward;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -51,7 +53,7 @@ public class MyInfoService {
 
 
     // 작성한 게시글들 조회
-    public ResponseEntity<?> getMyPosts(HttpServletRequest request){
+    public ResponseEntity<?> getMyPosts(HttpServletRequest request) {
 
         // 인증된 유저 정보
         Member auth_member = authorizeToken(request);
@@ -64,10 +66,10 @@ public class MyInfoService {
         HashMap<String, Object> postlist = new HashMap<>();
         List<HashMap<String, Object>> postlistset = new ArrayList<>();
 
-        for(Post post : posts){
-            postlist.put("postId",post.getPostId());
-            postlist.put("author",post.getAuthor());
-            postlist.put("title",post.getTitle());
+        for (Post post : posts) {
+            postlist.put("postId", post.getPostId());
+            postlist.put("author", post.getAuthor());
+            postlist.put("title", post.getTitle());
 
             postlistset.add(postlist);
         }
@@ -77,7 +79,7 @@ public class MyInfoService {
 
 
     // 모든 전적 조회
-    public ResponseEntity<PrivateResponseBody> getMyAllRecord(HttpServletRequest request){
+    public ResponseEntity<PrivateResponseBody> getMyAllRecord(HttpServletRequest request) {
         // 인증된 유저 정보
         Member auth_member = authorizeToken(request);
 
@@ -85,9 +87,9 @@ public class MyInfoService {
         HashMap<String, String> allRecordSet = new HashMap<>();
 
         allRecordSet.put("nickname", auth_member.getNickname()); // 닉네임
-        allRecordSet.put("allPlayRecord",Long.toString(auth_member.getWinNum()+auth_member.getLossNum())); // 총 플레이 수
-        allRecordSet.put("allLierPlayRecord",Long.toString(auth_member.getWinLIER()+auth_member.getLossLIER())); // 총 라이어 플레이 수
-        allRecordSet.put("allCitizenPlayRecord",Long.toString(auth_member.getWinCITIZEN()+auth_member.getLossCITIZEN())); // 총 시민 플레이 수
+        allRecordSet.put("allPlayRecord", Long.toString(auth_member.getWinNum() + auth_member.getLossNum())); // 총 플레이 수
+        allRecordSet.put("allLierPlayRecord", Long.toString(auth_member.getWinLIER() + auth_member.getLossLIER())); // 총 라이어 플레이 수
+        allRecordSet.put("allCitizenPlayRecord", Long.toString(auth_member.getWinCITIZEN() + auth_member.getLossCITIZEN())); // 총 시민 플레이 수
         allRecordSet.put("winNum", Long.toString(auth_member.getWinNum())); // 전체 승리 수
         allRecordSet.put("lossNum", Long.toString(auth_member.getLossNum())); // 전체 패배 수
         allRecordSet.put("winLIER", Long.toString(auth_member.getWinLIER())); // 라이어로 승리한 수
@@ -99,21 +101,23 @@ public class MyInfoService {
     }
 
     // 얻은 업적 조회
-    public ResponseEntity<PrivateResponseBody> getMyReward(HttpServletRequest request){
+    @Transactional
+    public ResponseEntity<PrivateResponseBody> getMyReward(HttpServletRequest request) {
         // 인증된 유저 정보
         Member auth_member = authorizeToken(request);
 
-        List<Reward> rewards = auth_member.getRewards();
-        List<HashMap<String, Object>> rewardlist = new ArrayList<>();
+        List<RewardResponseDto> rewardlist = new ArrayList<>();
 
-        for(Reward reward1 : rewards){
-            HashMap<String, Object> rewardInfo = new HashMap<>();
-            rewardInfo.put("rewardId",reward1.getRewardId());
-            rewardInfo.put("rewardName",reward1.getRewardName());
-
-            rewardlist.add(rewardInfo);
+        if (!auth_member.getRewards().isEmpty()) {
+            for (Reward reward1 : auth_member.getRewards()) {
+                rewardlist.add(
+                        RewardResponseDto.builder()
+                                .rewardId(reward1.getRewardId())
+                                .rewardName(reward1.getRewardName())
+                                .build()
+                );
+            }
         }
-
 
         return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, rewardlist), HttpStatus.OK);
     }
