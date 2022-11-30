@@ -65,7 +65,7 @@ public class Member extends Timestamped{
     private GameRoomMember gameRoomMember;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "member",fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reward> rewards;
 
     @JsonIgnore
