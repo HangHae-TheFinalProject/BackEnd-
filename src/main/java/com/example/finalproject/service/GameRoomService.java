@@ -50,8 +50,6 @@ public class GameRoomService {
     private final ChatRoomService chatRoomService;
     private final EntityManager em;
     private final SimpMessageSendingOperations messagingTemplate;
-    private final RedisTemplate<String, Object> redisTemplate;
-    private final ChannelTopic channelTopic;
 
     // 인증 정보 검증 부분을 한 곳으로 모아놓음
     public Member authorizeToken(HttpServletRequest request) {
@@ -355,15 +353,6 @@ public class GameRoomService {
 
         // 구독 주소에 어떤 유저가 집입했는지 메세지 전달 (구독한 유저 전부 메세지 받음)
         messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage);
-
-        // 채팅창에 입장 메세지 출력
-        ChatMessage chatMessage = new ChatMessage();
-        chatMessage.setRoomId(Long.toString(roomId));
-        chatMessage.setType(ChatMessage.MessageType.ENTER);
-        chatMessage.setSender(auth_member.getNickname());
-        chatMessage.setMessage(auth_member.getNickname().substring(0, auth_member.getNickname().length() - 5) + "님이 게임에 참가하셨습니다.");
-
-        redisTemplate.convertAndSend(channelTopic.getTopic(), chatMessage);
 
         // 유저의 활동이력 정보 조회
         MemberActive userActive = jpaQueryFactory
