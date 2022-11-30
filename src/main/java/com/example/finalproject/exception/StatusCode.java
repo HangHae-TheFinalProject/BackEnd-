@@ -31,6 +31,7 @@ public enum StatusCode {
     ROOMNAME_OVER(HttpStatus.BAD_REQUEST,"129","생성할 수 있는 방 이름 글자 수가 초과하였습니다."),
     NOT_ENOUGH_MEMBER(HttpStatus.BAD_REQUEST,"130","게임 시작하기에 충분한 유저가 모이지 않았습니다."),
     ROOMNAME_BLANK(HttpStatus.BAD_REQUEST,"131","게임방 이름은 공백일 수 없습니다."),
+    NOT_EXIST_ROOMS(HttpStatus.BAD_REQUEST,"132","조건에 맞는 방이 존재하지 않습니다."),
 
     // comment
     COMMENT_ERROR(HttpStatus.BAD_REQUEST,"140","댓글이 존재하지 않습니다."),

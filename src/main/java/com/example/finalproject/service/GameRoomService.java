@@ -90,6 +90,11 @@ public class GameRoomService {
         int sizeInPage = pageNum * size;
 
         // 동적QueryDSL로 생성된 전체 게임방 불러오기
+        if(dynamicQueryDsl.findGameRooms(view).isEmpty()){
+            return new ResponseEntity<>(new PrivateResponseBody
+                    (StatusCode.NOT_EXIST_ROOMS, null), HttpStatus.BAD_REQUEST);
+        }
+
         List<GameRoom> rooms = dynamicQueryDsl.findGameRooms(view);
 
         // 메인페이지에 보여줄 전체 방과 방의 주인 및 방 참여 인원을 출력하기 위한 리스트
