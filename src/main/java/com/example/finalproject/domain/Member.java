@@ -9,6 +9,7 @@ import org.hibernate.Hibernate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -31,11 +32,45 @@ public class Member extends Timestamped{
     @Column(nullable = false)
     private String nickname;
 
+    @Column
+    private Long winNum = 0L;
+
+    @Column
+    private Long winLIER = 0L;
+
+    @Column
+    private Long winCITIZEN = 0L;
+
+    @Column
+    private Long lossNum = 0L;
+
+    @Column
+    private Long lossLIER = 0L;
+
+    @Column
+    private Long lossCITIZEN = 0L;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments;
+
     // 추가
     @JsonIgnore
     @JoinColumn(name="gameroommember_id")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private GameRoomMember gameRoomMember;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reward> rewards;
+
+    @JsonIgnore
+    @OneToOne(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    private MemberActive memberActive;
 
     @Override
     public boolean equals(Object o) {

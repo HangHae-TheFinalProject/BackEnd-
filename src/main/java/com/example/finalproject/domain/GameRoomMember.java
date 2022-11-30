@@ -6,13 +6,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
-public class GameRoomMember {
+public class GameRoomMember extends Timestamped{
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
@@ -33,4 +34,10 @@ public class GameRoomMember {
     @JoinColumn(name="memberid")
     @ManyToOne(fetch = FetchType.LAZY)
     private Member member;
+
+    @Column(nullable = false)
+    private String ready;
+
+    @Column(nullable = false)
+    private String session;
 }

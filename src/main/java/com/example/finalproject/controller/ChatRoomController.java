@@ -15,7 +15,7 @@ import java.util.List;
 // WebSocket 통신 외에 채팅 화면 View 구성을 위해 필요한 Controller를 생성
 @RequiredArgsConstructor
 @Controller
-@RequestMapping("lier/chat")
+@RequestMapping("/chat")
 public class ChatRoomController {
 
     private final ChatRoomRepository chatRoomRepository;
@@ -32,8 +32,8 @@ public class ChatRoomController {
     // 채팅방 생성
     @PostMapping("/room")
     @ResponseBody
-    public ResponseEntity<PrivateResponseBody> createRoom(@RequestParam String name, HttpServletRequest request) {
-        return chatRoomService.createChatRoom(name, request);
+    public ResponseEntity<PrivateResponseBody> createRoom(@RequestParam String name,@RequestParam String roomId ) {
+        return chatRoomService.createChatRoom(roomId, name);
     }
 
     // 채팅방 입장 화면
