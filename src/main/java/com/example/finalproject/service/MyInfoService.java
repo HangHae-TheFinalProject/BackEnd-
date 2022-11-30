@@ -109,6 +109,8 @@ public class MyInfoService {
         List<RewardResponseDto> rewardlist = new ArrayList<>();
 
         if (!auth_member.getRewards().isEmpty()) {
+            System.out.println("업적 획득 확인 : " + auth_member.getRewards().get(0));
+
             for (Reward reward1 : auth_member.getRewards()) {
                 rewardlist.add(
                         RewardResponseDto.builder()
@@ -119,6 +121,9 @@ public class MyInfoService {
             }
         }
 
-        return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, rewardlist), HttpStatus.OK);
+        HashMap<String, Object> rewardSet = new HashMap<>();
+        rewardSet.put("rewardlist",rewardlist);
+
+        return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, rewardSet), HttpStatus.OK);
     }
 }
