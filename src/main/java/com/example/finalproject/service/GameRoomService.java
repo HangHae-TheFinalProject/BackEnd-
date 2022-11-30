@@ -1,12 +1,15 @@
 package com.example.finalproject.service;
 
 import com.example.finalproject.controller.request.GameRoomRequestDto;
+import com.example.finalproject.controller.request.StringDto;
 import com.example.finalproject.controller.response.GameRoomResponseDto;
 import com.example.finalproject.domain.*;
 import com.example.finalproject.exception.PrivateException;
 import com.example.finalproject.exception.PrivateResponseBody;
 import com.example.finalproject.exception.StatusCode;
 import com.example.finalproject.jwt.TokenProvider;
+import com.example.finalproject.repository.ChatRoomRepository;
+import com.example.finalproject.repository.DynamicQueryDsl;
 import com.example.finalproject.repository.GameRoomMemberRepository;
 import com.example.finalproject.repository.GameRoomRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -31,15 +34,19 @@ import java.util.List;
 import static com.example.finalproject.domain.QMember.member;
 import static com.example.finalproject.domain.QGameRoom.gameRoom;
 import static com.example.finalproject.domain.QGameRoomMember.gameRoomMember;
+import static com.example.finalproject.domain.QMemberActive.memberActive;
+import static com.example.finalproject.domain.QGameStartSet.gameStartSet;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class GameRoomService {
+    private final DynamicQueryDsl dynamicQueryDsl;
     private final TokenProvider tokenProvider;
     private final JPAQueryFactory jpaQueryFactory;
     private final GameRoomRepository gameRoomRepository;
     private final GameRoomMemberRepository gameRoomMemberRepository;
+    private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomService chatRoomService;
     private final EntityManager em;
     private final SimpMessageSendingOperations messagingTemplate;
@@ -67,34 +74,23 @@ public class GameRoomService {
     }
 
 
-
     // 메인페이지 (방 전체 목록 조회) - 페이징 처리 완료
     public ResponseEntity<?> lierMainPage(
             HttpServletRequest request,
-            int pageNum) { // 인증정보를 가진 request
+            int pageNum,
+            String view
+    ) { // 인증정보를 가진 request
 
         // 토큰 유효성 검증
         authorizeToken(request);
-
-        // 테스트 시 활용할 임의 멤버
-//        Member member = jpaQueryFactory
-//                .selectFrom(QMember.member)
-//                .where(QMember.member.id.eq(1L))
-//                .fetchOne();
-//        if (member == null) {
-//            throw new PrivateException(StatusCode.LOGIN_EXPIRED_JWT_TOKEN);
-//        }
 
         // 한 페이지 당 보여지는 방 수 (4개)
         int size = 4;
         // 페이징 처리를 위해 현재 페이지와 보여지는 방 수를 곱해놓는다. (4개의 방 수 중 가장 마지막에 나올 위치값)
         int sizeInPage = pageNum * size;
 
-        // 생성된 전체 게임방 불러오기
-        List<GameRoom> rooms = jpaQueryFactory
-                .selectFrom(gameRoom)
-                .orderBy(gameRoom.createdAt.asc())
-                .fetch();
+        // 동적QueryDSL로 생성된 전체 게임방 불러오기
+        List<GameRoom> rooms = dynamicQueryDsl.findGameRooms(view);
 
         // 메인페이지에 보여줄 전체 방과 방의 주인 및 방 참여 인원을 출력하기 위한 리스트
         List<GameRoomResponseDto> gameroomlist = new ArrayList<>();
@@ -114,18 +110,18 @@ public class GameRoomService {
             // 방에 속한 멤버들의 정보들을 저장하기위한 리스트
             List<Member> memberList = new ArrayList<>();
 
-                // 게임방에 참가하고있는 멤버들의 인원 수 만큼 조회
-                for(int i = 0 ; i < gameRoomMembers.size() ; i++){
+            // 게임방에 참가하고있는 멤버들의 인원 수 만큼 조회
+            for (int i = 0; i < gameRoomMembers.size(); i++) {
 
-                    // 참가한 멤버마다 정보들을 불러옴
-                    Member each_member = jpaQueryFactory
-                            .selectFrom(member)
-                            .where(member.memberId.eq(gameRoomMembers.get(i).getMember_id()))
-                            .fetchOne();
+                // 참가한 멤버마다 정보들을 불러옴
+                Member each_member = jpaQueryFactory
+                        .selectFrom(member)
+                        .where(member.memberId.eq(gameRoomMembers.get(i).getMember_id()))
+                        .fetchOne();
 
-                    // 리스트에 정보들을 저장
-                    memberList.add(each_member);
-                }
+                // 리스트에 정보들을 저장
+                memberList.add(each_member);
+            }
 
             // 바로 DB 정보를 결과값으로 보낼 수 없기 때문에 DTO에 한번 더 저장
             GameRoomResponseDto gameRoomResponseDto = GameRoomResponseDto.builder()
@@ -146,13 +142,13 @@ public class GameRoomService {
         List<GameRoomResponseDto> roomsInPage = new ArrayList<>();
 
         // 페이징 처리 후 나온 페이지에 존재하는 4개의 방을 담는다.
-        for(int i = sizeInPage - size ; i < sizeInPage ; i++){
+        for (int i = sizeInPage - size; i < sizeInPage; i++) {
 
             // 방을 담는다.
             roomsInPage.add(gameroomlist.get(i));
 
             // 지금 존재하는 전체 방의 개수와 i 값이 같다면 break로 더이상 담지 않고 빠져나온다.
-            if(i == gameroomlist.size()-1){
+            if (i == gameroomlist.size() - 1) {
                 break;
             }
         }
@@ -161,7 +157,7 @@ public class GameRoomService {
         int pageCnt = rooms.size() / size;
 
         // 만약 페이지 수가 size 와 딱 맞아떨어지지 않고 더 많다면 +1을 해준다.
-        if(!(rooms.size() % size == 0)){
+        if (!(rooms.size() % size == 0)) {
             pageCnt = pageCnt + 1;
         }
 
@@ -169,9 +165,9 @@ public class GameRoomService {
         HashMap<String, Object> pageRoomSet = new HashMap<>();
 
         // 최대 페이지
-        pageRoomSet.put("pageCnt",pageCnt);
+        pageRoomSet.put("pageCnt", pageCnt);
         // 페이지 안에 있는 방들
-        pageRoomSet.put("roomsInPage",roomsInPage);
+        pageRoomSet.put("roomsInPage", roomsInPage);
 
 
         // 결과 출력
@@ -184,8 +180,7 @@ public class GameRoomService {
     public ResponseEntity<?> makeGameRoom(
             GameRoomRequestDto gameRoomRequestDto, // 방 생성을 위해 input 값이 담긴 DTO
             HttpServletRequest request) // 인증정보를 가진 request
-            throws io.openvidu.java.client.OpenViduJavaClientException, io.openvidu.java.client.OpenViduHttpException
-    {
+            throws io.openvidu.java.client.OpenViduJavaClientException, io.openvidu.java.client.OpenViduHttpException {
 
         // 토큰 유효성 검증
         Member auth_member = authorizeToken(request);
@@ -196,9 +191,13 @@ public class GameRoomService {
 
         log.info("세션 아이디 : {}, 토큰 : {}", sessionAndToken.get("sessionId"), sessionAndToken.get("token"));
 
-        if(gameRoomRequestDto.getRoomName().length() >= 11){
+        if (gameRoomRequestDto.getRoomName().length() >= 11) {
             return new ResponseEntity<>(new PrivateResponseBody
                     (StatusCode.ROOMNAME_OVER, null), HttpStatus.BAD_REQUEST);
+        }
+        if (gameRoomRequestDto.getRoomName() == null || gameRoomRequestDto.getRoomName().equals("")) {
+            return new ResponseEntity<>(new PrivateResponseBody
+                    (StatusCode.ROOMNAME_BLANK, null), HttpStatus.BAD_REQUEST);
         }
 
         // 게임 방 생성을 위한 DTO 정보 기입
@@ -213,7 +212,25 @@ public class GameRoomService {
         // 게임방 생성 (저장)
         gameRoomRepository.save(gameRoom1);
 
-        chatRoomService.createChatRoom( gameRoom1.getRoomId().toString(), gameRoom1.getRoomName());
+        // 유저의 활동이력 정보 조회
+        MemberActive userActive = jpaQueryFactory
+                .selectFrom(memberActive)
+                .where(memberActive.member.eq(auth_member))
+                .fetchOne();
+
+        // 방을 생성한 유저의 방 생성(create), 방장(owner) 이력 업데이트
+        jpaQueryFactory
+                .update(memberActive)
+                .set(memberActive.createNum, userActive.getCreateNum()+1L)
+                .set(memberActive.ownerNum, userActive.getOwnerNum()+1L)
+                .where(memberActive.member.eq(auth_member))
+                .execute();
+
+        em.flush();
+        em.clear();
+
+        // 채팅방 생성
+        chatRoomService.createChatRoom(gameRoom1.getRoomId().toString(), gameRoom1.getRoomName());
 
         // 원하는 정보들만 출력될 수 있도록 HashMap을 생성
         HashMap<String, String> roomInfo = new HashMap<>();
@@ -255,8 +272,8 @@ public class GameRoomService {
                 .fetchOne();
 
         // 이미 게임방 상태가 시작 중이라면 참가할 수 없음
-        if(enterGameRoom.getStatus().equals("start")){
-            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.ALREADY_PLAYING,null),HttpStatus.BAD_REQUEST);
+        if (enterGameRoom.getStatus().equals("start")) {
+            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.ALREADY_PLAYING, null), HttpStatus.BAD_REQUEST);
         }
 
         // 만약, 관리 DB(GameRoomMember)에 현재 입장하고자 하는 멤버와 입장하고자 하는 방 정보가 매핑이 되어있으면 이미 참가가 되어있는 것이므로 에러 출력
@@ -266,7 +283,7 @@ public class GameRoomService {
                 .fetchOne() != null) {
 
             // 이미 참가한 멤버 이슈 출력
-            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.MEMBER_DUPLICATED,null),HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.MEMBER_DUPLICATED, null), HttpStatus.BAD_REQUEST);
         }
 
         // 현재 입장하고자하는 게임방의 정보를 가지고있는 관리DB(GameRoomMember) 정보들을 리스트화하여 불러오기 (게임 방 정원 확인을 위한 용도)
@@ -279,7 +296,7 @@ public class GameRoomService {
         if (gameRoomMemberList.size() >= 9) {
 
             // 정원이 초과하여 입장할 수 없다는 이슈 출력
-            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.CANT_ENTER,null),HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.CANT_ENTER, null), HttpStatus.BAD_REQUEST);
         }
 
         // 8명이거나 이하라면, 관리DB (GameRoomMember)에 저장 및 등록 (멤버 게임방 입장)
@@ -307,7 +324,7 @@ public class GameRoomService {
         List<Member> memberList = new ArrayList<>();
 
         // 리스트에 불러온 멤버의 정보들을 담는다.
-        for(GameRoomMember gameRoomMember1 : gameRoomMembers){
+        for (GameRoomMember gameRoomMember1 : gameRoomMembers) {
             memberList.add(gameRoomMember1.getMember());
         }
 
@@ -339,9 +356,25 @@ public class GameRoomService {
         chatMessage.setRoomId(Long.toString(roomId));
         chatMessage.setType(ChatMessage.MessageType.ENTER);
         chatMessage.setSender(auth_member.getNickname());
-        chatMessage.setMessage(auth_member.getNickname().substring(0,auth_member.getNickname().length()-5) + "님이 게임에 참가하셨습니다.");
+        chatMessage.setMessage(auth_member.getNickname().substring(0, auth_member.getNickname().length() - 5) + "님이 게임에 참가하셨습니다.");
 
         redisTemplate.convertAndSend(channelTopic.getTopic(), chatMessage);
+
+        // 유저의 활동이력 정보 조회
+        MemberActive userActive = jpaQueryFactory
+                .selectFrom(memberActive)
+                .where(memberActive.member.eq(auth_member))
+                .fetchOne();
+
+        // 유저가 방에 입장한 이력 업데이트
+        jpaQueryFactory
+                .update(memberActive)
+                .set(memberActive.enterNum, userActive.getEnterNum()+1L)
+                .where(memberActive.member.eq(auth_member))
+                .execute();
+
+        em.flush();
+        em.clear();
 
         // 결과 출력
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, gameRoomResponseDto), HttpStatus.OK);
@@ -376,11 +409,14 @@ public class GameRoomService {
                 .fetch();
 
         // 만약 멤버가 나간 후, 게임방에 남아있는 멤버가 존재하지 않을 경우에 게임방도 같이 삭제
-        if(gameRoomMembers.isEmpty()){
+        if (gameRoomMembers.isEmpty()) {
             jpaQueryFactory
                     .delete(gameRoom)
                     .where(gameRoom.roomId.eq(gameRoom1.getRoomId()))
                     .execute();
+
+            // 채팅방 삭제
+            chatRoomRepository.deleteRoom(gameRoom1.getRoomId().toString());
         }
 
         // 누가 방을 나갔는지 소켓으로 전체 공유
@@ -394,6 +430,19 @@ public class GameRoomService {
         // 구독자들에게 퇴장 메세지 전달
         messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage);
 
+        // 유저의 활동이력 정보 조회
+        MemberActive userActive = jpaQueryFactory
+                .selectFrom(memberActive)
+                .where(memberActive.member.eq(auth_member))
+                .fetchOne();
+
+        // 유저가 방에 입장한 이력 업데이트
+        jpaQueryFactory
+                .update(memberActive)
+                .set(memberActive.exitNum, userActive.getExitNum()+1L)
+                .where(memberActive.member.eq(auth_member))
+                .execute();
+
         // 방에서 나가려고 하는 멤버가 현재 방장이고, 게임방에 남아있는 인원이 존재할 경우에 남은 사람듣 중에 방장을 랜덤으로 지정
         if (auth_member.getNickname().equals(gameRoom1.getOwner()) && !gameRoomMembers.isEmpty()) {
 
@@ -406,15 +455,25 @@ public class GameRoomService {
                     .where(QMember.member.memberId.eq(nextOwnerId))
                     .fetchOne();
 
+            // 다음 방장으로 지정된 유저의 활동이력 정보 조회
+            MemberActive nextOwnerActive = jpaQueryFactory
+                    .selectFrom(memberActive)
+                    .where(memberActive.member.eq(nextOwner))
+                    .fetchOne();
+
+            // 다음 방장으로 지정된 유저의 owner 이력 업데이트
+            jpaQueryFactory
+                    .update(memberActive)
+                    .set(memberActive.ownerNum, nextOwnerActive.getOwnerNum()+1L)
+                    .where(memberActive.member.eq(nextOwner))
+                    .execute();
+
             // 게임 방의 방장 정보 수정
             jpaQueryFactory
                     .update(gameRoom)
                     .set(gameRoom.owner, nextOwner.getNickname())
                     .where(gameRoom.roomId.eq(roomId))
                     .execute();
-
-            em.flush();
-            em.clear();
 
             GameMessage gameMessage1 = new GameMessage<>();
             gameMessage1.setRoomId(Long.toString(gameRoom1.getRoomId())); // 방 id
@@ -424,7 +483,54 @@ public class GameRoomService {
             gameMessage1.setType(GameMessage.MessageType.NEWOWNER); // 메세지 타입
 
             messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage1);
+
         }
+
+        // 게임이 시작된 방에서 나갈 경우
+        if(gameRoom1.getStatus().equals("start")){
+            // 해당 게임방 게임세트를 조회
+            GameStartSet gameSet = jpaQueryFactory
+                    .selectFrom(gameStartSet)
+                    .where(gameStartSet.roomId.eq(gameRoom1.getRoomId()))
+                    .fetchOne();
+
+            // 게임세트의 라이어와 나가고자하는 유저의 닉네임이 같다면
+            if(gameSet.getLier().equals(auth_member.getNickname())){
+
+                // StartSet 삭제(초기화)
+                jpaQueryFactory
+                        .delete(gameStartSet)
+                        .where(gameStartSet.gamestartsetId.eq(gameSet.getGamestartsetId()))
+                        .execute();
+
+                // 방의 상태 초기화
+                jpaQueryFactory
+                        .update(gameRoom)
+                        .set(gameRoom.status, "wait")
+                        .execute();
+
+                // 해당 게임방에 남아있는 유저들의 상태 unready로 초기화
+                for(GameRoomMember gameRoomMember1 : gameRoomMembers){
+                    jpaQueryFactory
+                            .update(gameRoomMember)
+                            .set(gameRoomMember.ready, "unready")
+                            .where(gameRoomMember.gameRoomMemberId.eq(gameRoomMember1.getGameRoomMemberId()))
+                            .execute();
+                }
+
+                GameMessage gameMessage1 = new GameMessage<>();
+                gameMessage1.setRoomId(Long.toString(gameRoom1.getRoomId())); // 방 id
+                gameMessage1.setSenderId("");
+                gameMessage1.setSender("운영자");
+                gameMessage1.setContent("라이어 유저의 퇴장으로 인해 게임 준비 단계로 돌아갑니다."); // 라이어 퇴장으로 인한 메세지 내용
+                gameMessage1.setType(GameMessage.MessageType.RESET); // 메세지 타입
+
+                messagingTemplate.convertAndSend("/sub/gameroom/" + roomId, gameMessage1);
+            }
+        }
+
+        em.flush();
+        em.clear();
 
         // 정상적으로 방을 나가면 문구 출력
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, "방을 나가셨습니다."), HttpStatus.OK);
@@ -476,8 +582,6 @@ public class GameRoomService {
         return sessionAndToken;
 
     }
-
-
 
 
 }

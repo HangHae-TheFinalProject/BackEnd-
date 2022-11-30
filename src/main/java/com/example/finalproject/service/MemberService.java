@@ -162,6 +162,37 @@ public class MemberService {
                 (StatusCode.OK, "로그아웃"), HttpStatus.OK);
     }
 
+    // 회원 탈퇴
+    public ResponseEntity<PrivateResponseBody> cleansing(HttpServletRequest request) {
+
+        log.info("탈퇴 진입 : {}", request.getHeader("Authorization"));
+
+        // 리프레쉬 토큰 확인
+        if (!tokenProvider.validateToken(request.getHeader("Refresh-Token"))) {
+            return new ResponseEntity<>(new PrivateResponseBody
+                    (StatusCode.LOGIN_WRONG_FORM_JWT_TOKEN, null), HttpStatus.BAD_REQUEST);
+        }
+
+        // 현재 로그인한 유저 조회
+        Member member = tokenProvider.getMemberFromAuthentication();
+
+        // 회원 확인
+        if (null == member) {
+            return new ResponseEntity<>(new PrivateResponseBody
+                    (StatusCode.LOGIN_MEMBER_ID_FAIL, null), HttpStatus.NOT_FOUND);
+        }
+
+        // 리프레쉬 토큰 삭제
+        tokenProvider.deleteRefreshToken(member);
+
+        // 멤버 삭제
+        memberRepository.delete(member);
+
+        // Message 및 Status를 Return
+        return new ResponseEntity<>(new PrivateResponseBody
+                (StatusCode.OK, "회원 탈퇴 성공"), HttpStatus.OK);
+    }
+
     //Email 확인
     @Transactional(readOnly = true)
     public Member isPresentMember(String email) {
