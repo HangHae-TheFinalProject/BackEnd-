@@ -486,6 +486,7 @@ public class PostService {
 
         // 총 페이지 수와 페이징 처리된 게시글들을 같이 저장
         HashMap<String, Object> pagingResult = new HashMap<>();
+        pagingResult.put("postsCnt", allPostlist.size());
         pagingResult.put("pageCnt", pageCnt); // 총 페이지 수
         pagingResult.put("pageInPosts", pagingAllPostlist); // 페이지 안에 존재하는 게시글들
 

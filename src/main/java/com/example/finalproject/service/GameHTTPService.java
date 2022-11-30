@@ -168,7 +168,6 @@ public class GameHTTPService {
             em.flush();
             em.clear();
 
-            rewardRequired.achievePlayReward(lier, gameroomid);
         }
         // 틀리면 시민 승리
         else {

@@ -3,10 +3,12 @@ package com.example.finalproject.service;
 import com.example.finalproject.domain.GameMessage;
 import com.example.finalproject.domain.Member;
 import com.example.finalproject.domain.Reward;
+import com.example.finalproject.repository.MemberRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.util.ArrayList;
@@ -23,12 +25,14 @@ import static com.example.finalproject.domain.QMemberActive.memberActive;
 public class RewardRequired implements RewardRequiredInter {
 
     private final JPAQueryFactory jpaQueryFactory;
+    private final MemberRepository memberRepository;
     private final EntityManager em;
     private final SimpMessageSendingOperations messagingTemplate;
-    private List<Member> quickWinSet = null;
+    private List<Member> quickWinSet = new ArrayList<>();
 
     // 게임 플레이 시 얻는 업적
     @Override
+    @Transactional
     public void achievePlayReward(Member playingMember, Long gameroomid) {
 
         GameMessage gameMessage = new GameMessage();
@@ -46,17 +50,12 @@ public class RewardRequired implements RewardRequiredInter {
                     .fetchOne();
 
             if (!rewardlist.contains(reward1)) {
-
                 rewardlist.add(reward1);
 
-                jpaQueryFactory
-                        .update(member)
-                        .set(member.rewards, rewardlist)
-                        .where(member.memberId.eq(playingMember.getMemberId()))
-                        .execute();
+                Member member1 = playingMember;
 
-                em.flush();
-                em.clear();
+                member1.setRewards(rewardlist);
+                memberRepository.save(member1);
 
                 gameMessage.setSender("운영자");
                 gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
@@ -136,14 +135,10 @@ public class RewardRequired implements RewardRequiredInter {
 
                 rewardlist.add(reward1);
 
-                jpaQueryFactory
-                        .update(member)
-                        .set(member.rewards, rewardlist)
-                        .where(member.memberId.eq(playingMember.getMemberId()))
-                        .execute();
+                Member member1 = playingMember;
 
-                em.flush();
-                em.clear();
+                member1.setRewards(rewardlist);
+                memberRepository.save(member1);
 
                 gameMessage.setSender("운영자");
                 gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
@@ -166,13 +161,13 @@ public class RewardRequired implements RewardRequiredInter {
 
             quickWinSet.add(playingMember);
 
-            for(Member member2 : quickWinSet){
-                if(member2.getNickname().equals(playingMember.getNickname())){
+            for (Member member2 : quickWinSet) {
+                if (member2.getNickname().equals(playingMember.getNickname())) {
                     quickWinCnt = quickWinCnt + 1;
                 }
             }
 
-            if(quickWinCnt == 2){
+            if (quickWinCnt == 2) {
                 Reward reward1 = jpaQueryFactory
                         .selectFrom(reward)
                         .where(reward.rewardId.eq(5L))
@@ -181,14 +176,10 @@ public class RewardRequired implements RewardRequiredInter {
                 if (!rewardlist.contains(reward1)) {
                     rewardlist.add(reward1);
 
-                    jpaQueryFactory
-                            .update(member)
-                            .set(member.rewards, rewardlist)
-                            .where(member.memberId.eq(playingMember.getMemberId()))
-                            .execute();
+                    Member member1 = playingMember;
 
-                    em.flush();
-                    em.clear();
+                    member1.setRewards(rewardlist);
+                    memberRepository.save(member1);
 
                     gameMessage.setSender("운영자");
                     gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
@@ -211,14 +202,10 @@ public class RewardRequired implements RewardRequiredInter {
 
                 rewardlist.add(reward1);
 
-                jpaQueryFactory
-                        .update(member)
-                        .set(member.rewards, rewardlist)
-                        .where(member.memberId.eq(playingMember.getMemberId()))
-                        .execute();
+                Member member1 = playingMember;
 
-                em.flush();
-                em.clear();
+                member1.setRewards(rewardlist);
+                memberRepository.save(member1);
 
                 gameMessage.setSender("운영자");
                 gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
@@ -240,14 +227,10 @@ public class RewardRequired implements RewardRequiredInter {
 
                 rewardlist.add(reward1);
 
-                jpaQueryFactory
-                        .update(member)
-                        .set(member.rewards, rewardlist)
-                        .where(member.memberId.eq(playingMember.getMemberId()))
-                        .execute();
+                Member member1 = playingMember;
 
-                em.flush();
-                em.clear();
+                member1.setRewards(rewardlist);
+                memberRepository.save(member1);
 
                 gameMessage.setSender("운영자");
                 gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
@@ -354,14 +337,10 @@ public class RewardRequired implements RewardRequiredInter {
 
                 rewardlist.add(reward1);
 
-                jpaQueryFactory
-                        .update(member)
-                        .set(member.rewards, rewardlist)
-                        .where(member.memberId.eq(playingMember.getMemberId()))
-                        .execute();
+                Member member1 = playingMember;
 
-                em.flush();
-                em.clear();
+                member1.setRewards(rewardlist);
+                memberRepository.save(member1);
 
                 gameMessage.setSender("운영자");
                 gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
@@ -382,14 +361,10 @@ public class RewardRequired implements RewardRequiredInter {
 
                 rewardlist.add(reward1);
 
-                jpaQueryFactory
-                        .update(member)
-                        .set(member.rewards, rewardlist)
-                        .where(member.memberId.eq(playingMember.getMemberId()))
-                        .execute();
+                Member member1 = playingMember;
 
-                em.flush();
-                em.clear();
+                member1.setRewards(rewardlist);
+                memberRepository.save(member1);
 
                 gameMessage.setSender("운영자");
                 gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
@@ -416,14 +391,10 @@ public class RewardRequired implements RewardRequiredInter {
 
                 rewardlist.add(reward1);
 
-                jpaQueryFactory
-                        .update(member)
-                        .set(member.rewards, rewardlist)
-                        .where(member.memberId.eq(playingMember.getMemberId()))
-                        .execute();
+                Member member1 = playingMember;
 
-                em.flush();
-                em.clear();
+                member1.setRewards(rewardlist);
+                memberRepository.save(member1);
 
                 gameMessage.setSender("운영자");
                 gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
