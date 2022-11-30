@@ -6,6 +6,6 @@ import com.example.finalproject.domain.Member;
 
 public interface RewardRequiredInter {
 
-    public void achievePlayReward(Member playingMember, Long gameroomid);
+    void achievePlayReward(Member playingMember, Long gameroomid);
 
 }
