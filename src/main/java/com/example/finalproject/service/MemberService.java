@@ -87,6 +87,10 @@ public class MemberService {
                 .gamestartNum(0L) // 게임시작 한 횟수
                 .voteNum(0L) // 투표한 횟수
                 .correctanswerNum(0L) // 정답을 맞춘 횟수
+                .starttime(null)
+                .endplaytime(null)
+                .playhour(0L)
+                .playminute(0L)
                 .member(member)
                 .build();
 

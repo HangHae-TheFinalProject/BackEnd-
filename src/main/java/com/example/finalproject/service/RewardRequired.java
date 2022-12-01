@@ -2,6 +2,7 @@ package com.example.finalproject.service;
 
 import com.example.finalproject.domain.GameMessage;
 import com.example.finalproject.domain.Member;
+import com.example.finalproject.domain.MemberActive;
 import com.example.finalproject.domain.Reward;
 import com.example.finalproject.repository.MemberRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -28,6 +29,7 @@ public class RewardRequired implements RewardRequiredInter {
     private final MemberRepository memberRepository;
     private final EntityManager em;
     private final SimpMessageSendingOperations messagingTemplate;
+    private Boolean rewardChecking = false;
     private List<Member> quickWinSet = new ArrayList<>();
 
     // 게임 플레이 시 얻는 업적
@@ -37,6 +39,13 @@ public class RewardRequired implements RewardRequiredInter {
 
         GameMessage gameMessage = new GameMessage();
         List<Reward> rewardlist = new ArrayList<>();
+
+        // 유저의 확ㄹ동 이력 정보 우선 조회
+        MemberActive userActive = jpaQueryFactory
+                .selectFrom(memberActive)
+                .where(memberActive.member.eq(playingMember))
+                .fetchOne();
+
 
         if (!playingMember.getRewards().isEmpty()) {
             rewardlist = playingMember.getRewards();
@@ -49,7 +58,15 @@ public class RewardRequired implements RewardRequiredInter {
                     .where(reward.rewardId.eq(1L))
                     .fetchOne();
 
-            if (!rewardlist.contains(reward1)) {
+            if(!rewardlist.isEmpty()){
+                for(Reward rewardCheck : rewardlist){
+                    if(rewardCheck.getRewardName().equals(reward1.getRewardName())){
+                        rewardChecking = true;
+                    }
+                }
+            }
+
+            if (rewardlist.isEmpty() || rewardChecking == false) {
                 rewardlist.add(reward1);
 
                 Member member1 = playingMember;
@@ -62,6 +79,8 @@ public class RewardRequired implements RewardRequiredInter {
                 gameMessage.setType(GameMessage.MessageType.REWARD);
 
                 messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid + "/" + playingMember.getNickname(), gameMessage);
+
+                System.out.println("[" + reward1.getRewardName() + "] 업적 획득 확인");
             }
 
         }
@@ -131,7 +150,15 @@ public class RewardRequired implements RewardRequiredInter {
                     .where(reward.rewardId.eq(3L))
                     .fetchOne();
 
-            if (!rewardlist.contains(reward1)) {
+            if(!rewardlist.isEmpty()){
+                for(Reward rewardCheck : rewardlist){
+                    if(rewardCheck.getRewardName().equals(reward1.getRewardName())){
+                        rewardChecking = true;
+                    }
+                }
+            }
+
+            if (rewardlist.isEmpty() || rewardChecking == false) {
 
                 rewardlist.add(reward1);
 
@@ -145,6 +172,8 @@ public class RewardRequired implements RewardRequiredInter {
                 gameMessage.setType(GameMessage.MessageType.REWARD);
 
                 messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid + "/" + playingMember.getNickname(), gameMessage);
+
+                System.out.println("[" + reward1.getRewardName() + "] 업적 획득 확인");
             }
         }
 
@@ -173,7 +202,15 @@ public class RewardRequired implements RewardRequiredInter {
                         .where(reward.rewardId.eq(5L))
                         .fetchOne();
 
-                if (!rewardlist.contains(reward1)) {
+                if(!rewardlist.isEmpty()){
+                    for(Reward rewardCheck : rewardlist){
+                        if(rewardCheck.getRewardName().equals(reward1.getRewardName())){
+                            rewardChecking = true;
+                        }
+                    }
+                }
+
+                if (rewardlist.isEmpty() || rewardChecking == false) {
                     rewardlist.add(reward1);
 
                     Member member1 = playingMember;
@@ -186,6 +223,8 @@ public class RewardRequired implements RewardRequiredInter {
                     gameMessage.setType(GameMessage.MessageType.REWARD);
 
                     messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid + "/" + playingMember.getNickname(), gameMessage);
+
+                    System.out.println("[" + reward1.getRewardName() + "] 업적 획득 확인");
                 }
             }
 
@@ -198,7 +237,15 @@ public class RewardRequired implements RewardRequiredInter {
                     .where(reward.rewardId.eq(4L))
                     .fetchOne();
 
-            if (!rewardlist.contains(reward1)) {
+            if(!rewardlist.isEmpty()){
+                for(Reward rewardCheck : rewardlist){
+                    if(rewardCheck.getRewardName().equals(reward1.getRewardName())){
+                        rewardChecking = true;
+                    }
+                }
+            }
+
+            if (rewardlist.isEmpty() || rewardChecking == false) {
 
                 rewardlist.add(reward1);
 
@@ -212,6 +259,8 @@ public class RewardRequired implements RewardRequiredInter {
                 gameMessage.setType(GameMessage.MessageType.REWARD);
 
                 messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid + "/" + playingMember.getNickname(), gameMessage);
+
+                System.out.println("[" + reward1.getRewardName() + "] 업적 획득 확인");
             }
         }
 
@@ -223,7 +272,15 @@ public class RewardRequired implements RewardRequiredInter {
                     .where(reward.rewardId.eq(8L))
                     .fetchOne();
 
-            if (!rewardlist.contains(reward1)) {
+            if(!rewardlist.isEmpty()){
+                for(Reward rewardCheck : rewardlist){
+                    if(rewardCheck.getRewardName().equals(reward1.getRewardName())){
+                        rewardChecking = true;
+                    }
+                }
+            }
+
+            if (rewardlist.isEmpty() || rewardChecking == false) {
 
                 rewardlist.add(reward1);
 
@@ -237,6 +294,8 @@ public class RewardRequired implements RewardRequiredInter {
                 gameMessage.setType(GameMessage.MessageType.REWARD);
 
                 messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid + "/" + playingMember.getNickname(), gameMessage);
+
+                System.out.println("[" + reward1.getRewardName() + "] 업적 획득 확인");
             }
         }
 
@@ -333,7 +392,15 @@ public class RewardRequired implements RewardRequiredInter {
                     .where(reward.rewardId.eq(2L))
                     .fetchOne();
 
-            if (!rewardlist.contains(reward1)) {
+            if(!rewardlist.isEmpty()){
+                for(Reward rewardCheck : rewardlist){
+                    if(rewardCheck.getRewardName().equals(reward1.getRewardName())){
+                        rewardChecking = true;
+                    }
+                }
+            }
+
+            if (rewardlist.isEmpty() || rewardChecking == false) {
 
                 rewardlist.add(reward1);
 
@@ -347,6 +414,8 @@ public class RewardRequired implements RewardRequiredInter {
                 gameMessage.setType(GameMessage.MessageType.REWARD);
 
                 messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid + "/" + playingMember.getNickname(), gameMessage);
+
+                System.out.println("[" + reward1.getRewardName() + "] 업적 획득 확인");
             }
         }
 
@@ -357,7 +426,15 @@ public class RewardRequired implements RewardRequiredInter {
                     .where(reward.rewardId.eq(6L))
                     .fetchOne();
 
-            if (!rewardlist.contains(reward1)) {
+            if(!rewardlist.isEmpty()){
+                for(Reward rewardCheck : rewardlist){
+                    if(rewardCheck.getRewardName().equals(reward1.getRewardName())){
+                        rewardChecking = true;
+                    }
+                }
+            }
+
+            if (rewardlist.isEmpty() || rewardChecking == false) {
 
                 rewardlist.add(reward1);
 
@@ -371,23 +448,28 @@ public class RewardRequired implements RewardRequiredInter {
                 gameMessage.setType(GameMessage.MessageType.REWARD);
 
                 messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid + "/" + playingMember.getNickname(), gameMessage);
+
+                System.out.println("[" + reward1.getRewardName() + "] 업적 획득 확인");
             }
         }
 
-        // 신과 함께 : 라이어가 정답을 10회 맞춰서 승리했을 시 획득
-        Long correctAnswerCnt = jpaQueryFactory
-                .select(memberActive.correctanswerNum)
-                .from(memberActive)
-                .where(memberActive.member.eq(playingMember))
-                .fetchOne();
 
-        if (correctAnswerCnt == 10L) {
+        // 신과 함께 : 라이어가 정답을 10회 맞춰서 승리했을 시 획득
+        if (userActive.getCorrectanswerNum() == 10L) {
             Reward reward1 = jpaQueryFactory
                     .selectFrom(reward)
                     .where(reward.rewardId.eq(7L))
                     .fetchOne();
 
-            if (!rewardlist.contains(reward1)) {
+            if(!rewardlist.isEmpty()){
+                for(Reward rewardCheck : rewardlist){
+                    if(rewardCheck.getRewardName().equals(reward1.getRewardName())){
+                        rewardChecking = true;
+                    }
+                }
+            }
+
+            if (rewardlist.isEmpty() || rewardChecking == false) {
 
                 rewardlist.add(reward1);
 
@@ -401,6 +483,8 @@ public class RewardRequired implements RewardRequiredInter {
                 gameMessage.setType(GameMessage.MessageType.REWARD);
 
                 messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid + "/" + playingMember.getNickname(), gameMessage);
+
+                System.out.println("[" + reward1.getRewardName() + "] 업적 획득 확인");
             }
         }
 

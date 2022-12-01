@@ -20,6 +20,7 @@ import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -68,6 +69,13 @@ public class GameService {
     // 게임 시작
     @Transactional
     public ResponseEntity<?> gameStart(GameMessage gameMessage, Long gameroomid) {
+        LocalDateTime startDateTime = LocalDateTime.of(
+                LocalDateTime.now().getYear(),
+                LocalDateTime.now().getMonth(),
+                LocalDateTime.now().getDayOfMonth(),
+                LocalDateTime.now().getHour(),
+                LocalDateTime.now().getMinute());
+
         // 현재 입장한 게임방의 정보를 가져옴
         GameRoom gameRoom1 = jpaQueryFactory
                 .selectFrom(gameRoom)
@@ -94,7 +102,7 @@ public class GameService {
         // 게임시작은 방장만이 할 수 있으므로 방장이 된 유저의 gamestart 이력을 업데이트
         jpaQueryFactory
                 .update(memberActive)
-                .set(memberActive.gamestartNum, ownerActive.getGamestartNum()+1L)
+                .set(memberActive.gamestartNum, ownerActive.getGamestartNum() + 1L)
                 .where(memberActive.member.eq(owner))
                 .execute();
 
@@ -131,6 +139,16 @@ public class GameService {
                     .where(member.memberId.eq(gameRoomMember2.getMember_id()))
                     .fetchOne();
 
+            // 유저의 게임시작시간을 기록
+            jpaQueryFactory
+                    .update(memberActive)
+                    .set(memberActive.starttime, startDateTime)
+                    .where(memberActive.member.eq(each_member))
+                    .execute();
+
+            em.flush();
+            em.clear();
+
             // 무작위 라이어 선택용 리스트에 추가
             playingMembers.add(each_member);
         }
@@ -157,7 +175,7 @@ public class GameService {
                 .build();
 
         // StartSet 저장
-        gameStartSetRepository.save(gameStartSet);;
+        gameStartSetRepository.save(gameStartSet);
 
         // http 형식으로 프론트에 전달할 반환값 (예비용)
         GameStartSetResponseDto gameStartSetResponseDto = GameStartSetResponseDto.builder()
@@ -171,7 +189,7 @@ public class GameService {
         List<String> memberset = new ArrayList<>();
 
         // 닉네임만 필요하기에 닉네임만 담음
-        for(Member member : playingMembers){
+        for (Member member : playingMembers) {
             memberset.add(member.getNickname());
         }
 
@@ -182,14 +200,14 @@ public class GameService {
         startset.put("keyword", gameStartSet.getKeyword()); // 키워드
         startset.put("memberlist", memberset); // 방에 존재하는 모든 유저들
 
-        if(gameRoom1.getMode().equals(Mode.일반)){
+        if (gameRoom1.getMode().equals(Mode.일반)) {
             gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 게임방 id
             gameMessage.setSenderId(""); // 준비된 유저의 id
             gameMessage.setSender("운영자"); // 준비된 유저의 닉네임
             gameMessage.setContent(startset); // 준비됫다는 내용
             gameMessage.setType(GameMessage.MessageType.START); // 메세지 타입
 
-        }else if(gameRoom1.getMode().equals(Mode.바보)){
+        } else if (gameRoom1.getMode().equals(Mode.바보)) {
             // 바보모드에서 라이어에 걸린 유저를 위한 같은 카테고리의 키워드들 리스트화
             keywordList = jpaQueryFactory
                     .selectFrom(keyword)
@@ -211,7 +229,6 @@ public class GameService {
             gameMessage.setContent(startset); // 준비됫다는 내용
             gameMessage.setType(GameMessage.MessageType.START); // 메세지 타입
         }
-
 
 
         // 게임 시작 알림을 방에 구독이 된 유저들에게 알려줌
@@ -292,7 +309,7 @@ public class GameService {
         // 게임준비한 유저의 이력을 업데이트
         jpaQueryFactory
                 .update(memberActive)
-                .set(memberActive.gamereadyNum, userActive.getGamereadyNum()+1L)
+                .set(memberActive.gamereadyNum, userActive.getGamereadyNum() + 1L)
                 .where(memberActive.member.eq(player))
                 .execute();
 
@@ -377,7 +394,7 @@ public class GameService {
                 .fetchOne();
 
         // 라이어가 게임 도중 방을 나갔을 경우 초기화가 되기때문에 위치값도 초기화
-        if(playRoom.getStatus().equals("wait")){
+        if (playRoom.getStatus().equals("wait")) {
             spotNum = 0;
         }
 
@@ -466,16 +483,16 @@ public class GameService {
     }
 
     // 한바퀴 더 혹은 투표하기 알람
-    public void oneMoreRoundOrVoteStartAlarm(Long gameroomid, GameMessage gameMessage){
+    public void oneMoreRoundOrVoteStartAlarm(Long gameroomid, GameMessage gameMessage) {
 
-        if(gameMessage.getType().equals(GameMessage.MessageType.VOTE)){
+        if (gameMessage.getType().equals(GameMessage.MessageType.VOTE)) {
             gameMessage.setRoomId(Long.toString(gameroomid)); // 게임 방 id
             gameMessage.setSenderId(""); // senderId는 딱히 필요없으므로 공백처리
             gameMessage.setSender("운영자"); // sender는 딱히 필요없으므로 공백처리
             gameMessage.setContent("방장이 '한 바퀴 더'를 선택하셨습니다"); // 마지막 유저의 위치면 한 바퀴를 돌았다는 것으로 간주
             gameMessage.setType(GameMessage.MessageType.ONEMOREROUND); // 메세지 타입
 
-        }else if(gameMessage.getType().equals(GameMessage.MessageType.ONEMOREROUND)){
+        } else if (gameMessage.getType().equals(GameMessage.MessageType.ONEMOREROUND)) {
             gameMessage.setRoomId(Long.toString(gameroomid)); // 게임 방 id
             gameMessage.setSenderId(""); // senderId는 딱히 필요없으므로 공백처리
             gameMessage.setSender("운영자"); // sender는 딱히 필요없으므로 공백처리
