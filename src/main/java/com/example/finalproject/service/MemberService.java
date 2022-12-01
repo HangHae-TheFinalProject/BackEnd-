@@ -100,7 +100,6 @@ public class MemberService {
     // 로그인
     @Transactional
     public ResponseEntity<PrivateResponseBody> login(LoginRequestDto requestDto, HttpServletResponse response) {
-
         // 로그인 시도한 이메일 아이디가 존재하는 아이디인지 확인 후 저장
         Member member = isPresentMember(requestDto.getEmail());
 
