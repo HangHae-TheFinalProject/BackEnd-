@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -177,11 +179,17 @@ public class GameHTTPService {
 
     @Transactional
     public void endGame(Long gameroomid) {
+        LocalDateTime endDateTime = LocalDateTime.of(
+                LocalDateTime.now().getYear(),
+                LocalDateTime.now().getMonth(),
+                LocalDateTime.now().getDayOfMonth(),
+                LocalDateTime.now().getHour(),
+                LocalDateTime.now().getMinute());
+
         GameStartSet gameStartSet1 = jpaQueryFactory
                 .selectFrom(gameStartSet)
                 .where(gameStartSet.roomId.eq(gameroomid))
                 .fetchOne();
-        System.out.println(gameStartSet1.getGamestartsetId());
 
         List<GameRoomMember> gameRoomMembers = jpaQueryFactory
                 .selectFrom(gameRoomMember)
@@ -197,6 +205,27 @@ public class GameHTTPService {
                     .where(member.memberId.eq(gameRoomMember2.getMember_id()))
                     .fetchOne();
 
+            MemberActive userActive = jpaQueryFactory
+                    .selectFrom(memberActive)
+                    .where(memberActive.member.eq(each_member))
+                    .fetchOne();
+
+            Long playhour = ChronoUnit.HOURS.between(userActive.getStarttime(), endDateTime);
+            Long playminute = ChronoUnit.MINUTES.between(userActive.getStarttime(), endDateTime);
+
+            jpaQueryFactory
+                    .update(memberActive)
+                    .set(memberActive.endplaytime, endDateTime)
+                    .set(memberActive.playhour, userActive.getPlayhour() + playhour)
+                    .set(memberActive.playminute, userActive.getPlayminute() + playminute)
+                    .where(memberActive.member.eq(each_member))
+                    .execute();
+
+            em.flush();
+            em.clear();
+
+            System.out.println("플레이 시간 : " + userActive.getPlayhour() + " 몇분 플레이 : " + userActive.getPlayminute());
+
             playingMembers.add(each_member);
 
 //             게임 맴버 상태 ready
@@ -206,6 +235,8 @@ public class GameHTTPService {
                     .where(gameRoomMember.member_id.eq(gameRoomMember2.getMember_id()))
                     .execute();
 
+            em.flush();
+            em.clear();
         }
 
         // 전적 계산
@@ -270,13 +301,13 @@ public class GameHTTPService {
                 if (playingMember.getNickname().equals(gameStartSet1.getLier())) {
                     Long lossNum1 = playingMember.getLossNum();
                     Long lossLIER1 = playingMember.getLossLIER();
-//                    playingMember.addLose();
+
                     jpaQueryFactory
                             .update(member)
                             .set(member.lossNum, lossNum1 + 1)
                             .where(member.memberId.eq(playingMember.getMemberId()))
                             .execute();
-//                    playingMember.addLossLIER();
+
                     jpaQueryFactory
                             .update(member)
                             .set(member.lossLIER, lossLIER1 + 1)

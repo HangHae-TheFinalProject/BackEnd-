@@ -89,8 +89,19 @@ public class GameRoomService {
 
         // 동적QueryDSL로 생성된 전체 게임방 불러오기
         if(dynamicQueryDsl.findGameRooms(view).isEmpty()){
+
+            // 조건 조회에 맞는 방이 없다면 빈 방의 리스트가 보여짐
+            List<GameRoomResponseDto> roomsInPage = new ArrayList<>();
+            // 조건 조회에 맞는 방이 없는 hashMap
+            HashMap<String, Object> pageRoomSet = new HashMap<>();
+
+            // 방이 없으므로 페이지 넘버 0
+            pageRoomSet.put("pageCnt", 0);
+            // 방이 없으므로 방도 없음
+            pageRoomSet.put("roomsInPage", roomsInPage);
+
             return new ResponseEntity<>(new PrivateResponseBody
-                    (StatusCode.NOT_EXIST_ROOMS, null), HttpStatus.BAD_REQUEST);
+                    (StatusCode.NOT_EXIST_ROOMS, pageRoomSet), HttpStatus.OK);
         }
 
         List<GameRoom> rooms = dynamicQueryDsl.findGameRooms(view);
