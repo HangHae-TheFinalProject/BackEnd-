@@ -221,9 +221,6 @@ public class GameHTTPService {
                     .where(memberActive.member.eq(each_member))
                     .execute();
 
-            em.flush();
-            em.clear();
-
             System.out.println("플레이 시간 : " + userActive.getPlayhour() + " 몇분 플레이 : " + userActive.getPlayminute());
 
             playingMembers.add(each_member);
@@ -235,8 +232,6 @@ public class GameHTTPService {
                     .where(gameRoomMember.member_id.eq(gameRoomMember2.getMember_id()))
                     .execute();
 
-            em.flush();
-            em.clear();
         }
 
         // 전적 계산
@@ -247,45 +242,25 @@ public class GameHTTPService {
             for (Member playingMember : playingMembers) {
                 // 라이어는 승리
                 if (playingMember.getNickname().equals(gameStartSet1.getLier())) {
-                    Long winNum1 = playingMember.getWinNum();
-                    Long winLier1 = playingMember.getWinLIER();
 
                     jpaQueryFactory
                             .update(member)
-                            .set(member.winNum, winNum1 + 1)
+                            .set(member.winNum, playingMember.getWinNum() + 1)
+                            .set(member.winLIER, playingMember.getWinLIER() + 1)
                             .where(member.memberId.eq(playingMember.getMemberId()))
                             .execute();
-
-                    jpaQueryFactory
-                            .update(member)
-                            .set(member.winLIER, winLier1 + 1)
-                            .where(member.memberId.eq(playingMember.getMemberId()))
-                            .execute();
-
-                    em.flush();
-                    em.clear();
 
                     victoryDto.getWinner().add(playingMember.getNickname());
                 }
                 // 시민은 패배
                 else {
-                    Long lossNum1 = playingMember.getLossNum();
-                    Long lossCITIZEN1 = playingMember.getLossCITIZEN();
 
                     jpaQueryFactory
                             .update(member)
-                            .set(member.lossNum, lossNum1 + 1)
+                            .set(member.lossNum, playingMember.getLossNum() + 1)
+                            .set(member.lossCITIZEN, playingMember.getLossCITIZEN() + 1)
                             .where(member.memberId.eq(playingMember.getMemberId()))
                             .execute();
-
-                    jpaQueryFactory
-                            .update(member)
-                            .set(member.lossCITIZEN, lossCITIZEN1 + 1)
-                            .where(member.memberId.eq(playingMember.getMemberId()))
-                            .execute();
-
-                    em.flush();
-                    em.clear();
 
                     victoryDto.getLoser().add(playingMember.getNickname());
                 }
@@ -299,45 +274,24 @@ public class GameHTTPService {
             for (Member playingMember : playingMembers) {
                 // 라이어는 패배
                 if (playingMember.getNickname().equals(gameStartSet1.getLier())) {
-                    Long lossNum1 = playingMember.getLossNum();
-                    Long lossLIER1 = playingMember.getLossLIER();
 
                     jpaQueryFactory
                             .update(member)
-                            .set(member.lossNum, lossNum1 + 1)
+                            .set(member.lossNum, playingMember.getLossNum() + 1)
+                            .set(member.lossLIER, playingMember.getLossLIER() + 1)
                             .where(member.memberId.eq(playingMember.getMemberId()))
                             .execute();
-
-                    jpaQueryFactory
-                            .update(member)
-                            .set(member.lossLIER, lossLIER1 + 1)
-                            .where(member.memberId.eq(playingMember.getMemberId()))
-                            .execute();
-
-                    em.flush();
-                    em.clear();
 
                     victoryDto.getLoser().add(playingMember.getNickname());
                 }
                 // 시민은 승리
                 else {
-                    Long winNum1 = playingMember.getWinNum();
-                    Long winCITIZEN1 = playingMember.getWinCITIZEN();
-
                     jpaQueryFactory
                             .update(member)
-                            .set(member.winNum, winNum1 + 1)
+                            .set(member.winNum, playingMember.getWinNum() + 1)
+                            .set(member.winCITIZEN, playingMember.getWinCITIZEN() + 1)
                             .where(member.memberId.eq(playingMember.getMemberId()))
                             .execute();
-
-                    jpaQueryFactory
-                            .update(member)
-                            .set(member.winCITIZEN, winCITIZEN1 + 1)
-                            .where(member.memberId.eq(playingMember.getMemberId()))
-                            .execute();
-
-                    em.flush();
-                    em.clear();
 
                     victoryDto.getWinner().add(playingMember.getNickname());
                 }
@@ -358,15 +312,27 @@ public class GameHTTPService {
         gameStartSetRepository.delete(gameStartSet1);
 
         // 게임 룸 상태 wait
-        GameRoom gameRoom1 = jpaQueryFactory
-                .selectFrom(gameRoom)
-                .where(gameRoom.roomId.eq(gameroomid))
-                .fetchOne();
+//        GameRoom gameRoom1 = jpaQueryFactory
+//                .selectFrom(gameRoom)
+//                .where(gameRoom.roomId.eq(gameroomid))
+//                .fetchOne();
+//
+//        jpaQueryFactory
+//                .update(gameRoom)
+//                .set(gameRoom.status, "wait")
+//                .where(gameRoom.roomId.eq(gameRoom1.getRoomId()))
+//                .execute();
 
         jpaQueryFactory
                 .update(gameRoom)
                 .set(gameRoom.status, "wait")
-                .where(gameRoom.roomId.eq(gameRoom1.getRoomId()))
+                .where(gameRoom.roomId.eq(
+                        jpaQueryFactory
+                                .select(gameRoom.roomId)
+                                .from(gameRoom)
+                                .where(gameRoom.roomId.eq(gameroomid))
+                                .fetchOne()
+                ))
                 .execute();
 
         em.flush();
