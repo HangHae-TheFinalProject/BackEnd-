@@ -266,6 +266,7 @@ public class GameHTTPService {
                     em.clear();
 
                     victoryDto.getWinner().add(playingMember.getNickname());
+
                 }
                 // 시민은 패배
                 else {
@@ -288,6 +289,7 @@ public class GameHTTPService {
                     em.clear();
 
                     victoryDto.getLoser().add(playingMember.getNickname());
+
                 }
 
                 // 게임 플레이 시 업적 획득
@@ -318,6 +320,7 @@ public class GameHTTPService {
                     em.clear();
 
                     victoryDto.getLoser().add(playingMember.getNickname());
+
                 }
                 // 시민은 승리
                 else {
@@ -340,10 +343,12 @@ public class GameHTTPService {
                     em.clear();
 
                     victoryDto.getWinner().add(playingMember.getNickname());
+
                 }
 
                 // 게임 플레이 시 업적 획득
                 rewardRequired.achievePlayReward(playingMember, gameroomid);
+
             }
         }
         GameMessage<VictoryDto> gameMessage = new GameMessage<>();
