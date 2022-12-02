@@ -7,6 +7,7 @@ import com.example.finalproject.domain.Reward;
 import com.example.finalproject.repository.MemberRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import static com.example.finalproject.domain.QGameStartSet.gameStartSet;
 import static com.example.finalproject.domain.QMemberActive.memberActive;
 
 @RequiredArgsConstructor
+@Slf4j
 @Service
 public class RewardRequired implements RewardRequiredInter {
 
@@ -29,7 +31,6 @@ public class RewardRequired implements RewardRequiredInter {
     private final MemberRepository memberRepository;
     private final EntityManager em;
     private final SimpMessageSendingOperations messagingTemplate;
-    private Boolean rewardChecking = false;
     private List<Member> quickWinSet = new ArrayList<>();
 
     // 게임 플레이 시 얻는 업적
@@ -39,6 +40,7 @@ public class RewardRequired implements RewardRequiredInter {
 
         GameMessage gameMessage = new GameMessage();
         List<Reward> rewardlist = new ArrayList<>();
+        Boolean rewardChecking = false;
 
         // 유저의 확ㄹ동 이력 정보 우선 조회
         MemberActive userActive = jpaQueryFactory
@@ -69,10 +71,10 @@ public class RewardRequired implements RewardRequiredInter {
             if (rewardlist.isEmpty() || rewardChecking == false) {
                 rewardlist.add(reward1);
 
-                Member member1 = playingMember;
+//                Member member1 = playingMember;
 
-                member1.setRewards(rewardlist);
-                memberRepository.save(member1);
+                playingMember.setRewards(rewardlist);
+                memberRepository.save(playingMember);
 
                 gameMessage.setSender("운영자");
                 gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
@@ -80,7 +82,8 @@ public class RewardRequired implements RewardRequiredInter {
 
                 messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid + "/" + playingMember.getNickname(), gameMessage);
 
-                System.out.println("[" + reward1.getRewardName() + "] 업적 획득 확인");
+                log.info("[{}] 업적 획득 확인" , reward1.getRewardName());
+                log.info("유저한테 제대로 들어갔는지 확인 : {}", playingMember.getRewards().get(0));
             }
 
         }

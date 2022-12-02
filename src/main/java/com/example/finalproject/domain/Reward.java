@@ -28,9 +28,9 @@ public class Reward {
     @Column
     private String rewardImg;
 
-//    @JoinColumn(name = "memberId")
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    private Member member;
+    @JoinColumn(name = "memberId")
+    @ManyToOne(fetch = FetchType.EAGER)
+    private Member member;
 
 
 }

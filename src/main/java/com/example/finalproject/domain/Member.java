@@ -63,7 +63,7 @@ public class Member extends Timestamped{
     private GameRoomMember gameRoomMember;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "member",fetch = FetchType.EAGER)
     private List<Reward> rewards;
 
     @JsonIgnore
