@@ -232,6 +232,9 @@ public class GameHTTPService {
                     .where(gameRoomMember.member_id.eq(gameRoomMember2.getMember_id()))
                     .execute();
 
+
+            em.flush();
+            em.clear();
         }
 
         // 전적 계산
@@ -312,17 +315,6 @@ public class GameHTTPService {
         gameStartSetRepository.delete(gameStartSet1);
 
         // 게임 룸 상태 wait
-//        GameRoom gameRoom1 = jpaQueryFactory
-//                .selectFrom(gameRoom)
-//                .where(gameRoom.roomId.eq(gameroomid))
-//                .fetchOne();
-//
-//        jpaQueryFactory
-//                .update(gameRoom)
-//                .set(gameRoom.status, "wait")
-//                .where(gameRoom.roomId.eq(gameRoom1.getRoomId()))
-//                .execute();
-
         jpaQueryFactory
                 .update(gameRoom)
                 .set(gameRoom.status, "wait")
