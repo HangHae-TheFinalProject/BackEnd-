@@ -2,10 +2,7 @@ package com.example.finalproject.service;
 
 import com.example.finalproject.controller.response.PostResponseDto;
 import com.example.finalproject.controller.response.RewardResponseDto;
-import com.example.finalproject.domain.Member;
-import com.example.finalproject.domain.MemberActive;
-import com.example.finalproject.domain.Post;
-import com.example.finalproject.domain.Reward;
+import com.example.finalproject.domain.*;
 import com.example.finalproject.exception.PrivateException;
 import com.example.finalproject.exception.PrivateResponseBody;
 import com.example.finalproject.exception.StatusCode;
@@ -23,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.example.finalproject.domain.QMemberReward.memberReward;
 import static com.example.finalproject.domain.QPost.post;
 import static com.example.finalproject.domain.QMemberActive.memberActive;
 
@@ -62,22 +60,28 @@ public class MyInfoService {
         // 인증된 유저 정보
         Member auth_member = authorizeToken(request);
 
+        // 유저가 작성한 게시글들 불러오기
         List<Post> posts = jpaQueryFactory
                 .selectFrom(post)
                 .where(post.member.eq(auth_member))
                 .fetch();
 
+        // 적성한 게시글의 일부 정보들을 hashmap으로 저장
         HashMap<String, Object> postlist = new HashMap<>();
+        // hashmap으로 저장한 게시글 일부 정보들을 리스트화하여 저장 (최종적으로 목록이 보여지는 리스트)
         List<HashMap<String, Object>> postlistset = new ArrayList<>();
 
+        // 작성된 게시글들 하나씩 조회
         for (Post post : posts) {
-            postlist.put("postId", post.getPostId());
-            postlist.put("author", post.getAuthor());
-            postlist.put("title", post.getTitle());
+            postlist.put("postId", post.getPostId()); // 게시글 id
+            postlist.put("author", post.getAuthor()); // 게시글 작성자
+            postlist.put("title", post.getTitle()); // 게시글 제목
 
+            // hashmap 으로 저장된 게시글 정보들을 최종 리스트에 저장
             postlistset.add(postlist);
         }
 
+        // 최종 리스트 반환
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, postlistset), HttpStatus.OK);
     }
 
@@ -88,19 +92,25 @@ public class MyInfoService {
         // 인증된 유저 정보
         Member auth_member = authorizeToken(request);
 
+        // 해당 유저의 활동이력 정보 불러오기
         MemberActive userActive = jpaQueryFactory
                 .selectFrom(memberActive)
                 .where(memberActive.member.eq(auth_member))
                 .fetchOne();
 
+        // 플레이한 n분이 60분을 초과할 경우
         if(userActive.getPlayminute() >= 60){
+
+            // 60분이 초과되어 시간으로 환산될 변수
             Long overminute = userActive.getPlayminute() / 60;
+            // 시간으로 환산된 후 남은 n분
             Long remainminute = userActive.getPlayminute() - (overminute * 60);
 
+            // 유저의 활동이력에서 60분 초과시 플레이 시간, 플레이 n분 업데이트
             jpaQueryFactory
                     .update(memberActive)
-                    .set(memberActive.playhour, userActive.getPlayhour() + overminute)
-                    .set(memberActive.playminute, remainminute)
+                    .set(memberActive.playhour, userActive.getPlayhour() + overminute) // 플레이 시간 (환산된 시간을 더해서 업데이트)
+                    .set(memberActive.playminute, remainminute) // 환산되고 남은 n분으로 업데이트
                     .where(memberActive.member.eq(auth_member))
                     .execute();
 
@@ -108,38 +118,51 @@ public class MyInfoService {
             em.clear();
         }
 
+        // view 단에서 보여지게될 플레이시간 문구를 저장하기 위한 변수
         String totalPlayTime = "";
 
+        // 플레이 시간 혹은 플레이 n분이 없다면 아직 플레이하지 않았다는 문구 저장
         if(userActive.getPlayhour() == 0L && userActive.getPlayminute() == 0L){
             totalPlayTime = "아직 플레이하지 않았습니다.";
-        }else if(userActive.getPlayhour() == 0L && userActive.getPlayminute() != 0L){
+        }
+        // 플레이한 시간 단위가 분이라면 몇분 플레이했는지 알려주는 문구 저장
+        else if(userActive.getPlayhour() == 0L && userActive.getPlayminute() != 0L){
             totalPlayTime = userActive.getPlayminute() + "분";
-        }else if(userActive.getPlayhour() != 0L && userActive.getPlayminute() == 0L){
+        }
+        // 플레이한 시간 단위가 시간이라면 몇시간 플레이했는지 알려주는 문구 저장
+        else if(userActive.getPlayhour() != 0L && userActive.getPlayminute() == 0L){
             totalPlayTime = userActive.getPlayhour() + "시간";
-        }else if(userActive.getPlayhour() != 0L && userActive.getPlayminute() != 0L){
+
+        }
+        // 플레이한 시간 단위가 시간, 분 모두 존재한다면 몇시간 몇분 플레이했는지 알려주는 문구 저장
+        else if(userActive.getPlayhour() != 0L && userActive.getPlayminute() != 0L){
             totalPlayTime = userActive.getPlayhour() + "시간 " + userActive.getPlayminute() + "분";
         }
 
+        // 업은 업적의 수를 저장하기 위한 변수 (0개 일때도 0개라고 알려주어야 하기 떄문에 변수를 따로 만듬)
         Integer rewardCnt = 0;
 
-        if(!auth_member.getRewards().isEmpty()){
-            rewardCnt = auth_member.getRewards().size();
+        // 얻은 업적이 존재할 경우
+        if(jpaQueryFactory
+                .selectFrom(memberReward)
+                .where(memberReward.member.eq(auth_member))
+                .fetch() != null){
+
+            // 존재하는 업적의 개수를 변수에 저장
+            rewardCnt = jpaQueryFactory
+                    .selectFrom(memberReward)
+                    .where(memberReward.member.eq(auth_member))
+                    .fetch().size();
         }
 
 
-        // 전적 저장
+        // 전적, 업적 개수, 닉네임과 같은 마이페이지에 보여질 정보들을 hashmap으로 저장
         HashMap<String, String> allRecordSet = new HashMap<>();
 
         allRecordSet.put("nickname", auth_member.getNickname()); // 닉네임
         allRecordSet.put("allPlayRecord", auth_member.getWinNum() + auth_member.getLossNum() + "전 " + auth_member.getWinNum() + "승 " + auth_member.getLossNum() + "패"); // 총 플레이 수
-//        allRecordSet.put("allLierPlayRecord", Long.toString(auth_member.getWinLIER() + auth_member.getLossLIER())); // 총 라이어 플레이 수
-//        allRecordSet.put("allCitizenPlayRecord", Long.toString(auth_member.getWinCITIZEN() + auth_member.getLossCITIZEN())); // 총 시민 플레이 수
-//        allRecordSet.put("winNum", Long.toString(auth_member.getWinNum())); // 전체 승리 수
-//        allRecordSet.put("lossNum", Long.toString(auth_member.getLossNum())); // 전체 패배 수
         allRecordSet.put("winLIER", auth_member.getWinLIER() + "승"); // 라이어로 승리한 수
-//        allRecordSet.put("loseLIER", Long.toString(auth_member.getLossLIER())); // 라이어로 패배한 수
         allRecordSet.put("winCITIZEN", auth_member.getWinCITIZEN() + "승"); //시민으로 승리한 수
-//        allRecordSet.put("loseCITIZEN", Long.toString(auth_member.getLossCITIZEN())); // 시민으로 패배한 수
         allRecordSet.put("totalPlayTime", totalPlayTime); // 총 플레이 시간
         allRecordSet.put("rewardCnt", rewardCnt + "개"); // 보유 리워드 개수
 
@@ -152,24 +175,33 @@ public class MyInfoService {
         // 인증된 유저 정보
         Member auth_member = authorizeToken(request);
 
+        // 최종적으로 반환될 보유 업적들을 DTO 형식으로 저장하기 위해 리스트 생성
         List<RewardResponseDto> rewardlist = new ArrayList<>();
 
-        if (!auth_member.getRewards().isEmpty()) {
-            System.out.println("업적 획득 확인 : " + auth_member.getRewards().get(0));
+        // 얻은 업적이 존재할 경우
+        if (jpaQueryFactory
+                .selectFrom(memberReward)
+                .where(memberReward.member.eq(auth_member))
+                .fetch() != null) {
 
-            for (Reward reward1 : auth_member.getRewards()) {
+            // 얻은 업적들 불러오기
+            List<MemberReward> userrewards = jpaQueryFactory
+                    .selectFrom(memberReward)
+                    .where(memberReward.member.eq(auth_member))
+                    .fetch();
+
+            // 업적들을 하나씩 조회
+            for (MemberReward reward1 : userrewards) {
+                // DTO 타입으로 변환하여 리스트에 저장
                 rewardlist.add(
                         RewardResponseDto.builder()
-                                .rewardId(reward1.getRewardId())
-                                .rewardName(reward1.getRewardName())
+                                .rewardId(reward1.getRewardid()) // 업적 id
+                                .rewardName(reward1.getRewardName()) // 업적 이름
                                 .build()
                 );
             }
         }
 
-        HashMap<String, Object> rewardSet = new HashMap<>();
-        rewardSet.put("rewardlist",rewardlist);
-
-        return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, rewardSet), HttpStatus.OK);
+        return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, rewardlist), HttpStatus.OK);
     }
 }

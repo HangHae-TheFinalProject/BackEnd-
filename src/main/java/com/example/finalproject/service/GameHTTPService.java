@@ -177,14 +177,16 @@ public class GameHTTPService {
         }
     }
 
+    // 게임 종료
     @Transactional
     public void endGame(Long gameroomid) {
+        // 게임 플레이 시간 측정을 위한 게임 종료 시간
         LocalDateTime endDateTime = LocalDateTime.of(
-                LocalDateTime.now().getYear(),
-                LocalDateTime.now().getMonth(),
-                LocalDateTime.now().getDayOfMonth(),
-                LocalDateTime.now().getHour(),
-                LocalDateTime.now().getMinute());
+                LocalDateTime.now().getYear(), // 현재 년도
+                LocalDateTime.now().getMonth(), // 현재 달
+                LocalDateTime.now().getDayOfMonth(), // 현재 일자
+                LocalDateTime.now().getHour(), // 현재 시간
+                LocalDateTime.now().getMinute()); // 현재 분
 
         GameStartSet gameStartSet1 = jpaQueryFactory
                 .selectFrom(gameStartSet)
@@ -205,30 +207,33 @@ public class GameHTTPService {
                     .where(member.memberId.eq(gameRoomMember2.getMember_id()))
                     .fetchOne();
 
+            // 게임방 참가 유저들의 활동이력들을 조회
             MemberActive userActive = jpaQueryFactory
                     .selectFrom(memberActive)
                     .where(memberActive.member.eq(each_member))
                     .fetchOne();
 
+            // 게임을 시작한 시간과 게임을 종료한 시간의 차를 구함 (ChronoUnit을 사용)
             Long playhour = ChronoUnit.HOURS.between(userActive.getStarttime(), endDateTime);
+            // 게임을 시작한 n분과 게임을 종료한 n분의 차를 구함 (ChronoUnit을 사용)
             Long playminute = ChronoUnit.MINUTES.between(userActive.getStarttime(), endDateTime);
 
+
+            // 각 유저의 게임 종료 시간과 플레이한 시간을 더해서 업데이트
             jpaQueryFactory
                     .update(memberActive)
-                    .set(memberActive.endplaytime, endDateTime)
-                    .set(memberActive.playhour, userActive.getPlayhour() + playhour)
-                    .set(memberActive.playminute, userActive.getPlayminute() + playminute)
+                    .set(memberActive.endplaytime, endDateTime) // 종료 시간 업데이트
+                    .set(memberActive.playhour, userActive.getPlayhour() + playhour) // 플레이한 시간 추가하여 업데이트
+                    .set(memberActive.playminute, userActive.getPlayminute() + playminute) // 플레이한 n분 추가하여 업데이트
                     .where(memberActive.member.eq(each_member))
                     .execute();
 
-            em.flush();
-            em.clear();
-
             System.out.println("플레이 시간 : " + userActive.getPlayhour() + " 몇분 플레이 : " + userActive.getPlayminute());
 
+            // 업데이트한 상태를 저장
             playingMembers.add(each_member);
 
-//             게임 맴버 상태 ready
+            // 게임 맴버 상태 ready
             jpaQueryFactory
                     .update(gameRoomMember)
                     .set(gameRoomMember.ready, "unready")
@@ -247,50 +252,30 @@ public class GameHTTPService {
             for (Member playingMember : playingMembers) {
                 // 라이어는 승리
                 if (playingMember.getNickname().equals(gameStartSet1.getLier())) {
-                    Long winNum1 = playingMember.getWinNum();
-                    Long winLier1 = playingMember.getWinLIER();
 
                     jpaQueryFactory
                             .update(member)
-                            .set(member.winNum, winNum1 + 1)
+                            .set(member.winNum, playingMember.getWinNum() + 1)
+                            .set(member.winLIER, playingMember.getWinLIER() + 1)
                             .where(member.memberId.eq(playingMember.getMemberId()))
                             .execute();
-
-                    jpaQueryFactory
-                            .update(member)
-                            .set(member.winLIER, winLier1 + 1)
-                            .where(member.memberId.eq(playingMember.getMemberId()))
-                            .execute();
-
-                    em.flush();
-                    em.clear();
 
                     victoryDto.getWinner().add(playingMember.getNickname());
                 }
                 // 시민은 패배
                 else {
-                    Long lossNum1 = playingMember.getLossNum();
-                    Long lossCITIZEN1 = playingMember.getLossCITIZEN();
 
                     jpaQueryFactory
                             .update(member)
-                            .set(member.lossNum, lossNum1 + 1)
+                            .set(member.lossNum, playingMember.getLossNum() + 1)
+                            .set(member.lossCITIZEN, playingMember.getLossCITIZEN() + 1)
                             .where(member.memberId.eq(playingMember.getMemberId()))
                             .execute();
-
-                    jpaQueryFactory
-                            .update(member)
-                            .set(member.lossCITIZEN, lossCITIZEN1 + 1)
-                            .where(member.memberId.eq(playingMember.getMemberId()))
-                            .execute();
-
-                    em.flush();
-                    em.clear();
 
                     victoryDto.getLoser().add(playingMember.getNickname());
                 }
 
-                // 게임 플레이 시 업적 획득
+                // 게임 플레이 시 업적 획득 (인터페이스)
                 rewardRequired.achievePlayReward(playingMember, gameroomid);
             }
         }
@@ -299,50 +284,29 @@ public class GameHTTPService {
             for (Member playingMember : playingMembers) {
                 // 라이어는 패배
                 if (playingMember.getNickname().equals(gameStartSet1.getLier())) {
-                    Long lossNum1 = playingMember.getLossNum();
-                    Long lossLIER1 = playingMember.getLossLIER();
 
                     jpaQueryFactory
                             .update(member)
-                            .set(member.lossNum, lossNum1 + 1)
+                            .set(member.lossNum, playingMember.getLossNum() + 1)
+                            .set(member.lossLIER, playingMember.getLossLIER() + 1)
                             .where(member.memberId.eq(playingMember.getMemberId()))
                             .execute();
-
-                    jpaQueryFactory
-                            .update(member)
-                            .set(member.lossLIER, lossLIER1 + 1)
-                            .where(member.memberId.eq(playingMember.getMemberId()))
-                            .execute();
-
-                    em.flush();
-                    em.clear();
 
                     victoryDto.getLoser().add(playingMember.getNickname());
                 }
                 // 시민은 승리
                 else {
-                    Long winNum1 = playingMember.getWinNum();
-                    Long winCITIZEN1 = playingMember.getWinCITIZEN();
-
                     jpaQueryFactory
                             .update(member)
-                            .set(member.winNum, winNum1 + 1)
+                            .set(member.winNum, playingMember.getWinNum() + 1)
+                            .set(member.winCITIZEN, playingMember.getWinCITIZEN() + 1)
                             .where(member.memberId.eq(playingMember.getMemberId()))
                             .execute();
-
-                    jpaQueryFactory
-                            .update(member)
-                            .set(member.winCITIZEN, winCITIZEN1 + 1)
-                            .where(member.memberId.eq(playingMember.getMemberId()))
-                            .execute();
-
-                    em.flush();
-                    em.clear();
 
                     victoryDto.getWinner().add(playingMember.getNickname());
                 }
 
-                // 게임 플레이 시 업적 획득
+                // 게임 플레이 시 업적 획득 (인터페이스)
                 rewardRequired.achievePlayReward(playingMember, gameroomid);
             }
         }
@@ -357,16 +321,17 @@ public class GameHTTPService {
         // GameStartSet 삭제
         gameStartSetRepository.delete(gameStartSet1);
 
-        // 게임 룸 상태 wait
-        GameRoom gameRoom1 = jpaQueryFactory
-                .selectFrom(gameRoom)
-                .where(gameRoom.roomId.eq(gameroomid))
-                .fetchOne();
-
+        // 게임방 상태를 wait 바꿈 (서브쿼리 사용하여 코드량 단축)
         jpaQueryFactory
                 .update(gameRoom)
                 .set(gameRoom.status, "wait")
-                .where(gameRoom.roomId.eq(gameRoom1.getRoomId()))
+                .where(gameRoom.roomId.eq(
+                        jpaQueryFactory // 서브쿼리로 해당 게임방 id를 불러온다.
+                                .select(gameRoom.roomId)
+                                .from(gameRoom)
+                                .where(gameRoom.roomId.eq(gameroomid))
+                                .fetchOne()
+                ))
                 .execute();
 
         em.flush();
