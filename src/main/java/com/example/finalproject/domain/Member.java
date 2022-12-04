@@ -56,19 +56,19 @@ public class Member extends Timestamped{
     @OneToMany(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
 
-    // 추가
     @JsonIgnore
     @JoinColumn(name="gameroommember_id")
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private GameRoomMember gameRoomMember;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "member",fetch = FetchType.EAGER)
-    private List<Reward> rewards;
-
-    @JsonIgnore
     @OneToOne(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     private MemberActive memberActive;
+
+    @JsonIgnore
+    @JoinColumn(name="memberreward_id")
+    @OneToOne
+    private MemberReward memberReward;
 
     @Override
     public boolean equals(Object o) {
@@ -91,7 +91,4 @@ public class Member extends Timestamped{
         return passwordEncoder.matches(password, this.password);
     }
 
-    public void update(List<Reward> rewards){
-        this.rewards = rewards;
-    }
 }

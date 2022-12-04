@@ -1,6 +1,5 @@
 package com.example.finalproject.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,30 +7,34 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Builder
 @Entity
-public class Reward {
+public class MemberReward {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    private Long rewardId;
+    private Long memberrewardId;
+
+    @Column(nullable = false)
+    private Long memberid;
+
+    @Column(nullable = false)
+    private String nickname;
+
+    @Column(nullable = false)
+    private Long rewardid;
 
     @Column(nullable = false)
     private String rewardName;
 
-    @Column(nullable = false)
-    private Integer level;
-
-    @Column
-    private String rewardImg;
-
-    @JsonIgnore
-    @JoinColumn(name="memberreward_id")
     @OneToOne
-    private MemberReward memberReward;
+    private Member member;
+
+    @OneToOne
+    private Reward reward;
 
 
 }
