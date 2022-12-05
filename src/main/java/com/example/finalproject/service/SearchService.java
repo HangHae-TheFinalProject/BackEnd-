@@ -68,6 +68,14 @@ public class SearchService {
         // 페이징 처리를 위해 현재 페이지와 보여지는 게시글 수를 곱해놓는다. (10개의 게시글 수 중 가장 마지막에 나올 위치값)
         int sizeInPage = pageNum * size;
 
+        if(jpaQueryFactory
+                .selectFrom(post)
+                .where(post.title.like("%" + stringDto.getValue().replace(" ", "%") + "%"))
+                .fetch() == null){
+
+            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, "검색 결과에 맞는 게시글이 존재하지 않습니다."), HttpStatus.OK);
+        }
+
         // 게시글 제목을 기준으로 검색 키워드로 패턴 비교하여 게시글들 조회
         List<Post> searchPost = jpaQueryFactory
                 .selectFrom(post)
