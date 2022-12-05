@@ -123,7 +123,7 @@ public class MyInfoService {
 
         // 플레이 시간 혹은 플레이 n분이 없다면 아직 플레이하지 않았다는 문구 저장
         if(userActive.getPlayhour() == 0L && userActive.getPlayminute() == 0L){
-            totalPlayTime = "아직 플레이하지 않았습니다.";
+            totalPlayTime = userActive.getPlayminute() + "분";
         }
         // 플레이한 시간 단위가 분이라면 몇분 플레이했는지 알려주는 문구 저장
         else if(userActive.getPlayhour() == 0L && userActive.getPlayminute() != 0L){
@@ -132,7 +132,6 @@ public class MyInfoService {
         // 플레이한 시간 단위가 시간이라면 몇시간 플레이했는지 알려주는 문구 저장
         else if(userActive.getPlayhour() != 0L && userActive.getPlayminute() == 0L){
             totalPlayTime = userActive.getPlayhour() + "시간";
-
         }
         // 플레이한 시간 단위가 시간, 분 모두 존재한다면 몇시간 몇분 플레이했는지 알려주는 문구 저장
         else if(userActive.getPlayhour() != 0L && userActive.getPlayminute() != 0L){
@@ -175,32 +174,26 @@ public class MyInfoService {
         // 인증된 유저 정보
         Member auth_member = authorizeToken(request);
 
-        // 최종적으로 반환될 보유 업적들을 DTO 형식으로 저장하기 위해 리스트 생성
-        List<RewardResponseDto> rewardlist = new ArrayList<>();
+            // 최종적으로 반환될 보유 업적들을 DTO 형식으로 저장하기 위해 리스트 생성
+            List<Long> rewardlist = new ArrayList<>();
 
-        // 얻은 업적이 존재할 경우
-        if (jpaQueryFactory
-                .selectFrom(memberReward)
-                .where(memberReward.member.eq(auth_member))
-                .fetch() != null) {
-
-            // 얻은 업적들 불러오기
-            List<MemberReward> userrewards = jpaQueryFactory
+            // 얻은 업적이 존재할 경우
+            if (jpaQueryFactory
                     .selectFrom(memberReward)
                     .where(memberReward.member.eq(auth_member))
-                    .fetch();
+                    .fetch() != null) {
+                // 얻은 업적들 불러오기
+                List<MemberReward> userrewards = jpaQueryFactory
+                        .selectFrom(memberReward)
+                        .where(memberReward.member.eq(auth_member))
+                        .fetch();
 
-            // 업적들을 하나씩 조회
-            for (MemberReward reward1 : userrewards) {
-                // DTO 타입으로 변환하여 리스트에 저장
-                rewardlist.add(
-                        RewardResponseDto.builder()
-                                .rewardId(reward1.getRewardid()) // 업적 id
-                                .rewardName(reward1.getRewardName()) // 업적 이름
-                                .build()
-                );
+                // 업적들을 하나씩 조회
+                for (MemberReward reward1 : userrewards) {
+                    // DTO 타입으로 변환하여 리스트에 저장
+                    rewardlist.add(reward1.getRewardid());
+                }
             }
-        }
 
         return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, rewardlist), HttpStatus.OK);
     }
