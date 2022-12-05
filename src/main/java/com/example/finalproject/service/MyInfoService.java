@@ -182,6 +182,7 @@ public class MyInfoService {
                     .selectFrom(memberReward)
                     .where(memberReward.member.eq(auth_member))
                     .fetch() != null) {
+
                 // 얻은 업적들 불러오기
                 List<MemberReward> userrewards = jpaQueryFactory
                         .selectFrom(memberReward)

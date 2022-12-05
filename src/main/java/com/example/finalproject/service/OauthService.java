@@ -125,6 +125,12 @@ public class OauthService {
                     .email((String) googleUserInfo.get("email"))
                     .password(passwordEncoder.encode((String) googleUserInfo.get("email"))) // 비밀번호 인코딩하여 저장
                     .nickname((String) googleUserInfo.get("name") + "#" + Integer.toString((int) (Math.random() * 9999)))
+                    .winNum(0L) // 전체 승리 횟수
+                    .lossNum(0L) // 전체 패배 횟수
+                    .winCITIZEN(0L) // 시민으로써 승리한 횟수
+                    .winLIER(0L) // 라이어로써 승리한 횟수
+                    .lossCITIZEN(0L) // 시민으로써 패배한 횟수
+                    .lossLIER(0L) // 라이어로써 패배한 횟수
                     .build();
 
             memberRepository.save(member);
