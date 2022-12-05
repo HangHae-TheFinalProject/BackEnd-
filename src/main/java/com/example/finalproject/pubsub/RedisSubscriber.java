@@ -21,6 +21,7 @@ public class RedisSubscriber {
      * Redis에서 메시지가 발행(publish)되면 대기하고 있던 Redis Subscriber가 해당 메시지를 받아 처리한다.
      */
     // 리스너가 대기하고 있다가 메세지 오면 RedisSubscriber.sendMessage가 수행됨
+
     public void sendMessage(String publishMessage) {
         try {
             // ChatMessage 객채로 맵핑

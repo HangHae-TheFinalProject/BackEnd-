@@ -54,20 +54,24 @@ public class CommentService {
         // 인증된 유저 정보 반환
         return member;
     }
+
     @Transactional
     public ResponseEntity<?> writeComment(Long postid, CommentRequestDto requestDto, HttpServletRequest request) {
 
         Member member = authorizeToken(request);
         Post post = postRepository.findById(postid).orElse(null);
+
         if (null == post) {
             throw new PrivateException(StatusCode.POST_ERROR);
         }
+
         Comment comment = Comment.builder()
                 .content(requestDto.getContent())
                 .author(member.getNickname())
                 .member(member)
                 .post(post)
                 .build();
+
         commentRepository.save(comment);
         post.getComments().add(comment);
 
@@ -81,6 +85,7 @@ public class CommentService {
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, commentResponseDto), HttpStatus.OK);
     }
 
+
     @Transactional
     public ResponseEntity<?> updateComment(Long commentid, CommentRequestDto requestDto, HttpServletRequest request) {
 
@@ -88,7 +93,6 @@ public class CommentService {
 
         Comment update_comment = jpaQueryFactory
                 .selectFrom(comment)
-                .where(comment.commentId.eq(commentid))
                 .where(comment.commentId.eq(commentid).and(comment.member.eq(member)))
                 .fetchOne();
 
@@ -107,6 +111,8 @@ public class CommentService {
 
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, "수정 완료"), HttpStatus.OK);
     }
+
+
     @Transactional
     public ResponseEntity<?> deleteComment(Long commentid, HttpServletRequest request) {
 
@@ -120,8 +126,6 @@ public class CommentService {
         if (del_comment == null) {
             return new ResponseEntity<>(new PrivateResponseBody(StatusCode.COMMENT_ERROR,null),HttpStatus.BAD_REQUEST);
         }
-
-        del_comment.getPost().getComments().remove(del_comment);
 
         jpaQueryFactory
                 .delete(comment)

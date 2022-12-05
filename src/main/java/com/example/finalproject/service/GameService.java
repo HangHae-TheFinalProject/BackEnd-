@@ -204,7 +204,7 @@ public class GameService {
             gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 게임방 id
             gameMessage.setSenderId(""); // 준비된 유저의 id
             gameMessage.setSender("운영자"); // 준비된 유저의 닉네임
-            gameMessage.setContent(startset); // 준비됫다는 내용
+            gameMessage.setContent(startset); // 준비됐다는 내용
             gameMessage.setType(GameMessage.MessageType.START); // 메세지 타입
 
         } else if (gameRoom1.getMode().equals(Mode.바보)) {
@@ -226,7 +226,7 @@ public class GameService {
             gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 게임방 id
             gameMessage.setSenderId(""); // 준비된 유저의 id
             gameMessage.setSender("운영자"); // 준비된 유저의 닉네임
-            gameMessage.setContent(startset); // 준비됫다는 내용
+            gameMessage.setContent(startset); // 준비됐다는 내용
             gameMessage.setType(GameMessage.MessageType.START); // 메세지 타입
         }
 
@@ -350,7 +350,7 @@ public class GameService {
         gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 게임방 id
         gameMessage.setSenderId(Long.toString(readyPlayer.getMemberId())); // 준비된 유저의 id
         gameMessage.setSender(readyPlayer.getNickname()); // 준비된 유저의 닉네임
-        gameMessage.setContent(gameMessage.getSender() + "님이 준비완료되었습니다."); // 준비됫다는 내용
+        gameMessage.setContent(gameMessage.getSender() + "님이 준비완료되었습니다."); // 준비됐다는 내용
         gameMessage.setType(GameMessage.MessageType.READY); // 메세지 타입
 
         // 구독 주소로 해당 메세지 공유
@@ -375,7 +375,7 @@ public class GameService {
             gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 게임방 id
             gameMessage.setSenderId("");
             gameMessage.setSender("");
-            gameMessage.setContent("모든 유저가 준비되었습니다."); // 준비됫다는 내용
+            gameMessage.setContent("모든 유저가 준비되었습니다."); // 준비됐다는 내용
             gameMessage.setType(GameMessage.MessageType.ALLREADY); // 메세지 타입
 
             messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);

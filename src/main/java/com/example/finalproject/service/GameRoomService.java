@@ -306,8 +306,8 @@ public class GameRoomService {
                 .where(gameRoomMember.gameRoom.eq(enterGameRoom))
                 .fetch();
 
-        // 만약, 위에서 불러온 관리DB 정보가 9명이거나 이상이라면 정원 초과로 판단하여 에러 출력
-        if (gameRoomMemberList.size() >= 9) {
+        // 만약, 위에서 불러온 관리DB 정보가 8명이거나 이상이라면 정원 초과로 판단하여 에러 출력
+        if (gameRoomMemberList.size() > 7) {
 
             // 정원이 초과하여 입장할 수 없다는 이슈 출력
             return new ResponseEntity<>(new PrivateResponseBody(StatusCode.CANT_ENTER, null), HttpStatus.BAD_REQUEST);

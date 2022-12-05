@@ -115,12 +115,11 @@ public class GameHTTPService {
                 return obj2.getValue().compareTo(obj1.getValue());
             }
         });
-        int maxValue = 0;
-        for (Entry<String, Integer> entry : list_entries) {
-            maxValue = entry.getValue();
-            break;
-        }
+
+        int maxValue = list_entries.get(0).getValue();
+
         List<String> nickName = new ArrayList<>();
+
         for (Entry<String, Integer> entry : list_entries) {
             if (entry.getValue() == maxValue) {
                 nickName.add(entry.getKey());
