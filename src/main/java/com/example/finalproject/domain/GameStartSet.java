@@ -34,7 +34,7 @@ public class GameStartSet {
     private GameStartSet.Winner winner;
 
     public enum Winner {
-        CITIZEN, LIER
+        DEFAULT, CITIZEN, LIER
     }
 
     public Integer oneMoerRound(){

@@ -171,7 +171,7 @@ public class GameService {
                 .keyword(chooseKeyword.getWord()) // 키워드
                 .roomId(gameroomid) // 게임방 id
                 .round(1)
-                .winner(GameStartSet.Winner.CITIZEN)
+                .winner(GameStartSet.Winner.DEFAULT)
                 .build();
 
         // StartSet 저장
