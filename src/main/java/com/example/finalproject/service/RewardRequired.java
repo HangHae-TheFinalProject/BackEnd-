@@ -103,10 +103,14 @@ public class RewardRequired implements RewardRequiredInter {
                 // 관리DB에 저장
                 memberRewardRepository.save(userReward);
 
+                HashMap<String, String> contentset = new HashMap<>();
+                contentset.put("rewardName",reward1.getRewardName());
+                contentset.put("mentation",reward1.getMentation());
+
                 // 운영자 측에서 업적을 얻었다고 울림
                 gameMessage.setSender("운영자");
                 // 어떠한 업적을 얻었는지에 대한 내용 포함
-                gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
+                gameMessage.setContent(contentset);
                 // 메세지 타입은 Reward
                 gameMessage.setType(GameMessage.MessageType.REWARD);
 
@@ -218,10 +222,14 @@ public class RewardRequired implements RewardRequiredInter {
                 // 관리DB에 저장
                 memberRewardRepository.save(userReward);
 
+                HashMap<String, String> contentset = new HashMap<>();
+                contentset.put("rewardName",reward1.getRewardName());
+                contentset.put("mentation",reward1.getMentation());
+
                 // 운영자 측에서 업적을 얻었다고 울림
                 gameMessage.setSender("운영자");
                 // 어떠한 업적을 얻었는지에 대한 내용 포함
-                gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
+                gameMessage.setContent(contentset);
                 // 메세지 타입은 Reward
                 gameMessage.setType(GameMessage.MessageType.REWARD);
 
@@ -299,10 +307,14 @@ public class RewardRequired implements RewardRequiredInter {
                     // 관리DB에 저장
                     memberRewardRepository.save(userReward);
 
+                    HashMap<String, String> contentset = new HashMap<>();
+                    contentset.put("rewardName",reward1.getRewardName());
+                    contentset.put("mentation",reward1.getMentation());
+
                     // 운영자 측에서 업적을 얻었다고 울림
                     gameMessage.setSender("운영자");
                     // 어떠한 업적을 얻었는지에 대한 내용 포함
-                    gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
+                    gameMessage.setContent(contentset);
                     // 메세지 타입은 Reward
                     gameMessage.setType(GameMessage.MessageType.REWARD);
 
@@ -357,10 +369,14 @@ public class RewardRequired implements RewardRequiredInter {
                 // 관리DB에 저장
                 memberRewardRepository.save(userReward);
 
+                HashMap<String, String> contentset = new HashMap<>();
+                contentset.put("rewardName",reward1.getRewardName());
+                contentset.put("mentation",reward1.getMentation());
+
                 // 운영자 측에서 업적을 얻었다고 울림
                 gameMessage.setSender("운영자");
                 // 어떠한 업적을 얻었는지에 대한 내용 포함
-                gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
+                gameMessage.setContent(contentset);
                 // 메세지 타입은 Reward
                 gameMessage.setType(GameMessage.MessageType.REWARD);
 
@@ -413,10 +429,14 @@ public class RewardRequired implements RewardRequiredInter {
                 // 관리DB에 저장
                 memberRewardRepository.save(userReward);
 
+                HashMap<String, String> contentset = new HashMap<>();
+                contentset.put("rewardName",reward1.getRewardName());
+                contentset.put("mentation",reward1.getMentation());
+
                 // 운영자 측에서 업적을 얻었다고 울림
                 gameMessage.setSender("운영자");
                 // 어떠한 업적을 얻었는지에 대한 내용 포함
-                gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
+                gameMessage.setContent(contentset);
                 // 메세지 타입은 Reward
                 gameMessage.setType(GameMessage.MessageType.REWARD);
 
@@ -554,10 +574,14 @@ public class RewardRequired implements RewardRequiredInter {
                 // 관리DB에 저장
                 memberRewardRepository.save(userReward);
 
+                HashMap<String, String> contentset = new HashMap<>();
+                contentset.put("rewardName",reward1.getRewardName());
+                contentset.put("mentation",reward1.getMentation());
+
                 // 운영자 측에서 업적을 얻었다고 울림
                 gameMessage.setSender("운영자");
                 // 어떠한 업적을 얻었는지에 대한 내용 포함
-                gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
+                gameMessage.setContent(contentset);
                 // 메세지 타입은 Reward
                 gameMessage.setType(GameMessage.MessageType.REWARD);
 
@@ -609,10 +633,14 @@ public class RewardRequired implements RewardRequiredInter {
                 // 관리DB에 저장
                 memberRewardRepository.save(userReward);
 
+                HashMap<String, String> contentset = new HashMap<>();
+                contentset.put("rewardName",reward1.getRewardName());
+                contentset.put("mentation",reward1.getMentation());
+
                 // 운영자 측에서 업적을 얻었다고 울림
                 gameMessage.setSender("운영자");
                 // 어떠한 업적을 얻었는지에 대한 내용 포함
-                gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
+                gameMessage.setContent(contentset);
                 // 메세지 타입은 Reward
                 gameMessage.setType(GameMessage.MessageType.REWARD);
 
@@ -665,10 +693,14 @@ public class RewardRequired implements RewardRequiredInter {
                 // 관리DB에 저장
                 memberRewardRepository.save(userReward);
 
+                HashMap<String, String> contentset = new HashMap<>();
+                contentset.put("rewardName",reward1.getRewardName());
+                contentset.put("mentation",reward1.getMentation());
+
                 // 운영자 측에서 업적을 얻었다고 울림
                 gameMessage.setSender("운영자");
                 // 어떠한 업적을 얻었는지에 대한 내용 포함
-                gameMessage.setContent("'" + reward1.getRewardName() + "' 업적 달성!");
+                gameMessage.setContent(contentset);
                 // 메세지 타입은 Reward
                 gameMessage.setType(GameMessage.MessageType.REWARD);
 
