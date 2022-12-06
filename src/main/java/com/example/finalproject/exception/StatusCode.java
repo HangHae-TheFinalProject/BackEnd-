@@ -35,6 +35,7 @@ public enum StatusCode {
 
     // comment
     COMMENT_ERROR(HttpStatus.BAD_REQUEST,"140","댓글이 존재하지 않습니다."),
+    SEARCH_POST_ERROR(HttpStatus.BAD_REQUEST,"141","검색 결과에 맞는 게시글이 존재하지 않습니다."),
     INTERNAL_SERVER_ERROR_PLZ_CHECK(HttpStatus.INTERNAL_SERVER_ERROR, "999", "알수없는 서버 내부 에러 발생 , dladlsgur3334@gmail.com 으로 연락 부탁드립니다.");
 
     private final HttpStatus httpStatus;

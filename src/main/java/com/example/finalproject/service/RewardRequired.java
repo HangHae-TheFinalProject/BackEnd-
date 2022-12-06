@@ -62,7 +62,7 @@ public class RewardRequired implements RewardRequiredInter {
         }
 
         // 첫 1승 : 게임 전체 첫 번쨰 승리의 경우
-        if (playingMember.getWinNum() == 1) {
+        if (playingMember.getWinNum() == 0) {
             log.info("처음 승리할 시 진입 : {}", playingMember.getWinNum());
 
             // 첫 1승 업적 불러오기
@@ -178,7 +178,7 @@ public class RewardRequired implements RewardRequiredInter {
 
 
         // 승리의 기쁨 업적 : 라이어, 시민 총합 10회 승리 시 획득
-        if (playingMember.getWinNum() == 10) {
+        if (playingMember.getWinNum() == 9) {
             log.info("라이어 + 시민으로써 10회 승리한 횟수 : {}", playingMember.getWinNum());
 
             // 승리의 기쁨 업적 불러오기
@@ -317,7 +317,7 @@ public class RewardRequired implements RewardRequiredInter {
         }
 
         // 라이어 헌터 업적 : 시민으로써 10번 승리 시 획득
-        if (playingMember.getWinCITIZEN() == 10) {
+        if (playingMember.getWinCITIZEN() == 9) {
             log.info("시민으로써 이긴 횟수 : {}", playingMember.getWinCITIZEN());
 
             // 라이어 헌터 업적 불러오기
@@ -374,7 +374,7 @@ public class RewardRequired implements RewardRequiredInter {
 
 
         // 999 : 9번 이상 플레이하고 9번 승리, 9번 패배 시 획득
-        if (playingMember.getWinNum() + playingMember.getLossNum() >= 9 && playingMember.getWinNum() == 9 && playingMember.getLossNum() == 9) {
+        if (playingMember.getWinNum() + playingMember.getLossNum() >= 9 && playingMember.getWinNum() == 8 && playingMember.getLossNum() == 8) {
 
             // 999 업적 불러오기
             Reward reward1 = jpaQueryFactory
@@ -515,7 +515,7 @@ public class RewardRequired implements RewardRequiredInter {
 //        }
 
         // 5회 연패 : 5번 패배 시 획득 (라이어 패배, 시민 패배 합산 기준)
-        if (playingMember.getLossNum() == 5) {
+        if (playingMember.getLossNum() == 4) {
 
             // 5회 연패 업적 불러오기
             Reward reward1 = jpaQueryFactory
@@ -570,7 +570,7 @@ public class RewardRequired implements RewardRequiredInter {
         }
 
         // 불굴의 의지 : 12회 이상 패배, 4회 승리 시 획득
-        if (playingMember.getLossNum() >= 12 && playingMember.getWinNum() == 4) {
+        if (playingMember.getLossNum() >= 11 && playingMember.getWinNum() == 3) {
 
             // 불굴의 의지 업적 불러오기
             Reward reward1 = jpaQueryFactory
@@ -626,7 +626,7 @@ public class RewardRequired implements RewardRequiredInter {
 
 
         // 신과 함께 : 라이어가 정답을 10회 맞춰서 승리했을 시 획득
-        if (userActive.getCorrectanswerNum() == 10) {
+        if (userActive.getCorrectanswerNum() == 9) {
 
             // 신과 함께 업적 불러오기
             Reward reward1 = jpaQueryFactory

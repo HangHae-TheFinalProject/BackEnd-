@@ -71,9 +71,11 @@ public class SearchService {
         if(jpaQueryFactory
                 .selectFrom(post)
                 .where(post.title.like("%" + stringDto.getValue().replace(" ", "%") + "%"))
-                .fetch() == null){
+                .fetch().isEmpty()){
 
-            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, "검색 결과에 맞는 게시글이 존재하지 않습니다."), HttpStatus.OK);
+            return new ResponseEntity<>(new PrivateResponseBody
+                    (StatusCode.SEARCH_POST_ERROR, "검색 결과에 맞는 게시글이 존재하지 않습니다."), HttpStatus.BAD_REQUEST);
+            //return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, "검색 결과에 맞는 게시글이 존재하지 않습니다."), HttpStatus.OK);
         }
 
         // 게시글 제목을 기준으로 검색 키워드로 패턴 비교하여 게시글들 조회
