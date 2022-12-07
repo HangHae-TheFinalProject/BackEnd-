@@ -3,6 +3,7 @@ package com.example.finalproject.service;
 import com.example.finalproject.controller.request.GameRoomRequestDto;
 import com.example.finalproject.controller.request.StringDto;
 import com.example.finalproject.controller.response.GameRoomResponseDto;
+import com.example.finalproject.controller.response.MemberResponseDto;
 import com.example.finalproject.domain.*;
 import com.example.finalproject.exception.PrivateException;
 import com.example.finalproject.exception.PrivateResponseBody;
@@ -122,8 +123,7 @@ public class GameRoomService {
                     .fetch();
 
             // 방에 속한 멤버들의 정보들을 저장하기위한 리스트
-            List<Member> memberList = new ArrayList<>();
-
+            List<MemberResponseDto> memberList = new ArrayList<>();
             // 게임방에 참가하고있는 멤버들의 인원 수 만큼 조회
             for (int i = 0; i < gameRoomMembers.size(); i++) {
 
@@ -134,7 +134,12 @@ public class GameRoomService {
                         .fetchOne();
 
                 // 리스트에 정보들을 저장
-                memberList.add(each_member);
+                MemberResponseDto memberResponseDto= MemberResponseDto.builder()
+                        .memberId(each_member.getMemberId())
+                        .email(each_member.getEmail())
+                        .nickname(each_member.getNickname())
+                        .build();
+                memberList.add(memberResponseDto);
             }
 
             // 바로 DB 정보를 결과값으로 보낼 수 없기 때문에 DTO에 한번 더 저장
@@ -335,11 +340,16 @@ public class GameRoomService {
                 .fetch();
 
         // 불러온 멤버 정보들을 하나로 담기 위한 리스트
-        List<Member> memberList = new ArrayList<>();
+        List<MemberResponseDto> memberList = new ArrayList<>();
 
         // 리스트에 불러온 멤버의 정보들을 담는다.
         for (GameRoomMember gameRoomMember1 : gameRoomMembers) {
-            memberList.add(gameRoomMember1.getMember());
+            MemberResponseDto memberResponseDto= MemberResponseDto.builder()
+                    .memberId(gameRoomMember1.getMember().getMemberId())
+                    .email(gameRoomMember1.getMember().getEmail())
+                    .nickname(gameRoomMember1.getMember().getNickname())
+                    .build();
+            memberList.add(memberResponseDto);
         }
 
         // 최종적으로 출력될 DTO에 현재 게임방의 정보와 리스트에 담아온 참가 멤버들의 정보를 input 한다.
