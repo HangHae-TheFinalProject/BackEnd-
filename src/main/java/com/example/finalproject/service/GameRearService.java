@@ -2,7 +2,6 @@ package com.example.finalproject.service;
 
 import com.example.finalproject.controller.request.StringDto;
 import com.example.finalproject.controller.response.VictoryDto;
-import com.example.finalproject.controller.response.VoteDto;
 import com.example.finalproject.domain.*;
 
 import com.example.finalproject.jwt.TokenProvider;
@@ -36,12 +35,11 @@ import static com.example.finalproject.domain.QMemberActive.memberActive;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class GameHTTPService {
+public class GameRearService {
 
     private final GameStartSetRepository gameStartSetRepository;
     private final SimpMessageSendingOperations messagingTemplate;
     private final JPAQueryFactory jpaQueryFactory;
-    private final TokenProvider tokenProvider;
     private final RewardRequired rewardRequired;
     private final EntityManager em;
 
