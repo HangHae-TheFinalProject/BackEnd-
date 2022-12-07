@@ -342,13 +342,19 @@ public class GameRoomService {
                 .status(enterGameRoom.getStatus()) // 게임방 상태
                 .build();
 
+        // 입장 알림 문구와 참가한 유저수를 저장하기 위한 hashmap (게임 시작 시 인원 제한을 위한 용도)
+        HashMap<String, Object> contentset = new HashMap<>();
 
         // STomp로 입장한 메세지 전달
         GameMessage gameMessage = new GameMessage();
         gameMessage.setRoomId(Long.toString(roomId));
         gameMessage.setSenderId(Long.toString(auth_member.getMemberId()));
         gameMessage.setSender(auth_member.getNickname());
-        gameMessage.setContent(gameMessage.getRoomId() + "번방에 " + gameMessage.getSender() + "님이 입장하셨습니다.");
+
+        contentset.put("memberCnt",gameRoomMemberList.size());
+        contentset.put("enterMent",gameMessage.getRoomId() + "번방에 " + gameMessage.getSender() + "님이 입장하셨습니다.");
+
+        gameMessage.setContent(contentset);
         gameMessage.setType(GameMessage.MessageType.JOIN);
 
         // 구독 주소에 어떤 유저가 집입했는지 메세지 전달 (구독한 유저 전부 메세지 받음)
@@ -413,12 +419,19 @@ public class GameRoomService {
             chatRoomRepository.deleteRoom(gameRoom1.getRoomId().toString());
         }
 
+        // 방을 나갈 경우의 알림 문구와 나간 이후의 방 인원 수를 저장허기 위한 hashmap
+        HashMap<String, Object> contentset = new HashMap<>();
+
         // 누가 방을 나갔는지 소켓으로 전체 공유
         GameMessage gameMessage = new GameMessage();
         gameMessage.setRoomId(Long.toString(gameRoom1.getRoomId())); // 퇴장한 방의 id
         gameMessage.setSenderId(Long.toString(auth_member.getMemberId())); //퇴장한 사람 id
         gameMessage.setSender(auth_member.getNickname()); // 퇴장한 사람
-        gameMessage.setContent(gameMessage.getSender() + "님이 방을 나가셨습니다."); //퇴장 내용
+
+        contentset.put("memberCnt",gameRoomMembers.size());
+        contentset.put("outMent",gameMessage.getSender() + "님이 방을 나가셨습니다.");
+
+        gameMessage.setContent(contentset); //퇴장 내용
         gameMessage.setType(GameMessage.MessageType.LEAVE); // 메세지 타입
 
         // 구독자들에게 퇴장 메세지 전달
