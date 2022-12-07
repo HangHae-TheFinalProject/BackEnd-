@@ -15,7 +15,7 @@ public class GameRoomResponseDto {
     private String roomName;
     private String roomPassword;
     private Mode mode;
-    private List<Member> member;
+    private List<MemberResponseDto> member;
     private String owner;
     private String status;
 }
