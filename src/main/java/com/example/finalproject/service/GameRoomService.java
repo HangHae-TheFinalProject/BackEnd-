@@ -134,7 +134,7 @@ public class GameRoomService {
                         .fetchOne();
 
                 // 리스트에 정보들을 저장
-                MemberResponseDto memberResponseDto= MemberResponseDto.builder()
+                MemberResponseDto memberResponseDto = MemberResponseDto.builder()
                         .memberId(each_member.getMemberId())
                         .email(each_member.getEmail())
                         .nickname(each_member.getNickname())
@@ -351,8 +351,14 @@ public class GameRoomService {
         gameMessage.setSenderId(Long.toString(auth_member.getMemberId()));
         gameMessage.setSender(auth_member.getNickname());
 
-        contentset.put("memberCnt",gameRoomMemberList.size());
-        contentset.put("enterMent",gameMessage.getRoomId() + "번방에 " + gameMessage.getSender() + "님이 입장하셨습니다.");
+        Long memberCnt = jpaQueryFactory
+                .select(gameRoomMember.count())
+                .from(gameRoomMember)
+                .where(gameRoomMember.gameroom_id.eq(enterGameRoom.getRoomId()))
+                .fetchOne();
+
+        contentset.put("memberCnt", memberCnt);
+        contentset.put("enterMent", gameMessage.getRoomId() + "번방에 " + gameMessage.getSender() + "님이 입장하셨습니다.");
 
         gameMessage.setContent(contentset);
         gameMessage.setType(GameMessage.MessageType.JOIN);
@@ -369,7 +375,7 @@ public class GameRoomService {
         // 유저가 방에 입장한 이력 업데이트
         jpaQueryFactory
                 .update(memberActive)
-                .set(memberActive.enterNum, userActive.getEnterNum()+1L)
+                .set(memberActive.enterNum, userActive.getEnterNum() + 1L)
                 .where(memberActive.member.eq(auth_member))
                 .execute();
 
@@ -428,8 +434,14 @@ public class GameRoomService {
         gameMessage.setSenderId(Long.toString(auth_member.getMemberId())); //퇴장한 사람 id
         gameMessage.setSender(auth_member.getNickname()); // 퇴장한 사람
 
-        contentset.put("memberCnt",gameRoomMembers.size());
-        contentset.put("outMent",gameMessage.getSender() + "님이 방을 나가셨습니다.");
+        Long memberCnt = jpaQueryFactory
+                .select(gameRoomMember.count())
+                .from(gameRoomMember)
+                .where(gameRoomMember.gameroom_id.eq(gameRoom1.getRoomId()))
+                .fetchOne();
+
+        contentset.put("memberCnt", memberCnt);
+        contentset.put("outMent", gameMessage.getSender() + "님이 방을 나가셨습니다.");
 
         gameMessage.setContent(contentset); //퇴장 내용
         gameMessage.setType(GameMessage.MessageType.LEAVE); // 메세지 타입
@@ -446,7 +458,7 @@ public class GameRoomService {
         // 유저가 방에 입장한 이력 업데이트
         jpaQueryFactory
                 .update(memberActive)
-                .set(memberActive.exitNum, userActive.getExitNum()+1L)
+                .set(memberActive.exitNum, userActive.getExitNum() + 1L)
                 .where(memberActive.member.eq(auth_member))
                 .execute();
 
@@ -471,7 +483,7 @@ public class GameRoomService {
             // 다음 방장으로 지정된 유저의 owner 이력 업데이트
             jpaQueryFactory
                     .update(memberActive)
-                    .set(memberActive.ownerNum, nextOwnerActive.getOwnerNum()+1L)
+                    .set(memberActive.ownerNum, nextOwnerActive.getOwnerNum() + 1L)
                     .where(memberActive.member.eq(nextOwner))
                     .execute();
 
@@ -494,7 +506,7 @@ public class GameRoomService {
         }
 
         // 게임이 시작된 방에서 나갈 경우
-        if(gameRoom1.getStatus().equals("start")){
+        if (gameRoom1.getStatus().equals("start")) {
             // 해당 게임방 게임세트를 조회
             GameStartSet gameSet = jpaQueryFactory
                     .selectFrom(gameStartSet)
@@ -502,7 +514,7 @@ public class GameRoomService {
                     .fetchOne();
 
             // 게임세트의 라이어와 나가고자하는 유저의 닉네임이 같다면
-            if(gameSet.getLier().equals(auth_member.getNickname())){
+            if (gameSet.getLier().equals(auth_member.getNickname())) {
 
                 // StartSet 삭제(초기화)
                 jpaQueryFactory
@@ -517,7 +529,7 @@ public class GameRoomService {
                         .execute();
 
                 // 해당 게임방에 남아있는 유저들의 상태 unready로 초기화
-                for(GameRoomMember gameRoomMember1 : gameRoomMembers){
+                for (GameRoomMember gameRoomMember1 : gameRoomMembers) {
                     jpaQueryFactory
                             .update(gameRoomMember)
                             .set(gameRoomMember.ready, "unready")
