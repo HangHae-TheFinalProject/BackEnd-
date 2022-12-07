@@ -332,26 +332,6 @@ public class GameRoomService {
         // 입장한 정보 저장
         gameRoomMemberRepository.save(addGameRoomMember1);
 
-        // 다시 한번, 입장하고자하는 방에 속한 멤버들의 정보를 불러온다.
-        List<GameRoomMember> gameRoomMembers = jpaQueryFactory
-                .selectFrom(gameRoomMember)
-                .where(gameRoomMember.gameRoom.eq(enterGameRoom))
-                .orderBy(gameRoomMember.createdAt.asc())
-                .fetch();
-
-        // 불러온 멤버 정보들을 하나로 담기 위한 리스트
-        List<MemberResponseDto> memberList = new ArrayList<>();
-
-        // 리스트에 불러온 멤버의 정보들을 담는다.
-        for (GameRoomMember gameRoomMember1 : gameRoomMembers) {
-            MemberResponseDto memberResponseDto= MemberResponseDto.builder()
-                    .memberId(gameRoomMember1.getMember().getMemberId())
-                    .email(gameRoomMember1.getMember().getEmail())
-                    .nickname(gameRoomMember1.getMember().getNickname())
-                    .build();
-            memberList.add(memberResponseDto);
-        }
-
         // 최종적으로 출력될 DTO에 현재 게임방의 정보와 리스트에 담아온 참가 멤버들의 정보를 input 한다.
         gameRoomResponseDto = GameRoomResponseDto.builder()
                 .id(enterGameRoom.getRoomId()) // 입장한 게임방 id
@@ -360,7 +340,6 @@ public class GameRoomService {
                 .mode(enterGameRoom.getMode()) // 입장한 게임 모드
                 .owner(enterGameRoom.getOwner()) // 입장한 게임방의 방장
                 .status(enterGameRoom.getStatus()) // 게임방 상태
-                .member(memberList) // 입장한 멤버들
                 .build();
 
 
