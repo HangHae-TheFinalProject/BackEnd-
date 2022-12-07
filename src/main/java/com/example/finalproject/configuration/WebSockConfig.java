@@ -29,6 +29,7 @@ public class WebSockConfig implements WebSocketMessageBrokerConfigurer {
                 .setHandshakeHandler(new CustomHandshakeHandler())
                 .withSockJS();
     }
+    // 소켓 연결 하기 전 유효성 검사하기 위해 만들어 놓은 stompHandler 등록
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(stompHandler);
