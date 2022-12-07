@@ -44,35 +44,49 @@ public class GameHTTPService {
     private final TokenProvider tokenProvider;
     private final RewardRequired rewardRequired;
     private final EntityManager em;
+
+    // 한 게임에서 현재까지 투표된 사람 수를 count 할 변수
     static int cnt = 0;
+    // 투표를 집계할 Hash Map
     static HashMap<String, Integer> voteHashMap = new HashMap<>();
 
+    // 라이어 투표
     @Transactional
     public void vote(Long gameroomid, StringDto stringDto) {
+        // 투표할 사람 nickname 저장
         String name = stringDto.getValue();
+        // hash 를 통해 닉네임에 투표 받은 횟수 저장
+        // < 닉네임 : 2 > 형식으로 저장됨
+        // getOrDefault를 사용하여 처음 투표되는 것이면 0 + 1, 기존에 투표된 값이 있으면 기존 값 + 1을 저장함
         voteHashMap.put(name, voteHashMap.getOrDefault(name, 0) + 1);
+        // 투표한 명수 count +1
         cnt++;
 
+        // 해당 게임방에 해당하는 gameStartSet을 불러옴
         GameStartSet gameStartSet = gameStartSetRepository.findByRoomId(gameroomid);
 
+        // 해당 게임방에 있는 유저 명수를 구함
         List<GameRoomMember> gameRoomMembers = jpaQueryFactory
                 .selectFrom(gameRoomMember)
                 .where(gameRoomMember.gameroom_id.eq(gameroomid))
                 .fetch();
         int memberNum = gameRoomMembers.size();
+
+        // 아직 투표중이라면
         if (cnt != memberNum) {
             GameMessage<?> gameMessage = new GameMessage<>();
             gameMessage.setRoomId(Long.toString(gameroomid));
             gameMessage.setSenderId("");
             gameMessage.setSender("");
             gameMessage.setContent(null);
-            gameMessage.setType(GameMessage.MessageType.CONTINUE);
+            gameMessage.setType(GameMessage.MessageType.CONTINUE); // 투표중이라는 의미의 CONTINUE type의 메세지 뿌려줌
             messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
-            return;
+            return; // 아래 로직 (투표 끝났을 때 수횅되는 로직으로 가지 않고 return)
         }
 
-        List<String> votedName = sortHash(); // 투표가 끝나면 최다투표자 list 뽑음
+        // 투표가 끝났다면
+        List<String> votedName = sortHash(); // sortHash 함수를 통해서 최다투표자 list 뽑음
         GameMessage<List<String>> gameMessage = new GameMessage<>();
         gameMessage.setRoomId(Long.toString(gameroomid));
         gameMessage.setSenderId("");
@@ -86,7 +100,7 @@ public class GameHTTPService {
             // 시민이 지목 당했을 때
             else {
                 gameMessage.setType(GameMessage.MessageType.NLIER);
-                gameStartSet.setWinner(GameStartSet.Winner.LIER);
+                gameStartSet.setWinner(GameStartSet.Winner.LIER); // 해당 게임의 winner 를 Lier로 지정
             }
         } else {
             // 동점 상황일 때
@@ -96,14 +110,15 @@ public class GameHTTPService {
             // 동점 상황, 라운도 종료 됐을 때 (라이어 승리)
             else {
                 gameMessage.setType(GameMessage.MessageType.DRAWANDENDGAME);
-                gameStartSet.setWinner(GameStartSet.Winner.LIER);
+                gameStartSet.setWinner(GameStartSet.Winner.LIER); // 해당 게임의 winner 를 Lier로 지정
             }
         }
-        gameMessage.setContent(votedName);
+        gameMessage.setContent(votedName); // 최다 투표자 list 를 반환함
         messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
     }
 
+    // 투표 집계 한 HashMap 을 정렬하고 최다투표자 list를 뽐기 위한 함수
     public List<String> sortHash() {
         List<Entry<String, Integer>> list_entries = new ArrayList<Entry<String, Integer>>(voteHashMap.entrySet());
 
@@ -116,29 +131,37 @@ public class GameHTTPService {
             }
         });
 
+        // 정렬이 끝난 후 최다 투표 수 를 저장함
         int maxValue = list_entries.get(0).getValue();
 
         List<String> nickName = new ArrayList<>();
 
+        // 최다 투표 수와 같은 투표수를 받은 유저들 닉네임을 저장함 (동점자 포함하기 위함)
         for (Entry<String, Integer> entry : list_entries) {
             if (entry.getValue() == maxValue) {
                 nickName.add(entry.getKey());
             }
         }
+
+        // 해당 라운드의 투표가 끝났으므로 voteHashMap와 cnt를 초기화 해줌
         voteHashMap.clear();
         cnt = 0;
         return nickName;
     }
 
+    // 라이어가 정답을 맞췄는지 판단 (투표에서 라이어가 지목됐을 때의 다음 상황)
     @Transactional
     public void isAnswer(Long gameroomid, StringDto stringDto) {
+        // 라이어가 작성한 정답을 저장함
         String answer = stringDto.getValue();
+        // 해당 게임방에 해당하는 gameStartSet을 불러옴
         GameStartSet gameStartSet = gameStartSetRepository.findByRoomId(gameroomid);
 
         GameMessage<Boolean> gameMessage = new GameMessage<>();
         gameMessage.setRoomId(Long.toString(gameroomid));
         gameMessage.setSenderId("");
         gameMessage.setSender("");
+        // 정답 범위를 넓히기 위해 공백을 제거하고 '라이어가 작성한 정답'과 '실제 정답'을 비교함
         gameMessage.setContent(gameStartSet.getKeyword().replaceAll(" ", "").equals(answer.replaceAll(" ", "")));
         gameMessage.setType(GameMessage.MessageType.RESULT);
         messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
@@ -187,11 +210,13 @@ public class GameHTTPService {
                 LocalDateTime.now().getHour(), // 현재 시간
                 LocalDateTime.now().getMinute()); // 현재 분
 
+        // 해당 게임방에 해당하는 gameStartSet을 불러옴
         GameStartSet gameStartSet1 = jpaQueryFactory
                 .selectFrom(gameStartSet)
                 .where(gameStartSet.roomId.eq(gameroomid))
                 .fetchOne();
 
+        // 해당 게임 방에 있는 GameRoomMember를 불러옴
         List<GameRoomMember> gameRoomMembers = jpaQueryFactory
                 .selectFrom(gameRoomMember)
                 .where(gameRoomMember.gameroom_id.eq(gameroomid))
@@ -199,6 +224,7 @@ public class GameHTTPService {
 
         List<Member> playingMembers = new ArrayList<>();
 
+        // 위에서 얻은 GameRoomMember목록을 통해 유저 정보를 불러옴
         for (GameRoomMember gameRoomMember2 : gameRoomMembers) {
 
             Member each_member = jpaQueryFactory
@@ -232,7 +258,7 @@ public class GameHTTPService {
             // 업데이트한 상태를 저장
             playingMembers.add(each_member);
 
-            // 게임 맴버 상태 ready
+            // 게임 맴버 상태 unready
             jpaQueryFactory
                     .update(gameRoomMember)
                     .set(gameRoomMember.ready, "unready")
@@ -243,7 +269,8 @@ public class GameHTTPService {
             em.clear();
         }
 
-        // 전적 계산
+        // 전적 계산, 업데이트
+        // 클라이언트로 승리자, 패배자 list 반환할 Dto
         VictoryDto victoryDto = new VictoryDto();
 
         // 해당 게임의 승자가 라이어일 경우
@@ -254,11 +281,12 @@ public class GameHTTPService {
 
                     jpaQueryFactory
                             .update(member)
-                            .set(member.winNum, playingMember.getWinNum() + 1)
-                            .set(member.winLIER, playingMember.getWinLIER() + 1)
+                            .set(member.winNum, playingMember.getWinNum() + 1) // 승리 횟수 +1
+                            .set(member.winLIER, playingMember.getWinLIER() + 1) // 라이어로 승리 횟수 +1
                             .where(member.memberId.eq(playingMember.getMemberId()))
                             .execute();
 
+                    // 승리자 목록에 추가
                     victoryDto.getWinner().add(playingMember.getNickname());
                 }
                 // 시민은 패배
@@ -266,11 +294,11 @@ public class GameHTTPService {
 
                     jpaQueryFactory
                             .update(member)
-                            .set(member.lossNum, playingMember.getLossNum() + 1)
-                            .set(member.lossCITIZEN, playingMember.getLossCITIZEN() + 1)
+                            .set(member.lossNum, playingMember.getLossNum() + 1) // 패배 횟수 +1
+                            .set(member.lossCITIZEN, playingMember.getLossCITIZEN() + 1) // 시민으로 패배 횟수 +1
                             .where(member.memberId.eq(playingMember.getMemberId()))
                             .execute();
-
+                    // 패배자 목록에 추가
                     victoryDto.getLoser().add(playingMember.getNickname());
                 }
 
@@ -286,22 +314,24 @@ public class GameHTTPService {
 
                     jpaQueryFactory
                             .update(member)
-                            .set(member.lossNum, playingMember.getLossNum() + 1)
-                            .set(member.lossLIER, playingMember.getLossLIER() + 1)
+                            .set(member.lossNum, playingMember.getLossNum() + 1) // 패배 횟수 +1
+                            .set(member.lossLIER, playingMember.getLossLIER() + 1) // 라이아로 패배 횟수 +1
                             .where(member.memberId.eq(playingMember.getMemberId()))
                             .execute();
 
+                    // 패배자 목록에 추가
                     victoryDto.getLoser().add(playingMember.getNickname());
                 }
                 // 시민은 승리
                 else {
                     jpaQueryFactory
                             .update(member)
-                            .set(member.winNum, playingMember.getWinNum() + 1)
-                            .set(member.winCITIZEN, playingMember.getWinCITIZEN() + 1)
+                            .set(member.winNum, playingMember.getWinNum() + 1) // 승리 횟수 +1
+                            .set(member.winCITIZEN, playingMember.getWinCITIZEN() + 1) // 시민으로 승리 횟수 +1
                             .where(member.memberId.eq(playingMember.getMemberId()))
                             .execute();
 
+                    // 승리자 목록에 추가
                     victoryDto.getWinner().add(playingMember.getNickname());
                 }
 
@@ -313,7 +343,7 @@ public class GameHTTPService {
         gameMessage.setRoomId(Long.toString(gameroomid));
         gameMessage.setSenderId("");
         gameMessage.setSender("");
-        gameMessage.setContent(victoryDto);
+        gameMessage.setContent(victoryDto); // 승리자, 패배자 list 메세지 뿌려줌
         gameMessage.setType(GameMessage.MessageType.VICTORY);
         messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 

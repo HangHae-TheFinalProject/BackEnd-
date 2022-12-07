@@ -36,12 +36,14 @@ public class StompHandler implements ChannelInterceptor {
         // 연결할때
         if (StompCommand.CONNECT == accessor.getCommand()) {
 
+            // stomp의 헤더에서 accessToken과 refreshToken 을 뽑음
             String accessToken = Objects.requireNonNull(accessor.getFirstNativeHeader("Authorization")).substring(7);
             String refreshToken = accessor.getFirstNativeHeader("Refresh-Token");
 
             System.out.println("refreshToken = " + refreshToken);
             System.out.println("accessToken = " + accessToken);
 
+            // 토큰 검증
             tokenProvider.validateToken(accessToken);
             tokenProvider.validateToken(refreshToken);
 
