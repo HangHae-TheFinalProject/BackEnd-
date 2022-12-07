@@ -8,4 +8,8 @@ import lombok.Getter;
 public class RewardResponseDto {
     private Long rewardId;
     private String rewardName;
+    private String rewardDescription;
+    private String mentation;
+    private boolean isGold;
+    private boolean isActive;
 }
