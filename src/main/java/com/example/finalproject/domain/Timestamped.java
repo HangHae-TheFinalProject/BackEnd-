@@ -25,10 +25,4 @@ public abstract class Timestamped {
   @LastModifiedDate
   private LocalDateTime modifiedAt;
 
-//  @CreatedBy
-//  private String whoCreate;
-//
-//  @LastModifiedBy
-//  private String whoUpdate;
-
 }
