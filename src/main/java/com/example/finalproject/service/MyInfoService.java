@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -195,6 +196,7 @@ public class MyInfoService {
         List<MemberReward> userrewards = jpaQueryFactory
                 .selectFrom(memberReward)
                 .where(memberReward.memberid.eq(auth_member.getMemberId()))
+                .setLockMode(LockModeType.PESSIMISTIC_READ)
                 .fetch();
 
         // 얻은 업적이 존재할 경우
@@ -202,41 +204,25 @@ public class MyInfoService {
 
             log.info("획득한 업적이 존재할 경우 진입");
 
-            // 업적들을 하나씩 조회
-            for (MemberReward reward1 : userrewards) {
+            // 기본적으로 반환될 전체 업적을 리스트에 담는다
+            for(Reward checkreward : rewardlist){
+                rewardlistdtos.add(
+                        RewardResponseDto.builder()
+                                .rewardId(checkreward.getRewardId()) // 업적 id
+                                .rewardName(checkreward.getRewardName()) // 업적 이름
+                                .rewardDescription(checkreward.getRewardDescription()) // 업적 조건
+                                .mentation(checkreward.getMentation()) // 업적 문구
+                                .isGold(checkreward.isGold()) // 업적 황금 테두리 여부
+                                .isActive(false) // 업적 획득 여부
+                                .build()
+                );
+            }
 
-                // 얻은 업적의 DB 정보를 조회
-                Reward checkreward = jpaQueryFactory
-                        .selectFrom(reward)
-                        .where(reward.rewardId.eq(reward1.getRewardid()))
-                        .fetchOne();
-
-                // 전체 업적들에서 하나씩 비교
-                for(Reward reward2 : rewardlist){
-                    // 만약 획득한 업적의 id가 존재할 경우 active를 true로 반영하여 DTO에 저장
-                    if(checkreward.getRewardId() == reward2.getRewardId()){
-                        rewardlistdtos.add(
-                                RewardResponseDto.builder()
-                                        .rewardId(checkreward.getRewardId()) // 업적 id
-                                        .rewardName(checkreward.getRewardName()) // 업적 이름
-                                        .rewardDescription(checkreward.getRewardDescription()) // 업적 조건
-                                        .mentation(checkreward.getMentation()) // 업적 문구
-                                        .isGold(checkreward.isGold()) // 업적 황금 테두리 여부
-                                        .isActive(true) // 업적 획득 여부
-                                        .build()
-                        );
-                    }else if(reward1.getRewardid() != reward2.getRewardId()){
-                        // 획득한 업적 이외의 획득하지 못한 업적들은 active 속성을 false로 저장
-                        rewardlistdtos.add(
-                                RewardResponseDto.builder()
-                                        .rewardId(reward2.getRewardId()) // 업적 id
-                                        .rewardName(reward2.getRewardName()) // 업적 이름
-                                        .rewardDescription(reward2.getRewardDescription()) // 업적 조건
-                                        .mentation(reward2.getMentation()) // 업적 문구
-                                        .isGold(reward2.isGold()) // 업적 황금 테두리 여부
-                                        .isActive(false) // 업적 획득 여부
-                                        .build()
-                        );
+            // 얻은 업적의 active 값을 true로 변경하여 활성화
+            for(RewardResponseDto rewardResponseDto : rewardlistdtos){
+                for(MemberReward userreward : userrewards){
+                    if(rewardResponseDto.getRewardId() == userreward.getRewardid()) {
+                        rewardResponseDto.setActive(true);
                     }
                 }
             }
@@ -275,19 +261,9 @@ public class MyInfoService {
             }
         }
 
-//        // 페이지 수
-//        int pageCnt = rooms.size() / size;
-//
-//        // 만약 페이지 수가 size 와 딱 맞아떨어지지 않고 더 많다면 +1을 해준다.
-//        if (!(rooms.size() % size == 0)) {
-//            pageCnt = pageCnt + 1;
-//        }
-
         // page 번호와 페이지에 존재하는 업적들을 담기위한 hashmap
         HashMap<String, Object> pageRewardSet = new HashMap<>();
 
-//        // 최대 페이지
-//        pageRoomSet.put("pageCnt", pageCnt);
         // 페이지 안에 있는 업적들
         pageRewardSet.put("rewardsInPage", rewardsInPage);
 

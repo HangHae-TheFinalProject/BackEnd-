@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -172,12 +173,14 @@ public class GameRearService {
             Member lier = jpaQueryFactory
                     .selectFrom(member)
                     .where(member.nickname.eq(gameStartSet.getLier()))
+                    .setLockMode(LockModeType.PESSIMISTIC_READ)
                     .fetchOne();
 
             // 라이어의 활동 이력 정보 조회
             MemberActive userActive = jpaQueryFactory
                     .selectFrom(memberActive)
                     .where(memberActive.member.eq(lier))
+                    .setLockMode(LockModeType.PESSIMISTIC_READ)
                     .fetchOne();
 
             // 라이어의 정답 맞추기 이력정보 업데이트
@@ -212,6 +215,7 @@ public class GameRearService {
         GameStartSet gameStartSet1 = jpaQueryFactory
                 .selectFrom(gameStartSet)
                 .where(gameStartSet.roomId.eq(gameroomid))
+                .setLockMode(LockModeType.PESSIMISTIC_READ)
                 .fetchOne();
 
         // 해당 게임 방에 있는 GameRoomMember를 불러옴
