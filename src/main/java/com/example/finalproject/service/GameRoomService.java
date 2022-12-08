@@ -360,6 +360,7 @@ public class GameRoomService {
                 .setLockMode(LockModeType.PESSIMISTIC_READ)
                 .fetchOne();
 
+        contentset.put("owner", enterGameRoom.getOwner());
         contentset.put("memberCnt", memberCnt);
         contentset.put("enterMent", gameMessage.getRoomId() + "번방에 " + gameMessage.getSender() + "님이 입장하셨습니다.");
 

@@ -7,7 +7,6 @@ import com.example.finalproject.exception.PrivateResponseBody;
 import com.example.finalproject.exception.StatusCode;
 import com.example.finalproject.jwt.TokenProvider;
 import com.example.finalproject.repository.GameStartSetRepository;
-import com.example.finalproject.repository.KeywordRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +16,7 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 
@@ -38,12 +38,10 @@ public class GameService {
 
     private final TokenProvider tokenProvider;
     private final JPAQueryFactory jpaQueryFactory;
-    private final KeywordRepository keywordRepository;
     private final GameStartSetRepository gameStartSetRepository;
     private final SimpMessageSendingOperations messagingTemplate;
     private final EntityManager em;
     private Integer spotNum = 0;
-    private Integer readyNum = 0;
 
     // 인증 정보 검증 부분을 한 곳으로 모아놓음
     public Member authorizeToken(HttpServletRequest request) {
@@ -80,6 +78,7 @@ public class GameService {
         GameRoom gameRoom1 = jpaQueryFactory
                 .selectFrom(gameRoom)
                 .where(gameRoom.roomId.eq(gameroomid))
+                .setLockMode(LockModeType.PESSIMISTIC_READ)
                 .fetchOne();
 
         // 게임 시작은 방장만이 할 수 있음
@@ -91,12 +90,14 @@ public class GameService {
         Member owner = jpaQueryFactory
                 .selectFrom(member)
                 .where(member.nickname.eq(gameRoom1.getOwner()))
+                .setLockMode(LockModeType.PESSIMISTIC_READ)
                 .fetchOne();
 
         // 방장이 된 유저의 활동이력 정보 조회
         MemberActive ownerActive = jpaQueryFactory
                 .selectFrom(memberActive)
                 .where(memberActive.member.eq(owner))
+                .setLockMode(LockModeType.PESSIMISTIC_READ)
                 .fetchOne();
 
         // 게임시작은 방장만이 할 수 있으므로 방장이 된 유저의 gamestart 이력을 업데이트
@@ -110,12 +111,8 @@ public class GameService {
         List<GameRoomMember> gameRoomMembers = jpaQueryFactory
                 .selectFrom(gameRoomMember)
                 .where(gameRoomMember.gameroom_id.eq(gameroomid))
+                .setLockMode(LockModeType.PESSIMISTIC_READ)
                 .fetch();
-
-        // 인원이 네명이면 게임시작할 수 없음
-//        if(gameRoomMembers.size() < 3){
-//            return new ResponseEntity<>(new PrivateResponseBody(StatusCode.NOT_ENOUGH_MEMBER, null), HttpStatus.BAD_REQUEST);
-//        }
 
         // 게임방의 상태를 start 상태로 업데이트
         jpaQueryFactory
@@ -137,6 +134,7 @@ public class GameService {
             Member each_member = jpaQueryFactory
                     .selectFrom(member)
                     .where(member.memberId.eq(gameRoomMember2.getMember_id()))
+                    .setLockMode(LockModeType.PESSIMISTIC_READ)
                     .fetchOne();
 
             // 유저의 게임시작시간을 기록
@@ -159,6 +157,7 @@ public class GameService {
         // 시민들에게 뿌려지게 될 키워드 전체 목록 불러오기
         List<Keyword> keywordList = jpaQueryFactory
                 .selectFrom(keyword)
+                .setLockMode(LockModeType.PESSIMISTIC_READ)
                 .fetch();
 
         // 랜덤으로 걸린 키워드
@@ -298,12 +297,14 @@ public class GameService {
         Member player = jpaQueryFactory
                 .selectFrom(member)
                 .where(member.nickname.eq(gameMessage.getSender())) // message에 담겨있는 유저의 닉네임으로 조회
+                .setLockMode(LockModeType.PESSIMISTIC_READ)
                 .fetchOne();
 
         // 게임준비 한 유저의 활동이력 정보를 조회
         MemberActive userActive = jpaQueryFactory
                 .selectFrom(memberActive)
                 .where(memberActive.member.eq(player))
+                .setLockMode(LockModeType.PESSIMISTIC_READ)
                 .fetchOne();
 
         // 게임준비한 유저의 이력을 업데이트
@@ -317,6 +318,7 @@ public class GameService {
         GameRoomMember gameRoomMember1 = jpaQueryFactory
                 .selectFrom(gameRoomMember)
                 .where(gameRoomMember.gameroom_id.eq(gameroomid).and(gameRoomMember.member_id.eq(player.getMemberId())))
+                .setLockMode(LockModeType.PESSIMISTIC_READ)
                 .fetchOne();
 
         // 게임 유저의 준비상태가 unready일 경우
@@ -344,6 +346,7 @@ public class GameService {
         Member readyPlayer = jpaQueryFactory
                 .selectFrom(member)
                 .where(member.memberId.eq(gameRoomMember1.getMember_id()))
+                .setLockMode(LockModeType.PESSIMISTIC_READ)
                 .fetchOne();
 
         // 게임 준비된 유저 상태 메세지 공유
@@ -361,6 +364,7 @@ public class GameService {
                 .select(gameRoomMember.count())
                 .from(gameRoomMember)
                 .where(gameRoomMember.gameroom_id.eq(gameroomid).and(gameRoomMember.ready.eq("ready")))
+                .setLockMode(LockModeType.PESSIMISTIC_READ)
                 .fetchOne();
 
         // 방에 참가하고있는 전체 유저 수
@@ -368,6 +372,7 @@ public class GameService {
                 .select(gameRoomMember.count())
                 .from(gameRoomMember)
                 .where(gameRoomMember.gameroom_id.eq(gameroomid))
+                .setLockMode(LockModeType.PESSIMISTIC_READ)
                 .fetchOne();
 
         // 모든 유저가 준비 상태일 경우 ALLREADY 메세지 공유
@@ -391,6 +396,7 @@ public class GameService {
         GameRoom playRoom = jpaQueryFactory
                 .selectFrom(gameRoom)
                 .where(gameRoom.roomId.eq(gameroomid))
+                .setLockMode(LockModeType.PESSIMISTIC_READ)
                 .fetchOne();
 
         // 라이어가 게임 도중 방을 나갔을 경우 초기화가 되기때문에 위치값도 초기화
@@ -403,6 +409,7 @@ public class GameService {
                 .selectFrom(gameRoomMember)
                 .where(gameRoomMember.gameroom_id.eq(gameroomid))
                 .orderBy(gameRoomMember.createdAt.asc()) // 게임에 참가한 유저의 입장 시간 오름차순 순서대로
+                .setLockMode(LockModeType.PESSIMISTIC_READ)
                 .fetch();
 
         // 전역 변수로 초기값 0으로 지정된 위치값 : spotNum
@@ -417,6 +424,7 @@ public class GameService {
             Member speakNowMember = jpaQueryFactory
                     .selectFrom(member)
                     .where(member.memberId.eq(nowSpotMember.getMember_id()))
+                    .setLockMode(LockModeType.PESSIMISTIC_READ)
                     .fetchOne();
 
             // STomp로 입장한 메세지 전달
@@ -436,6 +444,7 @@ public class GameService {
             GameStartSet gameStartSet = jpaQueryFactory
                     .selectFrom(QGameStartSet.gameStartSet)
                     .where(QGameStartSet.gameStartSet.roomId.eq(gameroomid))
+                    .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                     .fetchOne();
 
 
