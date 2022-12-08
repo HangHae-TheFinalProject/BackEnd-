@@ -260,26 +260,9 @@ public class PostService {
         }
 
 
-
-        // 수정된 게시글의 정보를 Dto에 저장
-        PostResponseDto postResponseDto = PostResponseDto.builder()
-                .postId(update_post.getPostId()) // 수정된 게시글 id
-                .author(update_post.getAuthor()) // 수정된 게시글의 작성자
-                .title(update_post.getTitle()) // 수정된 게시글의 제목
-                .content(update_post.getContent()) // 수정된 게시글의 내용
-                .viewcnt(update_post.getViewcnt()) // 조회 수
-                .createdAt(update_post.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm"))) // 생성일자
-                .modifiedAt(update_post.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm"))) // 수정일자
-                .medias(mediaResponseDtos) // 수정된 게시글의 이미지들
-                .comments(comments) // 게시글에 작성된 댓글들
-                .build();
-
-
-
-
         // 댓글 기능 합쳐지면 댓글도 PostResponseDto 에 넣어 수정된 게시글과 함께 보여줄 것
 
-        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, postResponseDto), HttpStatus.OK);
+        return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, "게시글 수정 완료"), HttpStatus.OK);
     }
 
 
