@@ -418,6 +418,7 @@ public class PostService {
                 allPosts.put("title", post.getTitle()); // 게시글 제목
                 allPosts.put("createdAt", post.getCreatedAt()); // 게시글 생성일자
                 allPosts.put("viewcnt", post.getViewcnt()); // 게시글 조회수
+                allPosts.put("commentCount",post.getComments().size()); // 댓글 개수
 
                 allPostlist.add(allPosts);
             }
@@ -441,6 +442,7 @@ public class PostService {
                 allPosts.put("title", post.getTitle()); // 게시글 제목
                 allPosts.put("createdAt", post.getCreatedAt()); // 게시글 생성일자
                 allPosts.put("viewcnt", post.getViewcnt()); // 게시글 조회수
+                allPosts.put("commentCount",post.getComments().size()); // 댓글 개수
 
                 allPostlist.add(allPosts);
             }
