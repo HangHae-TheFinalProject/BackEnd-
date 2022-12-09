@@ -192,6 +192,25 @@ public class MemberService {
 
         // 리프레쉬 토큰 삭제
         tokenProvider.deleteRefreshToken(member);
+
+        // 유저가 얻은 업적이 존재할 경우
+        if(!jpaQueryFactory
+                .selectFrom(memberReward)
+                .where(memberReward.memberid.eq(member.getMemberId()))
+                .fetch().isEmpty()){
+            // 얻은 업적 삭제
+            jpaQueryFactory
+                    .delete(memberReward)
+                    .where(memberReward.memberid.eq(member.getMemberId()))
+                    .execute();
+        }
+
+        // 유저 활동 이력 삭제
+        jpaQueryFactory
+                .delete(memberActive)
+                .where(memberActive.member.eq(member))
+                .execute();
+
         // 멤버 삭제
         memberRepository.delete(member);
 
