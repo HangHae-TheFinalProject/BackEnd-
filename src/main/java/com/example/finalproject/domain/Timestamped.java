@@ -1,5 +1,6 @@
 package com.example.finalproject.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,9 +20,11 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class Timestamped {
 
+  @JsonFormat(timezone = "Asia/Seoul")
   @CreatedDate
   private LocalDateTime createdAt;
 
+  @JsonFormat(timezone = "Asia/Seoul")
   @LastModifiedDate
   private LocalDateTime modifiedAt;
 
