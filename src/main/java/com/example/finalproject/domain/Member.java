@@ -30,23 +30,23 @@ public class Member extends Timestamped{
     @Column(nullable = false)
     private String nickname;
 
-    @Column
-    private Long winNum = 0L;
+    @Column(nullable = false)
+    private Long winNum;
 
-    @Column
-    private Long winLIER = 0L;
+    @Column(nullable = false)
+    private Long winLIER;
 
-    @Column
-    private Long winCITIZEN = 0L;
+    @Column(nullable = false)
+    private Long winCITIZEN;
 
-    @Column
-    private Long lossNum = 0L;
+    @Column(nullable = false)
+    private Long lossNum;
 
-    @Column
-    private Long lossLIER = 0L;
+    @Column(nullable = false)
+    private Long lossLIER;
 
-    @Column
-    private Long lossCITIZEN = 0L;
+    @Column(nullable = false)
+    private Long lossCITIZEN;
 
     @JsonIgnore
     @OneToMany(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
@@ -56,19 +56,19 @@ public class Member extends Timestamped{
     @OneToMany(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
 
-    // 추가
     @JsonIgnore
     @JoinColumn(name="gameroommember_id")
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private GameRoomMember gameRoomMember;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.EAGER)
-    private List<Reward> rewards;
+    @OneToOne(mappedBy = "member",cascade = CascadeType.ALL, orphanRemoval = true)
+    private MemberActive memberActive;
 
     @JsonIgnore
-    @OneToOne(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
-    private MemberActive memberActive;
+    @JoinColumn(name="memberreward_id")
+    @OneToOne
+    private MemberReward memberReward;
 
     @Override
     public boolean equals(Object o) {
@@ -91,7 +91,4 @@ public class Member extends Timestamped{
         return passwordEncoder.matches(password, this.password);
     }
 
-    public void update(List<Reward> rewards){
-        this.rewards = rewards;
-    }
 }

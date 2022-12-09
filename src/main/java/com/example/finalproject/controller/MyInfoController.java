@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,10 +35,11 @@ public class MyInfoController {
     }
 
     // 리워드 조회
-    @GetMapping("/reward")
+    @GetMapping("/reward/{pageNum}")
     public ResponseEntity<PrivateResponseBody> getMyReward(
-            HttpServletRequest request){
-        return myInfoService.getMyReward(request);
+            HttpServletRequest request,
+            @PathVariable Integer pageNum){
+        return myInfoService.getMyReward(request, pageNum);
     }
 
 

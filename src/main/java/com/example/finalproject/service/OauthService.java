@@ -2,10 +2,12 @@ package com.example.finalproject.service;
 
 import com.example.finalproject.controller.request.TokenDto;
 import com.example.finalproject.domain.Member;
+import com.example.finalproject.domain.MemberActive;
 import com.example.finalproject.domain.SocialLoginType;
 import com.example.finalproject.exception.PrivateResponseBody;
 import com.example.finalproject.exception.StatusCode;
 import com.example.finalproject.jwt.TokenProvider;
+import com.example.finalproject.repository.MemberActiveRepository;
 import com.example.finalproject.repository.MemberRepository;
 import com.example.finalproject.social.SocialOauth;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -30,7 +32,7 @@ import java.util.List;
 
 import org.json.simple.parser.JSONParser;
 
-//import static com.example.finalproject.domain.QMember.member;
+//import static com.example.finalproject.domain.QMemberA.member;
 
 @Slf4j
 @Service
@@ -42,6 +44,7 @@ public class OauthService {
     private final JPAQueryFactory jpaQueryFactory;
     private final PasswordEncoder passwordEncoder;
     private final MemberRepository memberRepository;
+    private final MemberActiveRepository memberActiveRepository;
     private final TokenProvider tokenProvider;
 
     @Value("${sns.google.url}")
@@ -64,12 +67,6 @@ public class OauthService {
             e.printStackTrace();
         }
     }
-
-//    public String requestAccessToken(SocialLoginType socialLoginType, String code) {
-//        SocialOauth socialOauth = this.findSocialOauthByType(socialLoginType);
-//        return socialOauth.requestAccessToken(code);
-//    }
-
 
     public ResponseEntity<?> getGoogleUserInfo(String accessToken, HttpServletResponse response) throws Exception {
 
@@ -122,9 +119,35 @@ public class OauthService {
                     .email((String) googleUserInfo.get("email"))
                     .password(passwordEncoder.encode((String) googleUserInfo.get("email"))) // 비밀번호 인코딩하여 저장
                     .nickname((String) googleUserInfo.get("name") + "#" + Integer.toString((int) (Math.random() * 9999)))
+                    .winNum(0L) // 전체 승리 횟수
+                    .lossNum(0L) // 전체 패배 횟수
+                    .winCITIZEN(0L) // 시민으로써 승리한 횟수
+                    .winLIER(0L) // 라이어로써 승리한 횟수
+                    .lossCITIZEN(0L) // 시민으로써 패배한 횟수
+                    .lossLIER(0L) // 라이어로써 패배한 횟수
                     .build();
 
             memberRepository.save(member);
+
+            // 유저 활동 기록 초기화 (업적용)
+            MemberActive memberActive = MemberActive.builder()
+                    .createNum(0L) // 방 생성 횟수
+                    .ownerNum(0L) // 방장이 된 횟수
+                    .enterNum(0L) // 방에 들어간 횟수
+                    .exitNum(0L) // 방을 나간 횟수
+                    .gamereadyNum(0L) // 게임준비 한 횟수
+                    .gamestartNum(0L) // 게임시작 한 횟수
+                    .voteNum(0L) // 투표한 횟수
+                    .correctanswerNum(0L) // 정답을 맞춘 횟수
+                    .starttime(null)
+                    .endplaytime(null)
+                    .playhour(0L)
+                    .playminute(0L)
+                    .member(member)
+                    .build();
+
+            // 활동 기록 초기화 저장
+            memberActiveRepository.save(memberActive);
 
             //토큰 지급
             TokenDto tokenDto = tokenProvider.generateTokenDto(member);

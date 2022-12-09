@@ -5,11 +5,13 @@ import com.example.finalproject.controller.request.MemberRequestDto;
 import com.example.finalproject.controller.request.TokenDto;
 import com.example.finalproject.domain.Member;
 import com.example.finalproject.domain.MemberActive;
+import com.example.finalproject.domain.MemberReward;
 import com.example.finalproject.exception.PrivateResponseBody;
 import com.example.finalproject.exception.StatusCode;
 import com.example.finalproject.jwt.TokenProvider;
 import com.example.finalproject.repository.MemberActiveRepository;
 import com.example.finalproject.repository.MemberRepository;
+import com.example.finalproject.repository.MemberRewardRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,8 @@ import java.util.HashMap;
 import java.util.Optional;
 
 import static com.example.finalproject.domain.QMember.member;
+import static com.example.finalproject.domain.QMemberActive.memberActive;
+import static com.example.finalproject.domain.QMemberReward.memberReward;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -37,6 +41,7 @@ public class MemberService {
     private final JPAQueryFactory jpaQueryFactory;
     private final MemberRepository memberRepository;
     private final MemberActiveRepository memberActiveRepository;
+
 
     // 회원가입
     public ResponseEntity<PrivateResponseBody> signup(MemberRequestDto memberRequestDto) {
@@ -87,6 +92,10 @@ public class MemberService {
                 .gamestartNum(0L) // 게임시작 한 횟수
                 .voteNum(0L) // 투표한 횟수
                 .correctanswerNum(0L) // 정답을 맞춘 횟수
+                .starttime(null)
+                .endplaytime(null)
+                .playhour(0L)
+                .playminute(0L)
                 .member(member)
                 .build();
 
@@ -183,7 +192,6 @@ public class MemberService {
 
         // 리프레쉬 토큰 삭제
         tokenProvider.deleteRefreshToken(member);
-
         // 멤버 삭제
         memberRepository.delete(member);
 

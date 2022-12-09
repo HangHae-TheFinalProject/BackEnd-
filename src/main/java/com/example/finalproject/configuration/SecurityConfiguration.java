@@ -67,7 +67,8 @@ public class SecurityConfiguration {
                         "/lier/login",
                         "/lier/auth/**",
                         "/lier/chat/rooms",
-                        "/lier/manager/**"
+                        "/lier/manager/**",
+                        "/lier/room/test/**"
 //                "/lier/**" // 테스트 시 해제
                 ).permitAll()
 

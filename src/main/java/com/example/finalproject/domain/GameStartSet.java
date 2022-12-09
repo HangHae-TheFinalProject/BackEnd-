@@ -30,17 +30,22 @@ public class GameStartSet {
     @Column
     private Integer round;
 
-    @Column
+    @Column(nullable = false)
     private GameStartSet.Winner winner;
 
     public enum Winner {
-        CITIZEN, LIER
+        DEFAULT, CITIZEN, LIER
     }
 
     public Integer oneMoerRound(){
         this.round++;
         return this.round;
     }
+
+    public Winner getWinner() {
+        return this.winner;
+    }
+
     public void setWinner(GameStartSet.Winner winner){
         this.winner = winner;
     }

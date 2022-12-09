@@ -23,14 +23,27 @@ public class Reward {
     private String rewardName;
 
     @Column(nullable = false)
+    private String rewardDescription;
+
+    @Column(nullable = false)
+    private String mentation;
+
+    @Column(nullable = false)
+    private boolean isGold;
+
+    @Column(nullable = false)
+    private boolean isActive;
+
+    @Column(nullable = false)
     private Integer level;
 
     @Column
     private String rewardImg;
 
-//    @JoinColumn(name = "memberId")
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    private Member member;
+    @JsonIgnore
+    @JoinColumn(name="memberreward_id")
+    @OneToOne
+    private MemberReward memberReward;
 
 
 }

@@ -64,9 +64,19 @@ public class SearchService {
         authorizeToken(request);
 
         // 한 페이지 당 보여지는 게시글 수 (10개)
-        int size = 10;
+        int size = 8;
         // 페이징 처리를 위해 현재 페이지와 보여지는 게시글 수를 곱해놓는다. (10개의 게시글 수 중 가장 마지막에 나올 위치값)
         int sizeInPage = pageNum * size;
+
+        if(jpaQueryFactory
+                .selectFrom(post)
+                .where(post.title.like("%" + stringDto.getValue().replace(" ", "%") + "%"))
+                .fetch().isEmpty()){
+
+            return new ResponseEntity<>(new PrivateResponseBody
+                    (StatusCode.SEARCH_POST_ERROR, "검색 결과에 맞는 게시글이 존재하지 않습니다."), HttpStatus.BAD_REQUEST);
+            //return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, "검색 결과에 맞는 게시글이 존재하지 않습니다."), HttpStatus.OK);
+        }
 
         // 게시글 제목을 기준으로 검색 키워드로 패턴 비교하여 게시글들 조회
         List<Post> searchPost = jpaQueryFactory
@@ -108,7 +118,21 @@ public class SearchService {
             }
         }
 
-        return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, postsInPage), HttpStatus.OK);
+        // 총 페이지 수
+        int pageCnt = (int)searchPostList.size() / size;
+
+        // 만약, 총 게시글 수에서 size를 나누었을 때 딱 나누어 떨어지지 않고 나머지가 남아있다면 총 페이지 수에 +1
+        if(!(searchPostList.size() % size == 0)){
+            pageCnt = pageCnt + 1;
+        }
+
+        // 총 페이지 수와 페이징 처리된 게시글들을 같이 저장
+        HashMap<String, Object> SearchPagingResult = new HashMap<>();
+        SearchPagingResult.put("postsCnt", searchPostList.size());
+        SearchPagingResult.put("pageCnt", pageCnt); // 총 페이지 수
+        SearchPagingResult.put("pageInPosts", postsInPage); // 페이지 안에 존재하는 게시글들
+
+        return new ResponseEntity<>(new PrivateResponseBody(StatusCode.OK, SearchPagingResult), HttpStatus.OK);
     }
 
 
