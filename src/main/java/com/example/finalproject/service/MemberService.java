@@ -109,7 +109,6 @@ public class MemberService {
     // 로그인
     @Transactional
     public ResponseEntity<PrivateResponseBody> login(LoginRequestDto requestDto, HttpServletResponse response) {
-
         // 로그인 시도한 이메일 아이디가 존재하는 아이디인지 확인 후 저장
         Member member = isPresentMember(requestDto.getEmail());
 
@@ -193,6 +192,25 @@ public class MemberService {
 
         // 리프레쉬 토큰 삭제
         tokenProvider.deleteRefreshToken(member);
+
+        // 유저가 얻은 업적이 존재할 경우
+        if(!jpaQueryFactory
+                .selectFrom(memberReward)
+                .where(memberReward.memberid.eq(member.getMemberId()))
+                .fetch().isEmpty()){
+            // 얻은 업적 삭제
+            jpaQueryFactory
+                    .delete(memberReward)
+                    .where(memberReward.memberid.eq(member.getMemberId()))
+                    .execute();
+        }
+
+        // 유저 활동 이력 삭제
+        jpaQueryFactory
+                .delete(memberActive)
+                .where(memberActive.member.eq(member))
+                .execute();
+
         // 멤버 삭제
         memberRepository.delete(member);
 
