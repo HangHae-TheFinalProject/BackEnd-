@@ -172,6 +172,7 @@ public class GameService {
                 .keyword(chooseKeyword.getWord()) // 키워드
                 .roomId(gameroomid) // 게임방 id
                 .round(1)
+                .voteCnt(0)
                 .spotnum(0)
                 .winner(GameStartSet.Winner.DEFAULT)
                 .build();
