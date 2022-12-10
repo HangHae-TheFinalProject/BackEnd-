@@ -6,6 +6,7 @@ import com.example.finalproject.controller.request.StringDto;
 import com.example.finalproject.service.GameRoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Test;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -63,15 +64,15 @@ public class GemeRoomController {
         return gameRoomService.roomExit(roomId, request);
     }
 
-//
-//    // 방 입장 (동시성 테스트)
-//    @PostMapping("/room/test/{roomId}")
-//    public ResponseEntity<?> enterGameRoomTest(
-//            @PathVariable Long roomId,
-//            @RequestParam(value = "nickname") String nickname// 입장할 방 id
-//            ) {
-//        log.info("방 입장 테스트 - 방 id : {}", roomId);
-//        return gameRoomService.enterGameRoomtest(roomId, nickname);
-//    }
+
+    // 방 입장 (동시성 테스트)
+    @PostMapping("/room/test/{roomId}")
+    public ResponseEntity<?> enterGameRoomTest(
+            @PathVariable Long roomId,
+            @RequestParam(value = "nickname") String nickname// 입장할 방 id
+            ) {
+        log.info("방 입장 테스트 - 방 id : {}", roomId);
+        return gameRoomService.enterGameRoomtest(roomId, nickname);
+    }
 
 }
