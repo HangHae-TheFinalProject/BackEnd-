@@ -31,6 +31,9 @@ public class GameStartSet {
     private Integer round;
 
     @Column(nullable = false)
+    private Integer spotnum = 0;
+
+    @Column(nullable = false)
     private GameStartSet.Winner winner;
 
     public enum Winner {
