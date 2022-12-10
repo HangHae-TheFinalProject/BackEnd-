@@ -30,6 +30,7 @@ import static com.example.finalproject.domain.QGameRoom.gameRoom;
 import static com.example.finalproject.domain.QMember.member;
 import static com.example.finalproject.domain.QKeyword.keyword;
 import static com.example.finalproject.domain.QMemberActive.memberActive;
+import static com.example.finalproject.domain.QGameStartSet.gameStartSet;
 
 @Slf4j
 @RequiredArgsConstructor
