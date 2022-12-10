@@ -396,10 +396,16 @@ public class GameRoomService {
     @Transactional
     public ResponseEntity<?> roomExit(
             Long roomId, // 나가고자 하는 방 id
-            HttpServletRequest request) { // 인증 정보를 갖고있는 request
+//            HttpServletRequest request
+            StringDto stringDto
+    ) { // 인증 정보를 갖고있는 request
 
         // 토큰 유효성 검증
-        Member auth_member = authorizeToken(request);
+//        Member auth_member = authorizeToken(request);
+        Member auth_member = jpaQueryFactory
+                .selectFrom(member)
+                .where(member.nickname.eq(stringDto.getValue()))
+                .fetchOne();
 
         // 나가고자 하는 방의 정보 불러오기
         GameRoom gameRoom1 = jpaQueryFactory

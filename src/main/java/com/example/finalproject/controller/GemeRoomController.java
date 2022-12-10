@@ -49,7 +49,8 @@ public class GemeRoomController {
     @PostMapping("/room/{roomId}")
     public ResponseEntity<?> enterGameRoom(
             @PathVariable Long roomId, // 입장할 방 id
-            HttpServletRequest request) { // 입장할 인증정보를 가진 request
+            HttpServletRequest request
+    ) { // 입장할 인증정보를 가진 request
         log.info("방 입장 - 방 id : {}, uuid(유저아이디) : {}", roomId, request);
         return gameRoomService.enterGameRoom(roomId, request);
     }
@@ -59,9 +60,11 @@ public class GemeRoomController {
     @DeleteMapping("/room/{roomId}/exit")
     public ResponseEntity<?> roomExit(
             @PathVariable Long roomId, // 나가고자 하는 방의 Id
-            HttpServletRequest request) { // 나가고자하는 멤버의 인증정보를 가진 request
-        log.info("방 나가기 - 방 아이디 : {}, uuid(유저아이디) : {}", roomId, request);
-        return gameRoomService.roomExit(roomId, request);
+//            HttpServletRequest request
+            @RequestBody StringDto stringDto
+    ) { // 나가고자하는 멤버의 인증정보를 가진 request
+        log.info("방 나가기 - 방 아이디 : {}, uuid(유저아이디) : {}", roomId, stringDto.getValue());
+        return gameRoomService.roomExit(roomId, stringDto);
     }
 
 }
