@@ -18,16 +18,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static com.example.finalproject.domain.QGameRoom.gameRoom;
 import static com.example.finalproject.domain.QGameRoomMember.gameRoomMember;
 
 import java.util.Map.Entry;
-import java.util.ArrayList;
-import java.util.Comparator;
 
 import static com.example.finalproject.domain.QMember.member;
 import static com.example.finalproject.domain.QGameStartSet.gameStartSet;
@@ -44,25 +40,22 @@ public class GameRearService {
     private final RewardRequired rewardRequired;
     private final EntityManager em;
 
-    // 한 게임에서 현재까지 투표된 사람 수를 count 할 변수
-    static int cnt = 0;
-    // 투표를 집계할 Hash Map
-    static HashMap<String, Integer> voteHashMap = new HashMap<>();
 
     // 라이어 투표
     @Transactional
     public void vote(Long gameroomid, StringDto stringDto) {
         // 투표할 사람 nickname 저장
         String name = stringDto.getValue();
-        // hash 를 통해 닉네임에 투표 받은 횟수 저장
-        // < 닉네임 : 2 > 형식으로 저장됨
-        // getOrDefault를 사용하여 처음 투표되는 것이면 0 + 1, 기존에 투표된 값이 있으면 기존 값 + 1을 저장함
-        voteHashMap.put(name, voteHashMap.getOrDefault(name, 0) + 1);
-        // 투표한 명수 count +1
-        cnt++;
 
         // 해당 게임방에 해당하는 gameStartSet을 불러옴
         GameStartSet gameStartSet = gameStartSetRepository.findByRoomId(gameroomid);
+
+        // hash 를 통해 닉네임에 투표 받은 횟수 저장
+        // < 닉네임 : 2 > 형식으로 저장됨
+        // getOrDefault를 사용하여 처음 투표되는 것이면 0 + 1, 기존에 투표된 값이 있으면 기존 값 + 1을 저장함
+        gameStartSet.addVoteHashMap(name);
+        // 투표한 명수 count +1
+        int cnt = gameStartSet.addVoteCnt();
 
         // 해당 게임방에 있는 유저 명수를 구함
         List<GameRoomMember> gameRoomMembers = jpaQueryFactory
@@ -85,7 +78,10 @@ public class GameRearService {
         }
 
         // 투표가 끝났다면
-        List<String> votedName = sortHash(); // sortHash 함수를 통해서 최다투표자 list 뽑음
+        List<String> votedName = sortHash(gameStartSet.getVoteMap()); // sortHash 함수를 통해서 최다투표자 list 뽑음
+        // 해당 라운드의 투표가 끝났으므로 voteHashMap와 cnt를 초기화 해줌
+        gameStartSet.clearVote();
+
         GameMessage<List<String>> gameMessage = new GameMessage<>();
         gameMessage.setRoomId(Long.toString(gameroomid));
         gameMessage.setSenderId("");
@@ -118,8 +114,8 @@ public class GameRearService {
     }
 
     // 투표 집계 한 HashMap 을 정렬하고 최다투표자 list를 뽐기 위한 함수
-    public List<String> sortHash() {
-        List<Entry<String, Integer>> list_entries = new ArrayList<Entry<String, Integer>>(voteHashMap.entrySet());
+    public List<String> sortHash(Map<String, Integer> hashMap) {
+        List<Entry<String, Integer>> list_entries = new ArrayList<Entry<String, Integer>>(hashMap.entrySet());
 
         // 비교함수 Comparator를 사용하여 내림 차순으로 정렬
         Collections.sort(list_entries, new Comparator<Entry<String, Integer>>() {
@@ -143,8 +139,6 @@ public class GameRearService {
         }
 
         // 해당 라운드의 투표가 끝났으므로 voteHashMap와 cnt를 초기화 해줌
-        voteHashMap.clear();
-        cnt = 0;
         return nickName;
     }
 
