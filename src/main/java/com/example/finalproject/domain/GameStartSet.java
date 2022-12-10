@@ -34,6 +34,9 @@ public class GameStartSet {
     private Integer round;
 
     @Column(nullable = false)
+    private Integer spotnum = 0;
+
+    @Column(nullable = false)
     private GameStartSet.Winner winner;
 
     // 한 게임에서 현재까지 투표된 사람 수를 count 할 변수
