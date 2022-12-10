@@ -30,6 +30,7 @@ import static com.example.finalproject.domain.QGameRoom.gameRoom;
 import static com.example.finalproject.domain.QMember.member;
 import static com.example.finalproject.domain.QKeyword.keyword;
 import static com.example.finalproject.domain.QMemberActive.memberActive;
+import static com.example.finalproject.domain.QGameStartSet.gameStartSet;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -67,6 +68,7 @@ public class GameService {
     // 게임 시작
     @Transactional
     public ResponseEntity<?> gameStart(GameMessage gameMessage, Long gameroomid) {
+        // 게임 시작 시간
         LocalDateTime startDateTime = LocalDateTime.of(
                 LocalDateTime.now().getYear(),
                 LocalDateTime.now().getMonth(),
@@ -170,6 +172,7 @@ public class GameService {
                 .keyword(chooseKeyword.getWord()) // 키워드
                 .roomId(gameroomid) // 게임방 id
                 .round(1)
+                .spotnum(0)
                 .winner(GameStartSet.Winner.DEFAULT)
                 .build();
 
@@ -182,6 +185,7 @@ public class GameService {
                 .category(gameStartSet.getCategory())
                 .keyword(gameStartSet.getKeyword())
                 .roomId(gameStartSet.getRoomId())
+                .spotnum(gameStartSet.getSpotnum())
                 .build();
 
         // 웹소켓으로 방에 참가한 인원 리스트 전달을 위한 리스트
@@ -229,59 +233,8 @@ public class GameService {
             gameMessage.setType(GameMessage.MessageType.START); // 메세지 타입
         }
 
-
         // 게임 시작 알림을 방에 구독이 된 유저들에게 알려줌
         messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
-
-//        List<GameRoomMember> gameRoomMemberlist = jpaQueryFactory
-//                .selectFrom(gameRoomMember)
-//                .where(gameRoomMember.gameroom_id.eq(gameroomid))
-//                .fetch();
-//
-//        for(GameRoomMember gameRoomMember1 : gameRoomMemberlist){
-//            Member roommember = jpaQueryFactory
-//                    .selectFrom(member)
-//                    .where(member.memberId.eq(gameRoomMember1.getMember_id()))
-//                    .fetchOne();
-//
-//            // 라이어가 아닐 경우
-//            if(!roommember.getNickname().equals(gameStartSet.getLier())){
-//                log.info("시민에 걸린 유저 : {}", roommember.getNickname());
-//
-//                // 방 입장했을 떄 각 유저마다의 생성된 session 불러오기
-//                String session = jpaQueryFactory
-//                        .select(gameRoomMember.session)
-//                        .from(gameRoomMember)
-//                        .where(gameRoomMember.member_id.eq(roommember.getMemberId()).and(gameRoomMember.gameroom_id.eq(gameroomid)))
-//                        .fetchOne();
-//
-//                gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 게임방 id
-//                gameMessage.setSenderId(Long.toString(roommember.getMemberId())); // truer id
-//                gameMessage.setSender(roommember.getNickname()); // truer 닉네임
-//                gameMessage.setContent(gameMessage.getSender() + "님은 시민입니다. / [" + gameStartSet.getCategory() + " : " + gameStartSet.getKeyword() + "]"); // 시민 여부 내용
-//                gameMessage.setType(GameMessage.MessageType.TRUER); // 메세지 타입
-//
-//                messagingTemplate.convertAndSendToUser(session, "/sub/truer/gameroom/"+gameroomid, gameMessage);
-//
-//            }else if(roommember.getNickname().equals(gameStartSet.getLier())){ // 라이어일 경우
-//                log.info("라이어에 걸린 유저 : {}", gameStartSet.getLier());
-//
-//                // 방 입장했을 떄 각 유저마다의 생성된 session 불러오기
-//                String session = jpaQueryFactory
-//                        .select(gameRoomMember.session)
-//                        .from(gameRoomMember)
-//                        .where(gameRoomMember.member_id.eq(roommember.getMemberId()).and(gameRoomMember.gameroom_id.eq(gameroomid)))
-//                        .fetchOne();
-//
-//                gameMessage.setRoomId(Long.toString(gameroomid)); // 현재 게임방 id
-//                gameMessage.setSenderId(Long.toString(roommember.getMemberId())); // lier id
-//                gameMessage.setSender(roommember.getNickname()); // lier 닉네임
-//                gameMessage.setContent(gameMessage.getSender() + "님은 라이어입니다. / [" + gameStartSet.getCategory() + "]"); // 라이어 여부
-//                gameMessage.setType(GameMessage.MessageType.LIAR); // 메세지 타입
-//
-//                messagingTemplate.convertAndSendToUser(session, "/sub/lier/gameroom/"+gameroomid, gameMessage);
-//            }
-//        }
 
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, gameStartSetResponseDto), HttpStatus.OK);
     }
@@ -393,6 +346,7 @@ public class GameService {
     @Transactional
     public void spotlight(Long gameroomid) {
 
+        // 현재 게임방 조회
         GameRoom playRoom = jpaQueryFactory
                 .selectFrom(gameRoom)
                 .where(gameRoom.roomId.eq(gameroomid))
@@ -401,7 +355,14 @@ public class GameService {
 
         // 라이어가 게임 도중 방을 나갔을 경우 초기화가 되기때문에 위치값도 초기화
         if (playRoom.getStatus().equals("wait")) {
-            spotNum = 0;
+            jpaQueryFactory
+                    .update(gameStartSet)
+                    .set(gameStartSet.spotnum, 0)
+                    .where(gameStartSet.roomId.eq(playRoom.getRoomId()))
+                    .execute();
+
+            em.flush();
+            em.clear();
         }
 
         // 게임방에 참가하고 있는 유저들 불러오기
@@ -416,9 +377,18 @@ public class GameService {
         // spotNum 에 위치한 관리DB 유저 정보 조회
         GameMessage gameMessage = new GameMessage();
 
-        if (spotNum < gameRoomMembers.size()) {
+        // 현재 게임방 스타트셋 불러오기
+        GameStartSet gameStartSet1 = jpaQueryFactory
+                .selectFrom(gameStartSet)
+                .where(gameStartSet.roomId.eq(playRoom.getRoomId()))
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .fetchOne();
 
-            GameRoomMember nowSpotMember = gameRoomMembers.get(spotNum);
+        // 현재 유저의 위치값이 전체 유저들의 수보다 적을 경우
+        if (gameStartSet1.getSpotnum() < gameRoomMembers.size()) {
+
+            // 현재 스포트라이트가 켜진 유저
+            GameRoomMember nowSpotMember = gameRoomMembers.get(gameStartSet1.getSpotnum());
 
             // 관리DB 유저 정보로 해당 유저의 상세 정보 조회
             Member speakNowMember = jpaQueryFactory
@@ -438,9 +408,16 @@ public class GameService {
             messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
 
             // 현 위치의 정보를 메세지화시켜서 전달까지 완료했으면 위치값을 1 증가 시켜서 다음 위치의 유저에게 향할 수 있도록 +1
-            spotNum = spotNum + 1;
+            jpaQueryFactory
+                    .update(gameStartSet)
+                    .set(gameStartSet.spotnum, gameStartSet1.getSpotnum() + 1)
+                    .where(gameStartSet.roomId.eq(playRoom.getRoomId()))
+                    .execute();
 
-        } else if (spotNum == gameRoomMembers.size()) {
+            em.flush();
+            em.clear();
+
+        } else if (gameStartSet1.getSpotnum() == gameRoomMembers.size()) {
             GameStartSet gameStartSet = jpaQueryFactory
                     .selectFrom(QGameStartSet.gameStartSet)
                     .where(QGameStartSet.gameStartSet.roomId.eq(gameroomid))
@@ -448,19 +425,23 @@ public class GameService {
                     .fetchOne();
 
 
+            // 한바퀴가 끝나면 라운드 1 증가
             int round = gameStartSet.getRound() + 1;
             System.out.println("현재 끝난 라운드 : " + round);
 
+            // 증가된 라운드와 유저 위치값 초기화 업데이트
             jpaQueryFactory
                     .update(QGameStartSet.gameStartSet)
                     .set(QGameStartSet.gameStartSet.round, round)
+                    .set(QGameStartSet.gameStartSet.spotnum, 0)
                     .where(QGameStartSet.gameStartSet.roomId.eq(gameStartSet.getRoomId()))
                     .execute();
 
             em.flush();
             em.clear();
 
-            if (gameStartSet.getRound() < 3) {
+            if (gameStartSet.getRound() < 3) { // 끝난 라운드가 3 보다 작다면 COMPLETE 메세지 전달
+
                 HashMap<String, Object> contentset = new HashMap<>();
                 contentset.put("notice", "Round Over!");
                 contentset.put("round", gameStartSet.getRound());
@@ -471,7 +452,7 @@ public class GameService {
                 gameMessage.setContent(contentset); // 마지막 유저의 위치면 한 바퀴를 돌았다는 것으로 간주
                 gameMessage.setType(GameMessage.MessageType.COMPLETE); // 메세지 타입
 
-            } else if (gameStartSet.getRound() == 3) {
+            } else if (gameStartSet.getRound() == 3) { // 끝난 라운드가 3 이라면 ALLCOMPLETE 메세지 전달
                 HashMap<String, Object> contentset = new HashMap<>();
                 contentset.put("notice", "All Round Over!");
                 contentset.put("round", gameStartSet.getRound());
@@ -485,9 +466,6 @@ public class GameService {
 
             // 한 바퀴 완료 메세지 공유
             messagingTemplate.convertAndSend("/sub/gameroom/" + gameroomid, gameMessage);
-
-            // 한 바퀴를 다 돌았으면 위치값을 0으로 초기화
-            spotNum = 0;
         }
     }
 

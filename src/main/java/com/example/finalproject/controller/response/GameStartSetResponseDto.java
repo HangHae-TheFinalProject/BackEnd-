@@ -10,4 +10,5 @@ public class GameStartSetResponseDto {
     private String category;
     private String keyword;
     private Long roomId;
+    private Integer spotnum;
 }
