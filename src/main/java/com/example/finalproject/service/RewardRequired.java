@@ -390,7 +390,7 @@ public class RewardRequired implements RewardRequiredInter {
 
 
         // 999 : 9번 이상 플레이하고 9번 승리, 9번 패배 시 획득
-        if (playingMember.getWinNum() + playingMember.getLossNum() >= 9 && playingMember.getWinNum() == 8 && playingMember.getLossNum() == 8) {
+        if (playingMember.getWinNum() + playingMember.getLossNum() >= 9 && playingMember.getWinNum() >= 8 && playingMember.getLossNum() >= 8) {
 
             // 999 업적 불러오기
             Reward reward1 = jpaQueryFactory
@@ -593,8 +593,8 @@ public class RewardRequired implements RewardRequiredInter {
             }
         }
 
-        // 불굴의 의지 : 12회 이상 패배, 4회 승리 시 획득
-        if (playingMember.getLossNum() >= 11 && playingMember.getWinNum() == 3) {
+        // 불굴의 의지 : 12회 이상 패배, 4회 이상 승리 시 획득
+        if (playingMember.getLossNum() >= 11 && playingMember.getWinNum() >= 3) {
 
             // 불굴의 의지 업적 불러오기
             Reward reward1 = jpaQueryFactory
