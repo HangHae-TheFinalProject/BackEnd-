@@ -1,15 +1,15 @@
 package com.example.finalproject.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
 import org.hibernate.Hibernate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Objects;
 
+@Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,7 +19,7 @@ public class Member extends Timestamped{
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    private Long id;
+    private Long memberId;
 
     @Column(nullable = false)
     private String email;
@@ -30,6 +30,46 @@ public class Member extends Timestamped{
     @Column(nullable = false)
     private String nickname;
 
+    @Column(nullable = false)
+    private Long winNum;
+
+    @Column(nullable = false)
+    private Long winLIER;
+
+    @Column(nullable = false)
+    private Long winCITIZEN;
+
+    @Column(nullable = false)
+    private Long lossNum;
+
+    @Column(nullable = false)
+    private Long lossLIER;
+
+    @Column(nullable = false)
+    private Long lossCITIZEN;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "member",fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments;
+
+    @JsonIgnore
+    @JoinColumn(name="gameroommember_id")
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private GameRoomMember gameRoomMember;
+
+    @JsonIgnore
+    @OneToOne(mappedBy = "member",cascade = CascadeType.ALL, orphanRemoval = true)
+    private MemberActive memberActive;
+
+    @JsonIgnore
+    @JoinColumn(name="memberreward_id")
+    @OneToOne
+    private MemberReward memberReward;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -39,7 +79,7 @@ public class Member extends Timestamped{
             return false;
         }
         Member member = (Member) o;
-        return id != null && Objects.equals(id, member.id);
+        return memberId != null && Objects.equals(memberId, member.memberId);
     }
 
     @Override
@@ -50,4 +90,5 @@ public class Member extends Timestamped{
     public boolean validatePassword(PasswordEncoder passwordEncoder, String password) {
         return passwordEncoder.matches(password, this.password);
     }
+
 }
