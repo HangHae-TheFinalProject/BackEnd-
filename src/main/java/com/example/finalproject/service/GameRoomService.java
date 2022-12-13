@@ -75,6 +75,7 @@ public class GameRoomService {
 
 
     // 메인페이지 (방 전체 목록 조회) - 페이징 처리 완료
+    @Transactional
     public ResponseEntity<?> lierMainPage(
             HttpServletRequest request,
             int pageNum,
@@ -154,8 +155,12 @@ public class GameRoomService {
                     .status(gameRoom1.getStatus()) // 게임방 현재 상태
                     .build();
 
-            // DTO에 담긴 정보들을 리스트에 차곡차곡 저장
-            gameroomlist.add(gameRoomResponseDto);
+            // 동시성 이슈로 인해 게임방 나가기 이후 0명임에도 방이 삭제가 되야하지만 안되었을때 2차로 0명 방을 제외
+            if(!memberList.isEmpty()){
+                // DTO에 담긴 정보들을 리스트에 차곡차곡 저장
+                gameroomlist.add(gameRoomResponseDto);
+            }
+
         }
 
         // 페이징 처리 후 4개의 방만을 보여줄 리스트
@@ -411,7 +416,6 @@ public class GameRoomService {
         GameRoom gameRoom1 = jpaQueryFactory
                 .selectFrom(gameRoom)
                 .where(gameRoom.roomId.eq(roomId))
-                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                 .fetchOne();
 
         // 관리DB에서 나가고자하는 게임방에서 참가하고있는 멤버 삭제

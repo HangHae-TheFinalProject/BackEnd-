@@ -20,7 +20,8 @@ public class DynamicQueryDsl {
         return jpaQueryFactory
                 .selectFrom(gameRoom)
                 .where(eqMode(condition))
-                .orderBy(gameRoom.createdAt.asc())
+//                .orderBy(gameRoom.createdAt.asc())
+                .orderBy(gameRoom.createdAt.desc())
                 .fetch();
     }
 
