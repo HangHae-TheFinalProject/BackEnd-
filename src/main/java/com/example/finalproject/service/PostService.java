@@ -363,22 +363,26 @@ public class PostService {
                 .where(post.postId.eq(getPost.getPostId()))
                 .execute();
 
+        em.flush();
+        em.clear();
+
+        Post resultPost = jpaQueryFactory
+                .selectFrom(post)
+                .where(post.postId.eq(getPost.getPostId()))
+                .fetchOne();
 
         // 상세 조회할 게시글 정보를 Dto에 저장
         PostResponseDto postResponseDto = PostResponseDto.builder()
-                .postId(getPost.getPostId()) // 조회할 게시글 id
-                .author(getPost.getAuthor()) // 조회할 게시글 작성자
-                .title(getPost.getTitle()) // 조회할 게시글 제목
-                .content(getPost.getContent()) // 조회할 게시글 내용
-                .viewcnt(getPost.getViewcnt()) // 조회 수
-                .createdAt(getPost.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm"))) // 생성일자
-                .modifiedAt(getPost.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm"))) // 수정일자
+                .postId(resultPost.getPostId()) // 조회할 게시글 id
+                .author(resultPost.getAuthor()) // 조회할 게시글 작성자
+                .title(resultPost.getTitle()) // 조회할 게시글 제목
+                .content(resultPost.getContent()) // 조회할 게시글 내용
+                .viewcnt(resultPost.getViewcnt()) // 조회 수
+                .createdAt(resultPost.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm"))) // 생성일자
+                .modifiedAt(resultPost.getModifiedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd hh:mm"))) // 수정일자
                 .medias(mediaResponseDtos) // 조회할 게시글에 속한 이미지파일들
                 .comments(commentResponseDtoList) // 댓글들
                 .build();
-
-        em.flush();
-        em.clear();
 
         return new ResponseEntity<>(new PrivateResponseBody<>(StatusCode.OK, postResponseDto), HttpStatus.OK);
     }
