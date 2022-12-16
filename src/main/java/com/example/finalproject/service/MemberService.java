@@ -171,6 +171,7 @@ public class MemberService {
     }
 
     // 회원 탈퇴
+    @Transactional
     public ResponseEntity<PrivateResponseBody> cleansing(HttpServletRequest request) {
 
         log.info("탈퇴 진입 : {}", request.getHeader("Authorization"));
@@ -204,12 +205,6 @@ public class MemberService {
                     .where(memberReward.memberid.eq(member.getMemberId()))
                     .execute();
         }
-
-        // 유저 활동 이력 삭제
-        jpaQueryFactory
-                .delete(memberActive)
-                .where(memberActive.member.eq(member))
-                .execute();
 
         // 멤버 삭제
         memberRepository.delete(member);
