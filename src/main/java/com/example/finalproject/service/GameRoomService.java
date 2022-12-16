@@ -120,6 +120,7 @@ public class GameRoomService {
             // 따로 Member 엔티티에서 조회해서 추출해야 한다.
             List<GameRoomMember> gameRoomMembers = jpaQueryFactory
                     .selectFrom(gameRoomMember)
+//                    .innerJoin(gameRoom).on(gameRoomMember.gameRoom.eq(gameRoom1))
                     .where(gameRoomMember.gameRoom.eq(gameRoom1))
                     .orderBy(gameRoomMember.createdAt.asc())
                     .fetch();
