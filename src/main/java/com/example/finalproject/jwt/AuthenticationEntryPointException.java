@@ -2,6 +2,7 @@ package com.example.finalproject.jwt;
 
 import com.example.finalproject.controller.response.ResponseDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+@Slf4j
 @Component
 public class AuthenticationEntryPointException implements
         AuthenticationEntryPoint {
@@ -24,5 +26,6 @@ public class AuthenticationEntryPointException implements
             )
     );
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    log.info("회원관리 기능 절차(jwt) -> AuthenticationEntryPointException - commence 메소드 (request : {}, response : {}, authException : {})", request, response, authException.getMessage());
   }
 }

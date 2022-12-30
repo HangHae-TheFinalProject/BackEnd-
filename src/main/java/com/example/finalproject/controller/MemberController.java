@@ -29,7 +29,7 @@ public class MemberController {
             @RequestBody MemberRequestDto memberRequestDto){
         // 회원가입 진행시 재확인용 비밀번호는 입력하지 않는지 확인
 
-        log.info("이메일 : {}, 닉네임 : {}, 패스워드 : {}", memberRequestDto.getEmail(), memberRequestDto.getNickname(), memberRequestDto.getPassword());
+        log.info("회원가입 - 이메일 : {}, 닉네임 : {}, 패스워드 : {}", memberRequestDto.getEmail(), memberRequestDto.getNickname(), memberRequestDto.getPassword());
         return memberService.signup(memberRequestDto);
     }
 
@@ -38,7 +38,7 @@ public class MemberController {
     public ResponseEntity<PrivateResponseBody> login(
             @RequestBody LoginRequestDto requestDto,
             HttpServletResponse response) {
-        log.info("아이디 : {}, 비밀번호 : {}, response 헤더 : {}", requestDto.getEmail(), requestDto.getPassword(), response.getHeader("Authorization"));
+        log.info("로그인 - 아이디 : {}, 비밀번호 : {}", requestDto.getEmail(), requestDto.getPassword());
         return memberService.login(requestDto, response);
     }
 
@@ -47,14 +47,15 @@ public class MemberController {
     @PostMapping(value = "/logout")
     public ResponseEntity<PrivateResponseBody> logout(
             HttpServletRequest request) {
+        log.info("로그아웃 - 유저 액세스 토큰 : {}", request.getHeader("Authorization"));
         return memberService.logout(request);
     }
 
     // 회원탈퇴
     @DeleteMapping(value = "/removal")
     public ResponseEntity<PrivateResponseBody> cleansing(
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
+        log.info("회원탈퇴 - 유저 액세스 토큰 : {}", request.getHeader("Authorization"));
         return memberService.cleansing(request);
     }
 

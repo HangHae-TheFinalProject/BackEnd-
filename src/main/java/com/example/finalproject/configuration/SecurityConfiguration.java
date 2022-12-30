@@ -5,6 +5,7 @@ import com.example.finalproject.jwt.AuthenticationEntryPointException;
 import com.example.finalproject.jwt.TokenProvider;
 import com.example.finalproject.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.security.ConditionalOnDefaultWebSecurity;
@@ -20,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsUtils;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -37,19 +39,18 @@ public class SecurityConfiguration {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-
+        log.info("회원관리 기능 절차(jwt) -> SecurityConfiguration - passwordEncoder 메소드");
         return new BCryptPasswordEncoder();
     }
 
     @Bean
     @Order(SecurityProperties.BASIC_AUTH_ORDER)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        log.info("회원관리 기능 절차(jwt) -> SecurityConfiguration - filterChain 메소드 (HttpSecurity : {})", http);
+
         http.cors();
 
         http.csrf().disable()
-//        .headers()
-//        .frameOptions().sameOrigin() // SockJS는 기본적으로 HTML iframe 요소를 통한 전송을 허용하지 않도록 설정되는데 해당 내용을 해제한다.
-//        .and()
 
                 .exceptionHandling()
                 .authenticationEntryPoint(authenticationEntryPointException)
@@ -70,7 +71,6 @@ public class SecurityConfiguration {
                         "/lier/manager/**",
                         "/lier/room/test/**",
                         "/lier/room/**/exit"
-//                "/lier/**" // 테스트 시 해제
                 ).permitAll()
 
                 .antMatchers("/api/comments/**").permitAll()

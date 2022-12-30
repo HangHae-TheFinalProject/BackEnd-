@@ -17,7 +17,6 @@ import java.util.Map;
 @NoArgsConstructor
 public class UserDetailsImpl implements UserDetails,OAuth2User {
 
-
   private Member member;
   private Map<String, Object> attributes;
 
@@ -29,6 +28,7 @@ public class UserDetailsImpl implements UserDetails,OAuth2User {
     this.member = member;
     this.attributes = attributes;
   }
+
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     SimpleGrantedAuthority authority = new SimpleGrantedAuthority(Authority.ROLE_MEMBER.toString());
@@ -67,19 +67,15 @@ public class UserDetailsImpl implements UserDetails,OAuth2User {
     return true;
   }
 
-
-
   @Override
   public Map<String, Object> getAttributes(){
     return attributes;
   }
 
-
   @Override
   public String getName(){
     return null;
   }
-
 
 
 }

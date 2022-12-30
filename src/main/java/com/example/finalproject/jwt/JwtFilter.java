@@ -9,6 +9,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -29,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
@@ -36,7 +38,6 @@ public class JwtFilter extends OncePerRequestFilter {
     public static String BEARER_PREFIX = "Bearer ";
     public static String AUTHORITIES_KEY = "auth";
     private final String SECRET_KEY;
-
     private final TokenProvider tokenProvider;
     private final UserDetailsServiceImpl userDetailsService;
 
@@ -76,8 +77,10 @@ public class JwtFilter extends OncePerRequestFilter {
 
             Authentication authentication = new UsernamePasswordAuthenticationToken(principal, jwt, authorities);
             SecurityContextHolder.getContext().setAuthentication(authentication);
+
         }
 
+        log.info("회원관리 기능 절차(jwt) -> JwtFilter - doFilterInternal 메소드 (request : {}, response : {}, filterChain : {}", request, response, filterChain);
         filterChain.doFilter(request, response);
     }
 
@@ -86,6 +89,8 @@ public class JwtFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
             return bearerToken.substring(7);
         }
+
+        log.info("회원관리 기능 절차(jwt) -> JwtFilter - resolveToken 메소드 (bearerToken : {})", bearerToken);
         return null;
     }
 
